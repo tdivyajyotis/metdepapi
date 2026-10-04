@@ -118,4 +118,12 @@ The public `sunmoon` adapter supports exact, unambiguous station coordinates onl
 
 Cross-platform CI execution is deferred as requested. Local fixture and live-source checks are the validation performed for this delivery.
 
+## License
+
+Original code and original documentation are licensed under [MIT](LICENSE).
+IMD content, captured source material, source-derived fixtures and catalog
+material, and third-party software are subject to their own terms. See
+[license scope and external content](DATA_LICENSE.md) before redistributing
+collected material.
+
 For products whose reference illustrates a single record object (AWS and rainfall), an `id` filter yielding one record returns that documented object. National/state aggregate responses use arrays because the reference does not illustrate their aggregate wrapper. Validation checks each documented record shape in those arrays.
