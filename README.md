@@ -126,4 +126,39 @@ material, and third-party software are subject to their own terms. See
 [license scope and external content](DATA_LICENSE.md) before redistributing
 collected material.
 
+## Docker
+
+Run these commands from the repository directory with Docker running in Linux
+container mode. Build the image and create persistent storage:
+
+```text
+docker build -t imd-local .
+docker volume create imd-data
+```
+
+Start the scheduled collector and the API server, sharing the same volume:
+
+```text
+docker run -d --name imd-collector --restart unless-stopped -v imd-data:/app/data imd-local batch jobs.full.json --watch
+docker run -d --name imd-api --restart unless-stopped -p 127.0.0.1:8000:8000 -v imd-data:/app/data imd-local serve --host 0.0.0.0
+```
+
+Open <http://localhost:8000/health> for server health and
+<http://localhost:8000/coverage> for available products. The collector populates
+snapshots asynchronously; API routes can return 503 until a matching fresh
+snapshot is available. The host port is bound to localhost. Use
+`jobs.example.json` instead of `jobs.full.json` for a smaller initial collection.
+
+```text
+docker logs -f imd-collector
+docker logs imd-api
+docker stop imd-collector imd-api
+docker start imd-collector imd-api
+```
+
+The named volume keeps the SQLite database, downloaded files and caches across
+container replacement. The image's default command prints coverage; it does
+not start collection or serving by itself. Docker image execution has not been
+verified in this workspace.
+
 For products whose reference illustrates a single record object (AWS and rainfall), an `id` filter yielding one record returns that documented object. National/state aggregate responses use arrays because the reference does not illustrate their aggregate wrapper. Validation checks each documented record shape in those arrays.

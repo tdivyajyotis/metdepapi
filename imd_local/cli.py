@@ -117,6 +117,7 @@ def main(argv=None):
     server = commands.add_parser("serve")
     server.add_argument("--provider", choices=["public", "official"], default="public")
     server.add_argument("--port", type=int, default=8000)
+    server.add_argument("--host", default="127.0.0.1", help="Bind address; use 0.0.0.0 inside a container")
     server.add_argument("--max-age", type=int, default=86400, help="Maximum retrieval age in seconds")
     server.add_argument("--max-source-age", type=int, default=172800, help="Maximum known source age in seconds")
     artifact = commands.add_parser("artifact")
@@ -185,8 +186,8 @@ def main(argv=None):
             print(json.dumps({"valid": not errors, "basis": "IMD_reference_only", "errors": errors}, indent=2))
             return int(bool(errors))
         else:
-            print(f"Serving stored {args.provider} snapshots at http://127.0.0.1:{args.port}", flush=True)
-            with HTTPServer(("127.0.0.1", args.port), handler(Store(args.database), args.provider, args.max_age, args.max_source_age)) as httpd:
+            print(f"Serving stored {args.provider} snapshots at http://{args.host}:{args.port}", flush=True)
+            with HTTPServer((args.host, args.port), handler(Store(args.database), args.provider, args.max_age, args.max_source_age)) as httpd:
                 httpd.serve_forever()
             return 0
         print(json.dumps(output, indent=2, ensure_ascii=False))
