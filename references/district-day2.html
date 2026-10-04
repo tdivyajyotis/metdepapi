@@ -1,0 +1,4621 @@
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/geojson2svg/1.0.2/geojson2svg.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<script>
+	document.getElementById( 'legendv' ).scrollIntoView();
+	
+	var state="";
+	jQuery.getJSON("../../imd_latest/contents/district_shapefiles/"+state+".json", function(data) {
+	
+		// convert GeoJSON to JavaScript Maps comptible object
+		var mapVar = AmCharts.parseGeoJSON(data);
+		var map = AmCharts.makeChart("chartdiv1", {
+			"type": "map",
+			"theme": "light",
+			"dataProvider": {
+				"mapVar": mapVar,
+				"getAreasFromMap": true,
+				"areas": [
+    {
+        "title": "NICOBAR",
+        "id": "573",
+        "color": "#00b31e",
+        "balloonText": "NICOBAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "ANJAW",
+        "id": "513",
+        "color": "#ffffff",
+        "balloonText": "ANJAW :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHANGLANG",
+        "id": "482",
+        "color": "#4dff4d",
+        "balloonText": "CHANGLANG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "EAST KAMENG",
+        "id": "480",
+        "color": "#4dff4d",
+        "balloonText": "EAST KAMENG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "EAST SIANG",
+        "id": "507",
+        "color": "#ffffff",
+        "balloonText": "EAST SIANG :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KURUNG KUMEY",
+        "id": "500",
+        "color": "#00b31e",
+        "balloonText": "KURUNG KUMEY :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "LOHIT",
+        "id": "628",
+        "color": "#4dff4d",
+        "balloonText": "LOHIT :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "LOWER DIBANG VALLEY",
+        "id": "657",
+        "color": "#4dff4d",
+        "balloonText": "LOWER DIBANG VALLEY :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "LOWER SUBANSIRI",
+        "id": "484",
+        "color": "#4dff4d",
+        "balloonText": "LOWER SUBANSIRI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "PAPUM PARE",
+        "id": "470",
+        "color": "#4dff4d",
+        "balloonText": "PAPUM PARE :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "TAWANG",
+        "id": "25",
+        "color": "#4dff4d",
+        "balloonText": "TAWANG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "TIRAP",
+        "id": "466",
+        "color": "#00b31e",
+        "balloonText": "TIRAP :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "UPPER SIANG",
+        "id": "524",
+        "color": "#00b31e",
+        "balloonText": "UPPER SIANG :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "UPPER SUBANSIRI",
+        "id": "510",
+        "color": "#00b31e",
+        "balloonText": "UPPER SUBANSIRI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "WEST KAMENG",
+        "id": "24",
+        "color": "#4dff4d",
+        "balloonText": "WEST KAMENG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "WEST SIANG",
+        "id": "517",
+        "color": "#4dff4d",
+        "balloonText": "WEST SIANG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "BAKSA",
+        "id": "21",
+        "color": "#00b31e",
+        "balloonText": "BAKSA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "BARPETA",
+        "id": "27",
+        "color": "#4dff4d",
+        "balloonText": "BARPETA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "BONGAIGAON",
+        "id": "26",
+        "color": "#4dff4d",
+        "balloonText": "BONGAIGAON :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "CACHAR",
+        "id": "360",
+        "color": "#4dff4d",
+        "balloonText": "CACHAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "CHIRANG",
+        "id": "18",
+        "color": "#00b31e",
+        "balloonText": "CHIRANG :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "DARRANG",
+        "id": "16",
+        "color": "#4dff4d",
+        "balloonText": "DARRANG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "DHEMAJI",
+        "id": "623",
+        "color": "#4dff4d",
+        "balloonText": "DHEMAJI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "DHUBRI",
+        "id": "9",
+        "color": "#00b31e",
+        "balloonText": "DHUBRI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "GOALPARA",
+        "id": "12",
+        "color": "#00b31e",
+        "balloonText": "GOALPARA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "GOLAGHAT",
+        "id": "446",
+        "color": "#4dff4d",
+        "balloonText": "GOLAGHAT :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "HAILAKANDI",
+        "id": "337",
+        "color": "#4dff4d",
+        "balloonText": "HAILAKANDI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "JORHAT",
+        "id": "456",
+        "color": "#4dff4d",
+        "balloonText": "JORHAT :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "KARIMGANJ",
+        "id": "340",
+        "color": "#4dff4d",
+        "balloonText": "KARIMGANJ :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "KOKRAJHAR",
+        "id": "17",
+        "color": "#00b31e",
+        "balloonText": "KOKRAJHAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "BALRAMPUR-CG",
+        "id": "459",
+        "color": "#004de6",
+        "balloonText": "BALRAMPUR-CG :<\/br> Widespread <\/br> Stations=76-100%<br>2024-07-30"
+    },
+    {
+        "title": "MORIGAON",
+        "id": "14",
+        "color": "#4dff4d",
+        "balloonText": "MORIGAON :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "DIMA HASAO",
+        "id": "393",
+        "color": "#4dff4d",
+        "balloonText": "DIMA HASAO :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "NAGAON",
+        "id": "19",
+        "color": "#4dff4d",
+        "balloonText": "NAGAON :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "SIBSAGAR",
+        "id": "462",
+        "color": "#4dff4d",
+        "balloonText": "SIBSAGAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "TINSUKIA",
+        "id": "494",
+        "color": "#4dff4d",
+        "balloonText": "TINSUKIA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "UDALGURI",
+        "id": "22",
+        "color": "#4dff4d",
+        "balloonText": "UDALGURI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "EAST GARO HILLS",
+        "id": "6",
+        "color": "#4dff4d",
+        "balloonText": "EAST GARO HILLS :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "EAST KHASI HILLS",
+        "id": "2",
+        "color": "#00b31e",
+        "balloonText": "EAST KHASI HILLS :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "EAST JAINTIA HILLS",
+        "id": "3",
+        "color": "#00b31e",
+        "balloonText": "EAST JAINTIA HILLS :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SOUTH GARO HILLS",
+        "id": "1",
+        "color": "#4dff4d",
+        "balloonText": "SOUTH GARO HILLS :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "WEST GARO HILLS",
+        "id": "5",
+        "color": "#4dff4d",
+        "balloonText": "WEST GARO HILLS :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "WEST KHASI HILLS",
+        "id": "4",
+        "color": "#00b31e",
+        "balloonText": "WEST KHASI HILLS :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "DIMAPUR",
+        "id": "402",
+        "color": "#00b31e",
+        "balloonText": "DIMAPUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KOHIMA",
+        "id": "624",
+        "color": "#00b31e",
+        "balloonText": "KOHIMA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "LONGLENG",
+        "id": "626",
+        "color": "#00b31e",
+        "balloonText": "LONGLENG :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "MOKOKCHUNG",
+        "id": "625",
+        "color": "#00b31e",
+        "balloonText": "MOKOKCHUNG :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "MON",
+        "id": "451",
+        "color": "#00b31e",
+        "balloonText": "MON :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PHEK",
+        "id": "403",
+        "color": "#00b31e",
+        "balloonText": "PHEK :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "TUENSANG",
+        "id": "443",
+        "color": "#00b31e",
+        "balloonText": "TUENSANG :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "WOKHA",
+        "id": "436",
+        "color": "#00b31e",
+        "balloonText": "WOKHA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ZUNHEBOTO",
+        "id": "423",
+        "color": "#00b31e",
+        "balloonText": "ZUNHEBOTO :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "BISHNUPUR",
+        "id": "332",
+        "color": "#4dff4d",
+        "balloonText": "BISHNUPUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "CHANDEL",
+        "id": "331",
+        "color": "#4dff4d",
+        "balloonText": "CHANDEL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "IMPHAL EAST",
+        "id": "357",
+        "color": "#4dff4d",
+        "balloonText": "IMPHAL EAST :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "IMPHAL WEST",
+        "id": "350",
+        "color": "#4dff4d",
+        "balloonText": "IMPHAL WEST :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "SENAPATI",
+        "id": "388",
+        "color": "#4dff4d",
+        "balloonText": "SENAPATI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "TAMENGLONG",
+        "id": "376",
+        "color": "#4dff4d",
+        "balloonText": "TAMENGLONG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "THOUBAL",
+        "id": "347",
+        "color": "#4dff4d",
+        "balloonText": "THOUBAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "UKHRUL",
+        "id": "395",
+        "color": "#4dff4d",
+        "balloonText": "UKHRUL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "CHAMPHAI",
+        "id": "300",
+        "color": "#66FFFF",
+        "balloonText": "CHAMPHAI :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-09-30"
+    },
+    {
+        "title": "KOLASIB",
+        "id": "317",
+        "color": "#00b31e",
+        "balloonText": "KOLASIB :<\/br> Scattered <\/br> Stations=26-50%<br>2026-09-30"
+    },
+    {
+        "title": "LAWNGTLAI",
+        "id": "247",
+        "color": "#66FFFF",
+        "balloonText": "LAWNGTLAI :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-09-30"
+    },
+    {
+        "title": "LUNGLEI",
+        "id": "277",
+        "color": "#66FFFF",
+        "balloonText": "LUNGLEI :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-09-30"
+    },
+    {
+        "title": "SAIHA",
+        "id": "251",
+        "color": "#66FFFF",
+        "balloonText": "SAIHA :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-09-30"
+    },
+    {
+        "title": "SERCHHIP",
+        "id": "282",
+        "color": "#66FFFF",
+        "balloonText": "SERCHHIP :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-09-30"
+    },
+    {
+        "title": "DHALAI",
+        "id": "305",
+        "color": "#4dff4d",
+        "balloonText": "DHALAI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NORTH TRIPURA",
+        "id": "318",
+        "color": "#4dff4d",
+        "balloonText": "NORTH TRIPURA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SOUTH TRIPURA",
+        "id": "287",
+        "color": "#4dff4d",
+        "balloonText": "SOUTH TRIPURA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "WEST TRIPURA",
+        "id": "303",
+        "color": "#4dff4d",
+        "balloonText": "WEST TRIPURA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "GANGTOK",
+        "id": "449",
+        "color": "#4dff4d",
+        "balloonText": "GANGTOK :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MANGAN",
+        "id": "473",
+        "color": "#4dff4d",
+        "balloonText": "MANGAN :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NAMCHI",
+        "id": "450",
+        "color": "#4dff4d",
+        "balloonText": "NAMCHI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "GYALSHING",
+        "id": "455",
+        "color": "#4dff4d",
+        "balloonText": "GYALSHING :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "JALPAIGURI",
+        "id": "20",
+        "color": "#00b31e",
+        "balloonText": "JALPAIGURI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "MALDA",
+        "id": "362",
+        "color": "#00b31e",
+        "balloonText": "MALDA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "BANKURA",
+        "id": "274",
+        "color": "#4dff4d",
+        "balloonText": "BANKURA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "BIRBHUM",
+        "id": "310",
+        "color": "#4dff4d",
+        "balloonText": "BIRBHUM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "MURSHIDABAD",
+        "id": "322",
+        "color": "#4dff4d",
+        "balloonText": "MURSHIDABAD :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "NADIA",
+        "id": "290",
+        "color": "#4dff4d",
+        "balloonText": "NADIA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "BHADRAK",
+        "id": "196",
+        "color": "#ffffff",
+        "balloonText": "BHADRAK :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CUTTACK",
+        "id": "182",
+        "color": "#ffffff",
+        "balloonText": "CUTTACK :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DEOGARH",
+        "id": "205",
+        "color": "#ffffff",
+        "balloonText": "DEOGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GANJAM",
+        "id": "171",
+        "color": "#4dff4d",
+        "balloonText": "GANJAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "JAGATSINGHPUR",
+        "id": "175",
+        "color": "#ffffff",
+        "balloonText": "JAGATSINGHPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JHARSUGUDA",
+        "id": "595",
+        "color": "#ffffff",
+        "balloonText": "JHARSUGUDA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KALAHANDI",
+        "id": "173",
+        "color": "#ffffff",
+        "balloonText": "KALAHANDI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KANDHAMAL",
+        "id": "178",
+        "color": "#ffffff",
+        "balloonText": "KANDHAMAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KORAPUT",
+        "id": "152",
+        "color": "#4dff4d",
+        "balloonText": "KORAPUT :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MALKANGIRI",
+        "id": "142",
+        "color": "#ffffff",
+        "balloonText": "MALKANGIRI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PURI",
+        "id": "170",
+        "color": "#ffffff",
+        "balloonText": "PURI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAMBALPUR",
+        "id": "217",
+        "color": "#ffffff",
+        "balloonText": "SAMBALPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SUNDARGARH",
+        "id": "228",
+        "color": "#ffffff",
+        "balloonText": "SUNDARGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BOKARO",
+        "id": "284",
+        "color": "#ffffff",
+        "balloonText": "BOKARO :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHATRA",
+        "id": "302",
+        "color": "#4dff4d",
+        "balloonText": "CHATRA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "DEOGAARH",
+        "id": "309",
+        "color": "#4dff4d",
+        "balloonText": "DEOGAARH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "DHANBAD",
+        "id": "289",
+        "color": "#ffffff",
+        "balloonText": "DHANBAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DUMKA",
+        "id": "311",
+        "color": "#4dff4d",
+        "balloonText": "DUMKA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "GARHWA",
+        "id": "301",
+        "color": "#ffffff",
+        "balloonText": "GARHWA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GIRIDIH",
+        "id": "314",
+        "color": "#4dff4d",
+        "balloonText": "GIRIDIH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "GUMLA",
+        "id": "271",
+        "color": "#ffffff",
+        "balloonText": "GUMLA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JAMTARA",
+        "id": "599",
+        "color": "#4dff4d",
+        "balloonText": "JAMTARA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KHUNTI",
+        "id": "259",
+        "color": "#ffffff",
+        "balloonText": "KHUNTI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LATEHAR",
+        "id": "307",
+        "color": "#ffffff",
+        "balloonText": "LATEHAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LOHARDAGA",
+        "id": "597",
+        "color": "#ffffff",
+        "balloonText": "LOHARDAGA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PAKUR",
+        "id": "319",
+        "color": "#4dff4d",
+        "balloonText": "PAKUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "PALAMU",
+        "id": "598",
+        "color": "#ffffff",
+        "balloonText": "PALAMU :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAMGARH",
+        "id": "600",
+        "color": "#ffffff",
+        "balloonText": "RAMGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RANCHI",
+        "id": "272",
+        "color": "#ffffff",
+        "balloonText": "RANCHI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SIMDEGA",
+        "id": "596",
+        "color": "#ffffff",
+        "balloonText": "SIMDEGA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ARWAL",
+        "id": "339",
+        "color": "#ffffff",
+        "balloonText": "ARWAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BANKA",
+        "id": "333",
+        "color": "#ffffff",
+        "balloonText": "BANKA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BEGUSARAI",
+        "id": "369",
+        "color": "#ffffff",
+        "balloonText": "BEGUSARAI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KAIMUR",
+        "id": "346",
+        "color": "#ffffff",
+        "balloonText": "KAIMUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHAGALPUR",
+        "id": "361",
+        "color": "#ffffff",
+        "balloonText": "BHAGALPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHOJPUR",
+        "id": "365",
+        "color": "#ffffff",
+        "balloonText": "BHOJPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BUXAR",
+        "id": "363",
+        "color": "#ffffff",
+        "balloonText": "BUXAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GAYA",
+        "id": "324",
+        "color": "#ffffff",
+        "balloonText": "GAYA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GOPALGANJ",
+        "id": "409",
+        "color": "#ffffff",
+        "balloonText": "GOPALGANJ :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JEHANABAD",
+        "id": "342",
+        "color": "#ffffff",
+        "balloonText": "JEHANABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JAMUI",
+        "id": "334",
+        "color": "#ffffff",
+        "balloonText": "JAMUI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KATIHAR",
+        "id": "378",
+        "color": "#ffffff",
+        "balloonText": "KATIHAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KHAGARIA",
+        "id": "368",
+        "color": "#ffffff",
+        "balloonText": "KHAGARIA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KISHANGANJ",
+        "id": "415",
+        "color": "#4dff4d",
+        "balloonText": "KISHANGANJ :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "LAKHISARAI",
+        "id": "345",
+        "color": "#ffffff",
+        "balloonText": "LAKHISARAI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MADHEPURA",
+        "id": "387",
+        "color": "#ffffff",
+        "balloonText": "MADHEPURA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MUZAFFARPUR",
+        "id": "399",
+        "color": "#ffffff",
+        "balloonText": "MUZAFFARPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NALANDA",
+        "id": "354",
+        "color": "#ffffff",
+        "balloonText": "NALANDA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NAWADA",
+        "id": "330",
+        "color": "#ffffff",
+        "balloonText": "NAWADA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PATNA",
+        "id": "364",
+        "color": "#ffffff",
+        "balloonText": "PATNA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ROHTAS",
+        "id": "344",
+        "color": "#ffffff",
+        "balloonText": "ROHTAS :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAHARSA",
+        "id": "383",
+        "color": "#ffffff",
+        "balloonText": "SAHARSA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAMASTIPUR",
+        "id": "381",
+        "color": "#ffffff",
+        "balloonText": "SAMASTIPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SARAN",
+        "id": "392",
+        "color": "#ffffff",
+        "balloonText": "SARAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHEIKHPURA",
+        "id": "338",
+        "color": "#ffffff",
+        "balloonText": "SHEIKHPURA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHEOHAR",
+        "id": "605",
+        "color": "#ffffff",
+        "balloonText": "SHEOHAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SITAMARHI",
+        "id": "424",
+        "color": "#ffffff",
+        "balloonText": "SITAMARHI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SIWAN",
+        "id": "396",
+        "color": "#ffffff",
+        "balloonText": "SIWAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SUPAUL",
+        "id": "411",
+        "color": "#4dff4d",
+        "balloonText": "SUPAUL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "VAISHALI",
+        "id": "379",
+        "color": "#ffffff",
+        "balloonText": "VAISHALI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PRAYAGRAJ",
+        "id": "685",
+        "color": "#ffffff",
+        "balloonText": "PRAYAGRAJ :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DAUSA",
+        "id": "437",
+        "color": "#ffffff",
+        "balloonText": "DAUSA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AMETHI",
+        "id": "410",
+        "color": "#ffffff",
+        "balloonText": "AMETHI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AZAMGARH",
+        "id": "398",
+        "color": "#ffffff",
+        "balloonText": "AZAMGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BALLIA",
+        "id": "386",
+        "color": "#ffffff",
+        "balloonText": "BALLIA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KUMARAM BHEEM",
+        "id": "161",
+        "color": "#ffffff",
+        "balloonText": "KUMARAM BHEEM :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BANDA",
+        "id": "370",
+        "color": "#ffffff",
+        "balloonText": "BANDA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BARABANKI",
+        "id": "440",
+        "color": "#ffffff",
+        "balloonText": "BARABANKI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BASTI",
+        "id": "432",
+        "color": "#4dff4d",
+        "balloonText": "BASTI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "CHANDAULI",
+        "id": "355",
+        "color": "#ffffff",
+        "balloonText": "CHANDAULI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHITRAKOOT",
+        "id": "687",
+        "color": "#ffffff",
+        "balloonText": "CHITRAKOOT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DEORIA",
+        "id": "417",
+        "color": "#ffffff",
+        "balloonText": "DEORIA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AYODHYA",
+        "id": "420",
+        "color": "#ffffff",
+        "balloonText": "AYODHYA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FARRUKHABAD",
+        "id": "452",
+        "color": "#ffffff",
+        "balloonText": "FARRUKHABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FATEHPUR",
+        "id": "385",
+        "color": "#ffffff",
+        "balloonText": "FATEHPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GONDA",
+        "id": "686",
+        "color": "#4dff4d",
+        "balloonText": "GONDA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "HARDOI",
+        "id": "454",
+        "color": "#ffffff",
+        "balloonText": "HARDOI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JAUNPUR",
+        "id": "384",
+        "color": "#ffffff",
+        "balloonText": "JAUNPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KANNAUJ",
+        "id": "438",
+        "color": "#ffffff",
+        "balloonText": "KANNAUJ :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KANPUR DEHAT",
+        "id": "425",
+        "color": "#ffffff",
+        "balloonText": "KANPUR DEHAT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KAUSHAMBI",
+        "id": "366",
+        "color": "#ffffff",
+        "balloonText": "KAUSHAMBI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LAKHIMPUR KHERI",
+        "id": "493",
+        "color": "#4dff4d",
+        "balloonText": "LAKHIMPUR KHERI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "LUCKNOW",
+        "id": "435",
+        "color": "#ffffff",
+        "balloonText": "LUCKNOW :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHARAJGANJ",
+        "id": "715",
+        "color": "#4dff4d",
+        "balloonText": "MAHARAJGANJ :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MAU",
+        "id": "717",
+        "color": "#ffffff",
+        "balloonText": "MAU :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KANCHEEPURAM",
+        "id": "76",
+        "color": "#00b31e",
+        "balloonText": "KANCHEEPURAM :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "LOWER SIANG",
+        "id": "53",
+        "color": "#4dff4d",
+        "balloonText": "LOWER SIANG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SITAPUR",
+        "id": "461",
+        "color": "#ffffff",
+        "balloonText": "SITAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SONBHADRA",
+        "id": "716",
+        "color": "#ffffff",
+        "balloonText": "SONBHADRA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SULTANPUR",
+        "id": "401",
+        "color": "#ffffff",
+        "balloonText": "SULTANPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "UNNAO",
+        "id": "429",
+        "color": "#ffffff",
+        "balloonText": "UNNAO :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "VARANASI",
+        "id": "356",
+        "color": "#ffffff",
+        "balloonText": "VARANASI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AGRA",
+        "id": "442",
+        "color": "#ffffff",
+        "balloonText": "AGRA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ALIGARH",
+        "id": "469",
+        "color": "#ffffff",
+        "balloonText": "ALIGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AURAIYA",
+        "id": "422",
+        "color": "#ffffff",
+        "balloonText": "AURAIYA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BADAUN",
+        "id": "478",
+        "color": "#ffffff",
+        "balloonText": "BADAUN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BAGHPAT",
+        "id": "511",
+        "color": "#ffffff",
+        "balloonText": "BAGHPAT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BAREILLY",
+        "id": "497",
+        "color": "#ffffff",
+        "balloonText": "BAREILLY :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BIJNOR",
+        "id": "519",
+        "color": "#ffffff",
+        "balloonText": "BIJNOR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ETAH",
+        "id": "453",
+        "color": "#ffffff",
+        "balloonText": "ETAH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AURANGABAAD",
+        "id": "181",
+        "color": "#ffffff",
+        "balloonText": "AURANGABAAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FIROZABAD",
+        "id": "445",
+        "color": "#ffffff",
+        "balloonText": "FIROZABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GHAZIABAD",
+        "id": "501",
+        "color": "#ffffff",
+        "balloonText": "GHAZIABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "VIDISHA",
+        "id": "294",
+        "color": "#ffffff",
+        "balloonText": "VIDISHA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JALAUN",
+        "id": "397",
+        "color": "#ffffff",
+        "balloonText": "JALAUN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JHANSI",
+        "id": "374",
+        "color": "#ffffff",
+        "balloonText": "JHANSI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AMROHA",
+        "id": "505",
+        "color": "#ffffff",
+        "balloonText": "AMROHA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LALITPUR",
+        "id": "335",
+        "color": "#ffffff",
+        "balloonText": "LALITPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHOBA",
+        "id": "359",
+        "color": "#ffffff",
+        "balloonText": "MAHOBA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAINPURI",
+        "id": "444",
+        "color": "#ffffff",
+        "balloonText": "MAINPURI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MATHURA",
+        "id": "465",
+        "color": "#ffffff",
+        "balloonText": "MATHURA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MEERUT",
+        "id": "509",
+        "color": "#ffffff",
+        "balloonText": "MEERUT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MORADABAD",
+        "id": "508",
+        "color": "#ffffff",
+        "balloonText": "MORADABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PILIBHIT",
+        "id": "498",
+        "color": "#ffffff",
+        "balloonText": "PILIBHIT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAMPUR",
+        "id": "684",
+        "color": "#ffffff",
+        "balloonText": "RAMPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAHARANPUR",
+        "id": "533",
+        "color": "#ffffff",
+        "balloonText": "SAHARANPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHAHJAHANPUR",
+        "id": "477",
+        "color": "#ffffff",
+        "balloonText": "SHAHJAHANPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ALMORA",
+        "id": "522",
+        "color": "#4dff4d",
+        "balloonText": "ALMORA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "BAGESHWAR",
+        "id": "530",
+        "color": "#4dff4d",
+        "balloonText": "BAGESHWAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "CHAMOLI",
+        "id": "549",
+        "color": "#4dff4d",
+        "balloonText": "CHAMOLI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "CHAMPAWAT",
+        "id": "514",
+        "color": "#4dff4d",
+        "balloonText": "CHAMPAWAT :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "DEHRADUN",
+        "id": "547",
+        "color": "#4dff4d",
+        "balloonText": "DEHRADUN :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "PITHORAGARH",
+        "id": "540",
+        "color": "#4dff4d",
+        "balloonText": "PITHORAGARH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "RUDRAPRAYAG",
+        "id": "539",
+        "color": "#4dff4d",
+        "balloonText": "RUDRAPRAYAG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "UDHAM SINGH NAGAR",
+        "id": "720",
+        "color": "#ffffff",
+        "balloonText": "UDHAM SINGH NAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AMBALA",
+        "id": "613",
+        "color": "#ffffff",
+        "balloonText": "AMBALA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHIWANI",
+        "id": "504",
+        "color": "#ffffff",
+        "balloonText": "BHIWANI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FARIDABAD",
+        "id": "606",
+        "color": "#ffffff",
+        "balloonText": "FARIDABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GURGAON",
+        "id": "483",
+        "color": "#ffffff",
+        "balloonText": "GURGAON :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HISAR",
+        "id": "714",
+        "color": "#ffffff",
+        "balloonText": "HISAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JHAJJAR",
+        "id": "499",
+        "color": "#ffffff",
+        "balloonText": "JHAJJAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JIND",
+        "id": "521",
+        "color": "#ffffff",
+        "balloonText": "JIND :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KAITHAL",
+        "id": "528",
+        "color": "#ffffff",
+        "balloonText": "KAITHAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KARNAL",
+        "id": "523",
+        "color": "#ffffff",
+        "balloonText": "KARNAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KURUKSHETRA",
+        "id": "529",
+        "color": "#ffffff",
+        "balloonText": "KURUKSHETRA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHENDRAGARH",
+        "id": "479",
+        "color": "#ffffff",
+        "balloonText": "MAHENDRAGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MEWAT",
+        "id": "607",
+        "color": "#ffffff",
+        "balloonText": "MEWAT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PALWAL",
+        "id": "468",
+        "color": "#ffffff",
+        "balloonText": "PALWAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PANCHKULA",
+        "id": "545",
+        "color": "#ffffff",
+        "balloonText": "PANCHKULA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PANIPAT",
+        "id": "515",
+        "color": "#ffffff",
+        "balloonText": "PANIPAT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "REWARI",
+        "id": "481",
+        "color": "#ffffff",
+        "balloonText": "REWARI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ROHTAK",
+        "id": "721",
+        "color": "#ffffff",
+        "balloonText": "ROHTAK :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SIRSA",
+        "id": "525",
+        "color": "#ffffff",
+        "balloonText": "SIRSA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SONIPAT",
+        "id": "512",
+        "color": "#ffffff",
+        "balloonText": "SONIPAT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CENTRAL DELHI",
+        "id": "489",
+        "color": "#ffffff",
+        "balloonText": "CENTRAL DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "EAST DELHI",
+        "id": "491",
+        "color": "#ffffff",
+        "balloonText": "EAST DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "NEW DELHI",
+        "id": "689",
+        "color": "#ffffff",
+        "balloonText": "NEW DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "NORTH DELHI",
+        "id": "688",
+        "color": "#ffffff",
+        "balloonText": "NORTH DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "NORTH EAST DELHI",
+        "id": "496",
+        "color": "#ffffff",
+        "balloonText": "NORTH EAST DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "NORTH WEST DELHI",
+        "id": "502",
+        "color": "#ffffff",
+        "balloonText": "NORTH WEST DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "SOUTH DELHI",
+        "id": "486",
+        "color": "#ffffff",
+        "balloonText": "SOUTH DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "SOUTH WEST DELHI",
+        "id": "492",
+        "color": "#ffffff",
+        "balloonText": "SOUTH WEST DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "WEST DELHI",
+        "id": "495",
+        "color": "#ffffff",
+        "balloonText": "WEST DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "AMRITSAR",
+        "id": "564",
+        "color": "#ffffff",
+        "balloonText": "AMRITSAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BARNALA",
+        "id": "536",
+        "color": "#ffffff",
+        "balloonText": "BARNALA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FARIDKOT",
+        "id": "543",
+        "color": "#ffffff",
+        "balloonText": "FARIDKOT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FATEHGARH SAHIB",
+        "id": "544",
+        "color": "#ffffff",
+        "balloonText": "FATEHGARH SAHIB :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GURDASPUR",
+        "id": "568",
+        "color": "#ffffff",
+        "balloonText": "GURDASPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HOSHIARPUR",
+        "id": "565",
+        "color": "#ffffff",
+        "balloonText": "HOSHIARPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JALANDHAR",
+        "id": "557",
+        "color": "#ffffff",
+        "balloonText": "JALANDHAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KAPURTHALA",
+        "id": "554",
+        "color": "#ffffff",
+        "balloonText": "KAPURTHALA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LUDHIANA",
+        "id": "550",
+        "color": "#ffffff",
+        "balloonText": "LUDHIANA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MANSA",
+        "id": "615",
+        "color": "#ffffff",
+        "balloonText": "MANSA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MOGA",
+        "id": "546",
+        "color": "#ffffff",
+        "balloonText": "MOGA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MUKTSAR",
+        "id": "541",
+        "color": "#ffffff",
+        "balloonText": "MUKTSAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PATIALA",
+        "id": "719",
+        "color": "#ffffff",
+        "balloonText": "PATIALA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SANGRUR",
+        "id": "538",
+        "color": "#ffffff",
+        "balloonText": "SANGRUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "TARN TARAN",
+        "id": "558",
+        "color": "#ffffff",
+        "balloonText": "TARN TARAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHAMBA",
+        "id": "569",
+        "color": "#4dff4d",
+        "balloonText": "CHAMBA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "HAMIRPURR",
+        "id": "561",
+        "color": "#ffffff",
+        "balloonText": "HAMIRPURR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KANGRA",
+        "id": "567",
+        "color": "#4dff4d",
+        "balloonText": "KANGRA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KINNAUR",
+        "id": "562",
+        "color": "#ffffff",
+        "balloonText": "KINNAUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KULLU",
+        "id": "566",
+        "color": "#ffffff",
+        "balloonText": "KULLU :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MANDI",
+        "id": "563",
+        "color": "#ffffff",
+        "balloonText": "MANDI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHIMLA",
+        "id": "559",
+        "color": "#4dff4d",
+        "balloonText": "SHIMLA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SIRMAUR",
+        "id": "548",
+        "color": "#4dff4d",
+        "balloonText": "SIRMAUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SOLAN",
+        "id": "553",
+        "color": "#ffffff",
+        "balloonText": "SOLAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "UNA",
+        "id": "560",
+        "color": "#ffffff",
+        "balloonText": "UNA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ANANTNAG",
+        "id": "697",
+        "color": "#ffffff",
+        "balloonText": "ANANTNAG :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BARAMULLA",
+        "id": "698",
+        "color": "#ffffff",
+        "balloonText": "BARAMULLA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JAMMU",
+        "id": "692",
+        "color": "#ffffff",
+        "balloonText": "JAMMU :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KATHUA",
+        "id": "691",
+        "color": "#ffffff",
+        "balloonText": "KATHUA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LEH",
+        "id": "703",
+        "color": "#ffffff",
+        "balloonText": "LEH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "UDHAMPUR",
+        "id": "695",
+        "color": "#ffffff",
+        "balloonText": "UDHAMPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AJMER",
+        "id": "431",
+        "color": "#ffffff",
+        "balloonText": "AJMER :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ALWAR",
+        "id": "471",
+        "color": "#ffffff",
+        "balloonText": "ALWAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BANSWARA",
+        "id": "28",
+        "color": "#ffffff",
+        "balloonText": "BANSWARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BARAN",
+        "id": "349",
+        "color": "#ffffff",
+        "balloonText": "BARAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHARATPUR",
+        "id": "458",
+        "color": "#ffffff",
+        "balloonText": "BHARATPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHILWARA",
+        "id": "711",
+        "color": "#ffffff",
+        "balloonText": "BHILWARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BELLARY",
+        "id": "100",
+        "color": "#00b31e",
+        "balloonText": "BELLARY :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "DHOLPUR",
+        "id": "426",
+        "color": "#ffffff",
+        "balloonText": "DHOLPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DUNGARPUR",
+        "id": "661",
+        "color": "#ffffff",
+        "balloonText": "DUNGARPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JAIPUR",
+        "id": "614",
+        "color": "#ffffff",
+        "balloonText": "JAIPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JHALAWAR",
+        "id": "316",
+        "color": "#ffffff",
+        "balloonText": "JHALAWAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JHUNJHUNU",
+        "id": "485",
+        "color": "#ffffff",
+        "balloonText": "JHUNJHUNU :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KARAULI",
+        "id": "428",
+        "color": "#ffffff",
+        "balloonText": "KARAULI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KOTA",
+        "id": "372",
+        "color": "#ffffff",
+        "balloonText": "KOTA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAWAI MADHOPUR",
+        "id": "414",
+        "color": "#ffffff",
+        "balloonText": "SAWAI MADHOPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SIKAR",
+        "id": "472",
+        "color": "#ffffff",
+        "balloonText": "SIKAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SIROHI",
+        "id": "353",
+        "color": "#ffffff",
+        "balloonText": "SIROHI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "TONK",
+        "id": "582",
+        "color": "#ffffff",
+        "balloonText": "TONK :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "UDAIPUR",
+        "id": "709",
+        "color": "#ffffff",
+        "balloonText": "UDAIPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BARMER",
+        "id": "419",
+        "color": "#ffffff",
+        "balloonText": "BARMER :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BIKANER",
+        "id": "506",
+        "color": "#ffffff",
+        "balloonText": "BIKANER :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHURU",
+        "id": "503",
+        "color": "#ffffff",
+        "balloonText": "CHURU :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JODHPUR",
+        "id": "460",
+        "color": "#ffffff",
+        "balloonText": "JODHPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NAGAUR",
+        "id": "463",
+        "color": "#ffffff",
+        "balloonText": "NAGAUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ANUPPUR",
+        "id": "264",
+        "color": "#ffffff",
+        "balloonText": "ANUPPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BALAGHAT",
+        "id": "223",
+        "color": "#ffffff",
+        "balloonText": "BALAGHAT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHHATARPUR",
+        "id": "343",
+        "color": "#ffffff",
+        "balloonText": "CHHATARPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHHINDWARA",
+        "id": "236",
+        "color": "#ffffff",
+        "balloonText": "CHHINDWARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DAMOH",
+        "id": "298",
+        "color": "#ffffff",
+        "balloonText": "DAMOH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DINDORI",
+        "id": "261",
+        "color": "#ffffff",
+        "balloonText": "DINDORI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JABALPUR",
+        "id": "268",
+        "color": "#ffffff",
+        "balloonText": "JABALPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KATNI",
+        "id": "286",
+        "color": "#ffffff",
+        "balloonText": "KATNI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MANDLA",
+        "id": "249",
+        "color": "#ffffff",
+        "balloonText": "MANDLA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PANNA",
+        "id": "723",
+        "color": "#ffffff",
+        "balloonText": "PANNA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "REWA",
+        "id": "634",
+        "color": "#ffffff",
+        "balloonText": "REWA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAGAR",
+        "id": "299",
+        "color": "#ffffff",
+        "balloonText": "SAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SATNA",
+        "id": "328",
+        "color": "#ffffff",
+        "balloonText": "SATNA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SEONI",
+        "id": "239",
+        "color": "#ffffff",
+        "balloonText": "SEONI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHAHDOL",
+        "id": "291",
+        "color": "#ffffff",
+        "balloonText": "SHAHDOL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SIDHI",
+        "id": "304",
+        "color": "#ffffff",
+        "balloonText": "SIDHI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SINGRAULI",
+        "id": "602",
+        "color": "#ffffff",
+        "balloonText": "SINGRAULI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "TIKAMGARH",
+        "id": "358",
+        "color": "#ffffff",
+        "balloonText": "TIKAMGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "UMARIA",
+        "id": "285",
+        "color": "#ffffff",
+        "balloonText": "UMARIA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AGAR-MALWA",
+        "id": "609",
+        "color": "#ffffff",
+        "balloonText": "AGAR-MALWA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ALIRAJPUR",
+        "id": "234",
+        "color": "#ffffff",
+        "balloonText": "ALIRAJPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ASHOKNAGAR",
+        "id": "610",
+        "color": "#ffffff",
+        "balloonText": "ASHOKNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BARWANI",
+        "id": "219",
+        "color": "#ffffff",
+        "balloonText": "BARWANI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BETUL",
+        "id": "224",
+        "color": "#ffffff",
+        "balloonText": "BETUL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHIND",
+        "id": "418",
+        "color": "#ffffff",
+        "balloonText": "BHIND :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KOTTAYAM",
+        "id": "37",
+        "color": "#004de6",
+        "balloonText": "KOTTAYAM :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "DATIA",
+        "id": "391",
+        "color": "#ffffff",
+        "balloonText": "DATIA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DEWAS",
+        "id": "258",
+        "color": "#ffffff",
+        "balloonText": "DEWAS :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DHAR",
+        "id": "253",
+        "color": "#ffffff",
+        "balloonText": "DHAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GUNA",
+        "id": "326",
+        "color": "#ffffff",
+        "balloonText": "GUNA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GWALIOR",
+        "id": "394",
+        "color": "#ffffff",
+        "balloonText": "GWALIOR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HARDA",
+        "id": "229",
+        "color": "#ffffff",
+        "balloonText": "HARDA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HOSHANGABAD",
+        "id": "245",
+        "color": "#ffffff",
+        "balloonText": "HOSHANGABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "INDORE",
+        "id": "250",
+        "color": "#ffffff",
+        "balloonText": "INDORE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JHABUA",
+        "id": "260",
+        "color": "#ffffff",
+        "balloonText": "JHABUA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KHANDWA",
+        "id": "226",
+        "color": "#ffffff",
+        "balloonText": "KHANDWA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KHARGONE",
+        "id": "230",
+        "color": "#ffffff",
+        "balloonText": "KHARGONE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MANDSAUR",
+        "id": "312",
+        "color": "#ffffff",
+        "balloonText": "MANDSAUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MORENA",
+        "id": "421",
+        "color": "#ffffff",
+        "balloonText": "MORENA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "THRISSUR",
+        "id": "45",
+        "color": "#004de6",
+        "balloonText": "THRISSUR :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "RAISEN",
+        "id": "276",
+        "color": "#ffffff",
+        "balloonText": "RAISEN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAJGARH",
+        "id": "292",
+        "color": "#ffffff",
+        "balloonText": "RAJGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RATLAM",
+        "id": "281",
+        "color": "#ffffff",
+        "balloonText": "RATLAM :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SEHORE",
+        "id": "270",
+        "color": "#ffffff",
+        "balloonText": "SEHORE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHAJAPUR",
+        "id": "295",
+        "color": "#ffffff",
+        "balloonText": "SHAJAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHEOPUR KALAN",
+        "id": "389",
+        "color": "#ffffff",
+        "balloonText": "SHEOPUR KALAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHIVPURI",
+        "id": "375",
+        "color": "#ffffff",
+        "balloonText": "SHIVPURI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "UJJAIN",
+        "id": "279",
+        "color": "#ffffff",
+        "balloonText": "UJJAIN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ARAVALLI",
+        "id": "679",
+        "color": "#ffffff",
+        "balloonText": "ARAVALLI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BANASKANTHA",
+        "id": "320",
+        "color": "#ffffff",
+        "balloonText": "BANASKANTHA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHARUCH",
+        "id": "225",
+        "color": "#ffffff",
+        "balloonText": "BHARUCH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DAHOD",
+        "id": "269",
+        "color": "#ffffff",
+        "balloonText": "DAHOD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GAZIPUR",
+        "id": "371",
+        "color": "#ffffff",
+        "balloonText": "GAZIPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "THENI",
+        "id": "39",
+        "color": "#00b31e",
+        "balloonText": "THENI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "GANDHINAGAR",
+        "id": "267",
+        "color": "#ffffff",
+        "balloonText": "GANDHINAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KHERA",
+        "id": "263",
+        "color": "#ffffff",
+        "balloonText": "KHERA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHISAGAR",
+        "id": "608",
+        "color": "#ffffff",
+        "balloonText": "MAHISAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHESANA",
+        "id": "293",
+        "color": "#ffffff",
+        "balloonText": "MAHESANA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BIJAAPUR",
+        "id": "119",
+        "color": "#ffffff",
+        "balloonText": "BIJAAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NAVSARI",
+        "id": "643",
+        "color": "#ffffff",
+        "balloonText": "NAVSARI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PANCHMAHAL",
+        "id": "256",
+        "color": "#ffffff",
+        "balloonText": "PANCHMAHAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PATAN",
+        "id": "297",
+        "color": "#ffffff",
+        "balloonText": "PATAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SURAT",
+        "id": "207",
+        "color": "#ffffff",
+        "balloonText": "SURAT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "TAPI",
+        "id": "586",
+        "color": "#ffffff",
+        "balloonText": "TAPI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "VADODARA",
+        "id": "244",
+        "color": "#ffffff",
+        "balloonText": "VADODARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "VALSAD",
+        "id": "195",
+        "color": "#ffffff",
+        "balloonText": "VALSAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AMRELI",
+        "id": "221",
+        "color": "#ffffff",
+        "balloonText": "AMRELI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BHAVNAGAR",
+        "id": "210",
+        "color": "#ffffff",
+        "balloonText": "BHAVNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BOTAD",
+        "id": "233",
+        "color": "#ffffff",
+        "balloonText": "BOTAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DEVBHOOMI DWARKA",
+        "id": "242",
+        "color": "#ffffff",
+        "balloonText": "DEVBHOOMI DWARKA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ETAWAH",
+        "id": "427",
+        "color": "#ffffff",
+        "balloonText": "ETAWAH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GIR SOMNATH",
+        "id": "584",
+        "color": "#ffffff",
+        "balloonText": "GIR SOMNATH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JAMNAGAR",
+        "id": "257",
+        "color": "#ffffff",
+        "balloonText": "JAMNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KACHCHH",
+        "id": "321",
+        "color": "#ffffff",
+        "balloonText": "KACHCHH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MORBI",
+        "id": "583",
+        "color": "#ffffff",
+        "balloonText": "MORBI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PORBANDAR",
+        "id": "222",
+        "color": "#ffffff",
+        "balloonText": "PORBANDAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAJKOT",
+        "id": "266",
+        "color": "#ffffff",
+        "balloonText": "RAJKOT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SURENDRANAGAR",
+        "id": "275",
+        "color": "#ffffff",
+        "balloonText": "SURENDRANAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NORTH GOA",
+        "id": "98",
+        "color": "#4dff4d",
+        "balloonText": "NORTH GOA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SOUTH GOA",
+        "id": "95",
+        "color": "#4dff4d",
+        "balloonText": "SOUTH GOA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MUMBAI CITY",
+        "id": "151",
+        "color": "#ffffff",
+        "balloonText": "MUMBAI CITY :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MUMBAI SUBURBAN",
+        "id": "157",
+        "color": "#ffffff",
+        "balloonText": "MUMBAI SUBURBAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PALGHAR",
+        "id": "172",
+        "color": "#ffffff",
+        "balloonText": "PALGHAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAIGAD",
+        "id": "154",
+        "color": "#ffffff",
+        "balloonText": "RAIGAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RATNAGIRI",
+        "id": "131",
+        "color": "#ffffff",
+        "balloonText": "RATNAGIRI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SINDHUDURG",
+        "id": "107",
+        "color": "#ffffff",
+        "balloonText": "SINDHUDURG :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "THANE",
+        "id": "585",
+        "color": "#ffffff",
+        "balloonText": "THANE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DHULE",
+        "id": "587",
+        "color": "#ffffff",
+        "balloonText": "DHULE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JALGAON",
+        "id": "198",
+        "color": "#ffffff",
+        "balloonText": "JALGAON :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KOLHAPUR",
+        "id": "114",
+        "color": "#ffffff",
+        "balloonText": "KOLHAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NANDURBAR",
+        "id": "216",
+        "color": "#ffffff",
+        "balloonText": "NANDURBAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NASHIK",
+        "id": "186",
+        "color": "#ffffff",
+        "balloonText": "NASHIK :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PUNE",
+        "id": "159",
+        "color": "#ffffff",
+        "balloonText": "PUNE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SANGLI",
+        "id": "122",
+        "color": "#ffffff",
+        "balloonText": "SANGLI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SATARA",
+        "id": "135",
+        "color": "#ffffff",
+        "balloonText": "SATARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HINGOLI",
+        "id": "589",
+        "color": "#ffffff",
+        "balloonText": "HINGOLI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JALNA",
+        "id": "179",
+        "color": "#ffffff",
+        "balloonText": "JALNA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LATUR",
+        "id": "146",
+        "color": "#ffffff",
+        "balloonText": "LATUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "OSMANABAD",
+        "id": "143",
+        "color": "#ffffff",
+        "balloonText": "OSMANABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PARBHANI",
+        "id": "166",
+        "color": "#ffffff",
+        "balloonText": "PARBHANI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AKOLA",
+        "id": "194",
+        "color": "#ffffff",
+        "balloonText": "AKOLA :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "BHANDARA",
+        "id": "593",
+        "color": "#ffffff",
+        "balloonText": "BHANDARA :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "CHANDRAPUR",
+        "id": "617",
+        "color": "#ffffff",
+        "balloonText": "CHANDRAPUR :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "GADCHIROLI",
+        "id": "724",
+        "color": "#ffffff",
+        "balloonText": "GADCHIROLI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "NAGPUR",
+        "id": "206",
+        "color": "#ffffff",
+        "balloonText": "NAGPUR :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "WARDHA",
+        "id": "622",
+        "color": "#ffffff",
+        "balloonText": "WARDHA :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "WASHIM",
+        "id": "588",
+        "color": "#ffffff",
+        "balloonText": "WASHIM :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "BALOD",
+        "id": "187",
+        "color": "#ffffff",
+        "balloonText": "BALOD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BALODA BAZAR",
+        "id": "211",
+        "color": "#ffffff",
+        "balloonText": "BALODA BAZAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BASTAR",
+        "id": "160",
+        "color": "#ffffff",
+        "balloonText": "BASTAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AMBEDKAR NAGAR",
+        "id": "408",
+        "color": "#ffffff",
+        "balloonText": "AMBEDKAR NAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DANTEWARA",
+        "id": "591",
+        "color": "#ffffff",
+        "balloonText": "DANTEWARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DHAMTARI",
+        "id": "185",
+        "color": "#ffffff",
+        "balloonText": "DHAMTARI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JASHPUR",
+        "id": "255",
+        "color": "#ffffff",
+        "balloonText": "JASHPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KANKER",
+        "id": "176",
+        "color": "#ffffff",
+        "balloonText": "KANKER :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KONDAGAON",
+        "id": "169",
+        "color": "#ffffff",
+        "balloonText": "KONDAGAON :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KORBA",
+        "id": "243",
+        "color": "#ffffff",
+        "balloonText": "KORBA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KOREA",
+        "id": "603",
+        "color": "#ffffff",
+        "balloonText": "KOREA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHASAMUND",
+        "id": "200",
+        "color": "#ffffff",
+        "balloonText": "MAHASAMUND :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MUNGELI",
+        "id": "601",
+        "color": "#ffffff",
+        "balloonText": "MUNGELI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NARAYANPUR",
+        "id": "592",
+        "color": "#ffffff",
+        "balloonText": "NARAYANPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAIGARH",
+        "id": "235",
+        "color": "#ffffff",
+        "balloonText": "RAIGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAIPUR",
+        "id": "594",
+        "color": "#ffffff",
+        "balloonText": "RAIPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAJNANDGAON",
+        "id": "713",
+        "color": "#ffffff",
+        "balloonText": "RAJNANDGAON :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SUKMA",
+        "id": "155",
+        "color": "#ffffff",
+        "balloonText": "SUKMA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SURAJPUR",
+        "id": "308",
+        "color": "#ffffff",
+        "balloonText": "SURAJPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SURGUJA",
+        "id": "604",
+        "color": "#ffffff",
+        "balloonText": "SURGUJA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "EAST GODAVARI",
+        "id": "127",
+        "color": "#00b31e",
+        "balloonText": "EAST GODAVARI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KRISHNA",
+        "id": "113",
+        "color": "#00b31e",
+        "balloonText": "KRISHNA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SPSR NELLORE",
+        "id": "91",
+        "color": "#00b31e",
+        "balloonText": "SPSR NELLORE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PRAKASAM",
+        "id": "103",
+        "color": "#4dff4d",
+        "balloonText": "PRAKASAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SRIKAKULAM",
+        "id": "149",
+        "color": "#4dff4d",
+        "balloonText": "SRIKAKULAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "VISHAKHAPATNAM",
+        "id": "138",
+        "color": "#00b31e",
+        "balloonText": "VISHAKHAPATNAM :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "WEST GODAVARI",
+        "id": "130",
+        "color": "#00b31e",
+        "balloonText": "WEST GODAVARI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KURNOOL",
+        "id": "102",
+        "color": "#4dff4d",
+        "balloonText": "KURNOOL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "ADILABAD",
+        "id": "164",
+        "color": "#ffffff",
+        "balloonText": "ADILABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "B. KOTHAGUDEM",
+        "id": "707",
+        "color": "#4dff4d",
+        "balloonText": "B. KOTHAGUDEM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "J. BHUPALPALLY",
+        "id": "629",
+        "color": "#4dff4d",
+        "balloonText": "J. BHUPALPALLY :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "JAGTIAL",
+        "id": "148",
+        "color": "#ffffff",
+        "balloonText": "JAGTIAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JANGAON",
+        "id": "126",
+        "color": "#ffffff",
+        "balloonText": "JANGAON :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JOGULAMBA GADWAL",
+        "id": "104",
+        "color": "#4dff4d",
+        "balloonText": "JOGULAMBA GADWAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KAMAREDDY",
+        "id": "708",
+        "color": "#ffffff",
+        "balloonText": "KAMAREDDY :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KARIMNAGAR",
+        "id": "141",
+        "color": "#ffffff",
+        "balloonText": "KARIMNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KHAMMAM",
+        "id": "120",
+        "color": "#4dff4d",
+        "balloonText": "KHAMMAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "M. MALKAJGIRI",
+        "id": "123",
+        "color": "#ffffff",
+        "balloonText": "M. MALKAJGIRI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHABUBABAD",
+        "id": "128",
+        "color": "#ffffff",
+        "balloonText": "MAHABUBABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MAHABUBNAGAR",
+        "id": "112",
+        "color": "#4dff4d",
+        "balloonText": "MAHABUBNAGAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MANCHERIAL",
+        "id": "153",
+        "color": "#ffffff",
+        "balloonText": "MANCHERIAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MEDAK",
+        "id": "129",
+        "color": "#ffffff",
+        "balloonText": "MEDAK :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NAGARKURNOOL",
+        "id": "109",
+        "color": "#4dff4d",
+        "balloonText": "NAGARKURNOOL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NALGONDA",
+        "id": "115",
+        "color": "#4dff4d",
+        "balloonText": "NALGONDA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NIRMAL",
+        "id": "706",
+        "color": "#ffffff",
+        "balloonText": "NIRMAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NIZAMABAD",
+        "id": "147",
+        "color": "#ffffff",
+        "balloonText": "NIZAMABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PEDDAPALLE",
+        "id": "144",
+        "color": "#ffffff",
+        "balloonText": "PEDDAPALLE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAJANNA SIRCILLA",
+        "id": "140",
+        "color": "#ffffff",
+        "balloonText": "RAJANNA SIRCILLA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RANGAREDDY",
+        "id": "118",
+        "color": "#4dff4d",
+        "balloonText": "RANGAREDDY :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SANGAREDDY",
+        "id": "134",
+        "color": "#ffffff",
+        "balloonText": "SANGAREDDY :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SURYAPET",
+        "id": "117",
+        "color": "#4dff4d",
+        "balloonText": "SURYAPET :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "VIKARABAD",
+        "id": "121",
+        "color": "#4dff4d",
+        "balloonText": "VIKARABAD :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "WANAPARTHY",
+        "id": "106",
+        "color": "#4dff4d",
+        "balloonText": "WANAPARTHY :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "WARANGAL",
+        "id": "133",
+        "color": "#ffffff",
+        "balloonText": "WARANGAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HANAMKONDA",
+        "id": "132",
+        "color": "#ffffff",
+        "balloonText": "HANAMKONDA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "Y. BHUVANAGIRI",
+        "id": "125",
+        "color": "#ffffff",
+        "balloonText": "Y. BHUVANAGIRI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ARIYALUR",
+        "id": "56",
+        "color": "#00b31e",
+        "balloonText": "ARIYALUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "COIMBATORE",
+        "id": "55",
+        "color": "#00b31e",
+        "balloonText": "COIMBATORE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "CUDDALORE",
+        "id": "61",
+        "color": "#00b31e",
+        "balloonText": "CUDDALORE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "DINDIGUL",
+        "id": "46",
+        "color": "#00b31e",
+        "balloonText": "DINDIGUL :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ERODE",
+        "id": "64",
+        "color": "#00b31e",
+        "balloonText": "ERODE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KANYAKUMARI",
+        "id": "30",
+        "color": "#00b31e",
+        "balloonText": "KANYAKUMARI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KARUR",
+        "id": "49",
+        "color": "#00b31e",
+        "balloonText": "KARUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KRISHNAGIRI",
+        "id": "75",
+        "color": "#00b31e",
+        "balloonText": "KRISHNAGIRI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "MADURAI",
+        "id": "41",
+        "color": "#00b31e",
+        "balloonText": "MADURAI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "NAMAKKAL",
+        "id": "59",
+        "color": "#00b31e",
+        "balloonText": "NAMAKKAL :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PUDUKKOTTAI",
+        "id": "44",
+        "color": "#00b31e",
+        "balloonText": "PUDUKKOTTAI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "RAMANATHAPURAM",
+        "id": "32",
+        "color": "#00b31e",
+        "balloonText": "RAMANATHAPURAM :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SALEM",
+        "id": "66",
+        "color": "#00b31e",
+        "balloonText": "SALEM :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SIVAGANGAI",
+        "id": "43",
+        "color": "#00b31e",
+        "balloonText": "SIVAGANGAI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "THANJAVUR",
+        "id": "50",
+        "color": "#00b31e",
+        "balloonText": "THANJAVUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "THIRUNELVELI",
+        "id": "35",
+        "color": "#00b31e",
+        "balloonText": "THIRUNELVELI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "THIRUPPUR",
+        "id": "52",
+        "color": "#00b31e",
+        "balloonText": "THIRUPPUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "THIRUVALLUR",
+        "id": "712",
+        "color": "#00b31e",
+        "balloonText": "THIRUVALLUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "THIRUVANNAMALAI",
+        "id": "74",
+        "color": "#00b31e",
+        "balloonText": "THIRUVANNAMALAI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "VELLORE",
+        "id": "79",
+        "color": "#00b31e",
+        "balloonText": "VELLORE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "VILLUPURAM",
+        "id": "69",
+        "color": "#00b31e",
+        "balloonText": "VILLUPURAM :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "VIRUDHUNAGAR",
+        "id": "36",
+        "color": "#00b31e",
+        "balloonText": "VIRUDHUNAGAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "UDUPI",
+        "id": "86",
+        "color": "#66FFFF",
+        "balloonText": "UDUPI :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-10-05"
+    },
+    {
+        "title": "UTTAR KANNADA",
+        "id": "96",
+        "color": "#66FFFF",
+        "balloonText": "UTTAR KANNADA :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-10-05"
+    },
+    {
+        "title": "BIDAR",
+        "id": "137",
+        "color": "#ffffff",
+        "balloonText": "BIDAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DHARWAD",
+        "id": "97",
+        "color": "#4dff4d",
+        "balloonText": "DHARWAD :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "GADAG",
+        "id": "99",
+        "color": "#4dff4d",
+        "balloonText": "GADAG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "HAVERI",
+        "id": "93",
+        "color": "#4dff4d",
+        "balloonText": "HAVERI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KOPPAL",
+        "id": "101",
+        "color": "#ffffff",
+        "balloonText": "KOPPAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAICHUR",
+        "id": "105",
+        "color": "#ffffff",
+        "balloonText": "RAICHUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "YADGIR",
+        "id": "590",
+        "color": "#ffffff",
+        "balloonText": "YADGIR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BALRAMPUR-UP",
+        "id": "288",
+        "color": "#4dff4d",
+        "balloonText": "BALRAMPUR-UP :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "CHITRADURGA",
+        "id": "90",
+        "color": "#00b31e",
+        "balloonText": "CHIKBALLAPUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "DAVANGERE",
+        "id": "89",
+        "color": "#00b31e",
+        "balloonText": "DAVANGERE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "HASSAN",
+        "id": "83",
+        "color": "#00b31e",
+        "balloonText": "HASSAN :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KODAGU",
+        "id": "73",
+        "color": "#00b31e",
+        "balloonText": "KODAGU :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "MANDHYA",
+        "id": "77",
+        "color": "#00b31e",
+        "balloonText": "MANDHYA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ERNAKULAM",
+        "id": "40",
+        "color": "#004de6",
+        "balloonText": "ERNAKULAM :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "IDUKKI",
+        "id": "42",
+        "color": "#004de6",
+        "balloonText": "IDUKKI :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "KASARAGOD",
+        "id": "72",
+        "color": "#004de6",
+        "balloonText": "KASARAGOD :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "KOLLAM",
+        "id": "33",
+        "color": "#004de6",
+        "balloonText": "KOLLAM :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "MALAPPURAM",
+        "id": "58",
+        "color": "#004de6",
+        "balloonText": "MALAPPURAM :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "PALAKKAD",
+        "id": "51",
+        "color": "#004de6",
+        "balloonText": "PALAKKAD :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "PATHANAMTHITTA",
+        "id": "618",
+        "color": "#004de6",
+        "balloonText": "PATHANAMTHITTA :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "LAKSHADWEEP",
+        "id": "574",
+        "color": "#66FFFF",
+        "balloonText": "LAKSHADWEEP :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-10-05"
+    },
+    {
+        "title": "THIRUVANANTHAPURAM",
+        "id": "31",
+        "color": "#004de6",
+        "balloonText": "THIRUVANANTHAPURAM :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "THIRUVARUR",
+        "id": "48",
+        "color": "#00b31e",
+        "balloonText": "THIRUVARUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "BULDHANA",
+        "id": "197",
+        "color": "#ffffff",
+        "balloonText": "BULDHANA :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "NARSINGHPUR",
+        "id": "254",
+        "color": "#ffffff",
+        "balloonText": "NARSINGHPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "ANUGUL",
+        "id": "204",
+        "color": "#ffffff",
+        "balloonText": "ANUGUL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BILAASPUR",
+        "id": "556",
+        "color": "#ffffff",
+        "balloonText": "BILAASPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KIPHIRE",
+        "id": "627",
+        "color": "#00b31e",
+        "balloonText": "KIPHIRE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PRATAPGARH-RJ",
+        "id": "380",
+        "color": "#ffffff",
+        "balloonText": "PRATAPGARH-RJ :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BALESHWAR",
+        "id": "215",
+        "color": "#4dff4d",
+        "balloonText": "BALESHWAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "HAMIRPUR",
+        "id": "382",
+        "color": "#ffffff",
+        "balloonText": "HAMIRPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DAMAN",
+        "id": "616",
+        "color": "#ffffff",
+        "balloonText": "DAMAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GORAKHPUR",
+        "id": "433",
+        "color": "#ffffff",
+        "balloonText": "GORAKHPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DIU",
+        "id": "705",
+        "color": "#ffffff",
+        "balloonText": "DIU :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RI BHOI",
+        "id": "7",
+        "color": "#00b31e",
+        "balloonText": "RI BHOI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KARBI ANALOG",
+        "id": "8",
+        "color": "#4dff4d",
+        "balloonText": "KARBI ANALOG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "KAMRUP ",
+        "id": "10",
+        "color": "#4dff4d",
+        "balloonText": "KAMRUP METRO :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "COOCH BEHAR",
+        "id": "11",
+        "color": "#00b31e",
+        "balloonText": "COOCH BEHAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "NALBARI",
+        "id": "13",
+        "color": "#4dff4d",
+        "balloonText": "NALBARI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "KAMRUP RURAL",
+        "id": "15",
+        "color": "#4dff4d",
+        "balloonText": "KAMRUP RURAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "SONITPUR",
+        "id": "23",
+        "color": "#4dff4d",
+        "balloonText": "SONITPUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "PRATAPGARH-UP",
+        "id": "29",
+        "color": "#ffffff",
+        "balloonText": "PRATAPGARH-UP :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "THOOTHUKUDI",
+        "id": "34",
+        "color": "#00b31e",
+        "balloonText": "THOOTHUKUDI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ALAPPUZHA",
+        "id": "38",
+        "color": "#004de6",
+        "balloonText": "ALAPPUZHA :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "NAGAPATTINAM",
+        "id": "47",
+        "color": "#00b31e",
+        "balloonText": "NAGAPATTINAM :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "THIRUCHIRAPALLI",
+        "id": "54",
+        "color": "#00b31e",
+        "balloonText": "THIRUCHIRAPALLI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PERAMBALUR",
+        "id": "57",
+        "color": "#00b31e",
+        "balloonText": "PERAMBALUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "NILGIRIS",
+        "id": "60",
+        "color": "#00b31e",
+        "balloonText": "NILGIRIS :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KOZHIKODE",
+        "id": "62",
+        "color": "#004de6",
+        "balloonText": "KOZHIKODE :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "PUDUCHERRY",
+        "id": "63",
+        "color": "#00b31e",
+        "balloonText": "PUDUCHERRY :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "WAYANAD",
+        "id": "65",
+        "color": "#004de6",
+        "balloonText": "WAYANAD :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "CHAMARAJANAGAR",
+        "id": "67",
+        "color": "#00b31e",
+        "balloonText": "CHAMARAJANAGAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KANNUR",
+        "id": "68",
+        "color": "#004de6",
+        "balloonText": "KANNUR :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "DHARMAPURI",
+        "id": "70",
+        "color": "#00b31e",
+        "balloonText": "DHARMAPURI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "MYSORE",
+        "id": "71",
+        "color": "#00b31e",
+        "balloonText": "MYSORE :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "CHENNAI",
+        "id": "78",
+        "color": "#00b31e",
+        "balloonText": "CHENNAI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "DAKSHIN KANNADA",
+        "id": "80",
+        "color": "#66FFFF",
+        "balloonText": "DAKSHIN KANNADA :<\/br> Fairly Widespread <\/br> Stations=51-75%<br>2026-10-05"
+    },
+    {
+        "title": "BANGLORE URBAN",
+        "id": "81",
+        "color": "#00b31e",
+        "balloonText": "BANGLORE URBAN :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "RAMNAGAR",
+        "id": "82",
+        "color": "#00b31e",
+        "balloonText": "RAMNAGAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "CHIKMAGALUR",
+        "id": "84",
+        "color": "#00b31e",
+        "balloonText": "CHIKMAGALUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "CHITTOOR",
+        "id": "85",
+        "color": "#00b31e",
+        "balloonText": "CHITTOOR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "TUMKUR",
+        "id": "87",
+        "color": "#00b31e",
+        "balloonText": "TUMKUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SHIMOGA",
+        "id": "88",
+        "color": "#00b31e",
+        "balloonText": "SHIMOGA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "YSR KADAPA",
+        "id": "92",
+        "color": "#4dff4d",
+        "balloonText": "YSR KADAPA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "ANANTAPURAMU",
+        "id": "94",
+        "color": "#00b31e",
+        "balloonText": "ANANTAPURAMU :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "GUNTUR",
+        "id": "108",
+        "color": "#00b31e",
+        "balloonText": "GUNTUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "BAGALKOT",
+        "id": "110",
+        "color": "#ffffff",
+        "balloonText": "BAGALKOT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BELGAUM",
+        "id": "111",
+        "color": "#ffffff",
+        "balloonText": "BELGAUM :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HYDERABAD",
+        "id": "116",
+        "color": "#ffffff",
+        "balloonText": "HYDERABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BIJAPUR",
+        "id": "156",
+        "color": "#ffffff",
+        "balloonText": "BIJAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GULBARGA",
+        "id": "124",
+        "color": "#ffffff",
+        "balloonText": "GULBARGA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SIDDIPET",
+        "id": "136",
+        "color": "#ffffff",
+        "balloonText": "SIDDIPET :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SOLAPUR",
+        "id": "139",
+        "color": "#ffffff",
+        "balloonText": "SOLAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MULUGU",
+        "id": "145",
+        "color": "#4dff4d",
+        "balloonText": "MULUGU :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "VIZIANAGARAM",
+        "id": "150",
+        "color": "#4dff4d",
+        "balloonText": "VIZIANAGARAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "BEED",
+        "id": "158",
+        "color": "#ffffff",
+        "balloonText": "BEED :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GAJAPATHI",
+        "id": "162",
+        "color": "#4dff4d",
+        "balloonText": "GAJAPATHI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NANDED",
+        "id": "163",
+        "color": "#ffffff",
+        "balloonText": "NANDED :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAYAGARHA",
+        "id": "165",
+        "color": "#4dff4d",
+        "balloonText": "RAYAGARHA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NABARANGAPUR",
+        "id": "167",
+        "color": "#ffffff",
+        "balloonText": "NABARANGAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "AHMEDNAGAR",
+        "id": "168",
+        "color": "#ffffff",
+        "balloonText": "AHMEDNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KHORDHA",
+        "id": "174",
+        "color": "#ffffff",
+        "balloonText": "KHORDHA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NAYAGARH",
+        "id": "177",
+        "color": "#ffffff",
+        "balloonText": "NAYAGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "YAVATMAL",
+        "id": "180",
+        "color": "#ffffff",
+        "balloonText": "YAVATMAL :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "AURANGABAD",
+        "id": "325",
+        "color": "#ffffff",
+        "balloonText": "AURANGABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KENDRAPARHA",
+        "id": "183",
+        "color": "#ffffff",
+        "balloonText": "KENDRAPARHA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BAUDA",
+        "id": "184",
+        "color": "#ffffff",
+        "balloonText": "BAUDA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BALANGIR",
+        "id": "188",
+        "color": "#ffffff",
+        "balloonText": "BALANGIR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NUAPARHA",
+        "id": "189",
+        "color": "#ffffff",
+        "balloonText": "NUAPARHA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DANGS",
+        "id": "190",
+        "color": "#ffffff",
+        "balloonText": "DANGS :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SUBARNAPUR",
+        "id": "191",
+        "color": "#ffffff",
+        "balloonText": "SUBARNAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DHENKANAL",
+        "id": "192",
+        "color": "#ffffff",
+        "balloonText": "DHENKANAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JAJAPUR",
+        "id": "193",
+        "color": "#ffffff",
+        "balloonText": "JAJAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DURG",
+        "id": "199",
+        "color": "#ffffff",
+        "balloonText": "DURG :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GARIABAND",
+        "id": "201",
+        "color": "#ffffff",
+        "balloonText": "GARIABAND :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GONDIA",
+        "id": "202",
+        "color": "#ffffff",
+        "balloonText": "GONDIA :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "BURHANPUR",
+        "id": "203",
+        "color": "#ffffff",
+        "balloonText": "BURHANPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SOUTH 24 PARGANAS",
+        "id": "208",
+        "color": "#4dff4d",
+        "balloonText": "SOUTH 24 PARGANAS :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "AMRAVATI",
+        "id": "209",
+        "color": "#ffffff",
+        "balloonText": "AMRAVATI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "JUNAGARH",
+        "id": "212",
+        "color": "#ffffff",
+        "balloonText": "JUNAGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BARAGARH",
+        "id": "213",
+        "color": "#ffffff",
+        "balloonText": "BARAGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BEMETARA",
+        "id": "214",
+        "color": "#ffffff",
+        "balloonText": "BEMETARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KENDUJHAR",
+        "id": "218",
+        "color": "#4dff4d",
+        "balloonText": "KENDUJHAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "JANJGIR_CHAMPA",
+        "id": "220",
+        "color": "#ffffff",
+        "balloonText": "JANJGIR_CHAMPA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KABIRDHAM",
+        "id": "227",
+        "color": "#ffffff",
+        "balloonText": "KABIRDHAM :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PURBA MEDINIPUR",
+        "id": "231",
+        "color": "#4dff4d",
+        "balloonText": "PURBA MEDINIPUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "MAYURBHANJ",
+        "id": "232",
+        "color": "#4dff4d",
+        "balloonText": "MAYURBHANJ :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KOLKATA",
+        "id": "237",
+        "color": "#4dff4d",
+        "balloonText": "KOLKATA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "HOWRAH",
+        "id": "238",
+        "color": "#4dff4d",
+        "balloonText": "HOWRAH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "ANAND",
+        "id": "240",
+        "color": "#ffffff",
+        "balloonText": "ANAND :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PASCHIM SINGHBHUMI",
+        "id": "241",
+        "color": "#ffffff",
+        "balloonText": "PASCHIM SINGHBHUMI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PASCHIM MEDINIPUR",
+        "id": "246",
+        "color": "#4dff4d",
+        "balloonText": "PASCHIM MEDINIPUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "BILASPUR",
+        "id": "248",
+        "color": "#ffffff",
+        "balloonText": "BILASPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SARAIKELA",
+        "id": "252",
+        "color": "#ffffff",
+        "balloonText": "SARAIKELA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HOOGHLY",
+        "id": "262",
+        "color": "#4dff4d",
+        "balloonText": "HOOGHLY :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "NORTH 24 PARGANAS",
+        "id": "265",
+        "color": "#4dff4d",
+        "balloonText": "NORTH 24 PARGANAS :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "AHMADABAD",
+        "id": "273",
+        "color": "#ffffff",
+        "balloonText": "AHMADABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PURULIA",
+        "id": "278",
+        "color": "#4dff4d",
+        "balloonText": "PURULIA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "BHOPAL",
+        "id": "280",
+        "color": "#ffffff",
+        "balloonText": "BHOPAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PURBA BARDAMAN",
+        "id": "283",
+        "color": "#00b31e",
+        "balloonText": "PURBA BARDHAMAN :<\/br> Scattered <\/br> Stations=26-50%<br>2021-07-14"
+    },
+    {
+        "title": "HAZARIBAGH",
+        "id": "296",
+        "color": "#4dff4d",
+        "balloonText": "HAZARIBAGH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MAMIT",
+        "id": "306",
+        "color": "#00b31e",
+        "balloonText": "MAMIT :<\/br> Scattered <\/br> Stations=26-50%<br>2026-09-30"
+    },
+    {
+        "title": "AIZAWL",
+        "id": "313",
+        "color": "#00b31e",
+        "balloonText": "AIZAWL :<\/br> Scattered <\/br> Stations=26-50%<br>2026-09-30"
+    },
+    {
+        "title": "KODARMA",
+        "id": "315",
+        "color": "#4dff4d",
+        "balloonText": "KODARMA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "CHITTORGARH",
+        "id": "323",
+        "color": "#ffffff",
+        "balloonText": "CHITTORGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NEEMUCH",
+        "id": "327",
+        "color": "#ffffff",
+        "balloonText": "NEEMUCH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHURACHANDPUR",
+        "id": "329",
+        "color": "#4dff4d",
+        "balloonText": "CHURACHANDPUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "MIRZAPUR",
+        "id": "336",
+        "color": "#ffffff",
+        "balloonText": "MIRZAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GOODA",
+        "id": "341",
+        "color": "#4dff4d",
+        "balloonText": "GOODA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SAHEBGANJ",
+        "id": "348",
+        "color": "#4dff4d",
+        "balloonText": "SAHEBGANJ :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "BHADOHI",
+        "id": "351",
+        "color": "#ffffff",
+        "balloonText": "BHADOHI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MUNGER",
+        "id": "352",
+        "color": "#ffffff",
+        "balloonText": "MUNGER :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DAKSHIN DINAJPUR",
+        "id": "367",
+        "color": "#00b31e",
+        "balloonText": "DAKSHIN DINAJPUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "BUNDI",
+        "id": "373",
+        "color": "#ffffff",
+        "balloonText": "BUNDI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAJSAMAND",
+        "id": "377",
+        "color": "#ffffff",
+        "balloonText": "RAJSAMAND :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PURNEA",
+        "id": "390",
+        "color": "#ffffff",
+        "balloonText": "PURNEA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DARBHANGA",
+        "id": "400",
+        "color": "#ffffff",
+        "balloonText": "DARBHANGA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAIBEARELI",
+        "id": "404",
+        "color": "#ffffff",
+        "balloonText": "RAIBEARELI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KANPUR NAGAR",
+        "id": "405",
+        "color": "#ffffff",
+        "balloonText": "KANPUR NAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PALI",
+        "id": "406",
+        "color": "#ffffff",
+        "balloonText": "PALI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PEREN",
+        "id": "407",
+        "color": "#00b31e",
+        "balloonText": "PEREN :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "UTTAR DINAJPUR",
+        "id": "412",
+        "color": "#00b31e",
+        "balloonText": "UTTAR DINAJPUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ARARIA",
+        "id": "413",
+        "color": "#4dff4d",
+        "balloonText": "ARARIA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MADHUBANI",
+        "id": "416",
+        "color": "#ffffff",
+        "balloonText": "MADHUBANI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "EAST CHAMPARAN",
+        "id": "430",
+        "color": "#ffffff",
+        "balloonText": "EAST CHAMPARAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SANT KABIR NAGAR",
+        "id": "434",
+        "color": "#4dff4d",
+        "balloonText": "SANT KABIR NAGAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KUSHINAGAR",
+        "id": "439",
+        "color": "#4dff4d",
+        "balloonText": "KUSHINAGAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "DARJEELING",
+        "id": "441",
+        "color": "#00b31e",
+        "balloonText": "DARJEELING :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SIDDHARTH NAGAR",
+        "id": "447",
+        "color": "#4dff4d",
+        "balloonText": "SIDDHARTH NAGAR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "WEST CHAMPARAN",
+        "id": "448",
+        "color": "#4dff4d",
+        "balloonText": "WEST CHAMPARAN :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "HATHRAS",
+        "id": "457",
+        "color": "#ffffff",
+        "balloonText": "HATHRAS :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHRAWASTI",
+        "id": "464",
+        "color": "#4dff4d",
+        "balloonText": "SHRAWASTI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KANSHIRAMNAGAR",
+        "id": "467",
+        "color": "#ffffff",
+        "balloonText": "KANSHIRAMNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BAHRAICH",
+        "id": "474",
+        "color": "#4dff4d",
+        "balloonText": "BAHRAICH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "DIBRUGARH",
+        "id": "475",
+        "color": "#4dff4d",
+        "balloonText": "DIBRUGARH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "JAISALMER",
+        "id": "476",
+        "color": "#ffffff",
+        "balloonText": "JAISALMER :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "LAKHIMPUR",
+        "id": "487",
+        "color": "#4dff4d",
+        "balloonText": "LAKHIMPUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "GAUTAM BUDH NAGAR",
+        "id": "488",
+        "color": "#ffffff",
+        "balloonText": "GAUTAM BUDH NAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BULANDSAHAR",
+        "id": "490",
+        "color": "#ffffff",
+        "balloonText": "BULANDSAHAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NAINITAL",
+        "id": "516",
+        "color": "#4dff4d",
+        "balloonText": "NAINITAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "MUZAFARNAGAR",
+        "id": "518",
+        "color": "#ffffff",
+        "balloonText": "MUZAFARNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FATEHABAD",
+        "id": "520",
+        "color": "#ffffff",
+        "balloonText": "FATEHABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HARIDWAR",
+        "id": "526",
+        "color": "#ffffff",
+        "balloonText": "HARIDWAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PAURI GARHWAL",
+        "id": "527",
+        "color": "#4dff4d",
+        "balloonText": "PAURI GARHWAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "DIBANG VALLEY",
+        "id": "531",
+        "color": "#00b31e",
+        "balloonText": "DIBANG VALLEY :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SRI GANGANAGAR",
+        "id": "532",
+        "color": "#ffffff",
+        "balloonText": "SRI GANGANAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "YAMUNANAGAR",
+        "id": "534",
+        "color": "#ffffff",
+        "balloonText": "YAMUNANAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BATHINDA",
+        "id": "535",
+        "color": "#ffffff",
+        "balloonText": "BATHINDA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHANDIGARH",
+        "id": "537",
+        "color": "#ffffff",
+        "balloonText": "CHANDIGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "TEHRI GARHWAL",
+        "id": "542",
+        "color": "#4dff4d",
+        "balloonText": "TEHRI GARHWAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "FIROZPUR",
+        "id": "551",
+        "color": "#ffffff",
+        "balloonText": "FIROZPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NAWASHAHR",
+        "id": "552",
+        "color": "#ffffff",
+        "balloonText": "NAWASHAHR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "UTTARKASHI",
+        "id": "555",
+        "color": "#4dff4d",
+        "balloonText": "UTTARKASHI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "LAHUL&SPITI",
+        "id": "570",
+        "color": "#ffffff",
+        "balloonText": "LAHUL&SPITI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NORTH & MIDDLE ANDAMAN",
+        "id": "571",
+        "color": "#00b31e",
+        "balloonText": "NORTH & MIDDLE ANDAMAN :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "SOUTH ANDAMAN",
+        "id": "572",
+        "color": "#00b31e",
+        "balloonText": "SOUTH ANDAMAN :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "NAMSAI",
+        "id": "611",
+        "color": "#ffffff",
+        "balloonText": "NAMSAI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BANGLORE RURAL",
+        "id": "612",
+        "color": "#00b31e",
+        "balloonText": "BANGLORE RURAL :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "CHHOTA UDEPUR",
+        "id": "638",
+        "color": "#ffffff",
+        "balloonText": "CHHOTA UDEPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DADAR & NAGAR HAVELI",
+        "id": "647",
+        "color": "#ffffff",
+        "balloonText": "DADAR & NAGAR HAVELI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JALORE",
+        "id": "669",
+        "color": "#ffffff",
+        "balloonText": "JALORE :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SABAR KANTHA",
+        "id": "670",
+        "color": "#ffffff",
+        "balloonText": "SABAR KANTHA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "NARMADA",
+        "id": "683",
+        "color": "#ffffff",
+        "balloonText": "NARMADA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAS NAGAR",
+        "id": "690",
+        "color": "#ffffff",
+        "balloonText": "SAS NAGAR :<\/br> Dry <\/br> No rain<br>2026-10-02"
+    },
+    {
+        "title": "MIRPUR",
+        "id": "694",
+        "color": "#ffffff",
+        "balloonText": "MIRPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "POONCH",
+        "id": "641",
+        "color": "#ffffff",
+        "balloonText": "POONCH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BANDIPORA",
+        "id": "644",
+        "color": "#ffffff",
+        "balloonText": "BANDIPORA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "GANDERBAL",
+        "id": "645",
+        "color": "#ffffff",
+        "balloonText": "GANDERBAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KULGAM",
+        "id": "646",
+        "color": "#ffffff",
+        "balloonText": "KULGAM :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "HANUMANGARH",
+        "id": "710",
+        "color": "#ffffff",
+        "balloonText": "HANUMANGARH :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RUPNAGAR",
+        "id": "718",
+        "color": "#ffffff",
+        "balloonText": "RUPNAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PURBI SINGBHUMI",
+        "id": "722",
+        "color": "#ffffff",
+        "balloonText": "PURBI SINGBHUMI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "PULWAMA",
+        "id": "649",
+        "color": "#ffffff",
+        "balloonText": "PULWAMA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KUPWARA",
+        "id": "648",
+        "color": "#ffffff",
+        "balloonText": "KUPWARA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "MUZAFFARABAD",
+        "id": "640",
+        "color": "#ffffff",
+        "balloonText": "MUZAFFARABAD :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAJOURI",
+        "id": "650",
+        "color": "#ffffff",
+        "balloonText": "RAJOURI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "BUDGAM",
+        "id": "642",
+        "color": "#ffffff",
+        "balloonText": "BUDGAM :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "RAMBAN",
+        "id": "651",
+        "color": "#ffffff",
+        "balloonText": "RAMBAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "REASI",
+        "id": "652",
+        "color": "#ffffff",
+        "balloonText": "REASI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHOPIAN",
+        "id": "653",
+        "color": "#ffffff",
+        "balloonText": "SHOPIAN :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SRINAGAR",
+        "id": "654",
+        "color": "#ffffff",
+        "balloonText": "SRINAGAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KISHTWAR",
+        "id": "655",
+        "color": "#ffffff",
+        "balloonText": "KISHTWAR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "DODA",
+        "id": "656",
+        "color": "#ffffff",
+        "balloonText": "DODA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAMBA",
+        "id": "658",
+        "color": "#ffffff",
+        "balloonText": "SAMBA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KARGIL",
+        "id": "660",
+        "color": "#ffffff",
+        "balloonText": "KARGIL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "CHIKBALLAPUR",
+        "id": "725",
+        "color": "#00b31e",
+        "balloonText": "CHIKBALLAPUR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "UNOKOTI",
+        "id": "726",
+        "color": "#4dff4d",
+        "balloonText": "UNOKOTI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "HAPUR",
+        "id": "727",
+        "color": "#ffffff",
+        "balloonText": "HAPUR :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SAMBHAL",
+        "id": "728",
+        "color": "#ffffff",
+        "balloonText": "SAMBHAL :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "SHAMLI",
+        "id": "729",
+        "color": "#ffffff",
+        "balloonText": "SHAMLI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JHARGRAM",
+        "id": "731",
+        "color": "#4dff4d",
+        "balloonText": "JHARGRAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "ALIPURDUAR",
+        "id": "730",
+        "color": "#00b31e",
+        "balloonText": "ALIPURDUAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KALIMPONG",
+        "id": "732",
+        "color": "#00b31e",
+        "balloonText": "KALIMPONG :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SEPAHIJALA",
+        "id": "704",
+        "color": "#4dff4d",
+        "balloonText": "SEPAHIJALA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KHOWAI",
+        "id": "702",
+        "color": "#4dff4d",
+        "balloonText": "KHOWAI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "GOMATI",
+        "id": "701",
+        "color": "#4dff4d",
+        "balloonText": "GOMATI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NARAYANPET",
+        "id": "700",
+        "color": "#ffffff",
+        "balloonText": "NARAYANPET :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "TIRUPPATTAR",
+        "id": "699",
+        "color": "#00b31e",
+        "balloonText": "TIRUPPATTAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "TENKASI",
+        "id": "696",
+        "color": "#00b31e",
+        "balloonText": "TENKASI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KALLAKKURICHI",
+        "id": "682",
+        "color": "#00b31e",
+        "balloonText": "KALLAKKURICHI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "CHENGALPATTU",
+        "id": "681",
+        "color": "#00b31e",
+        "balloonText": "CHENGALPATTU :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PATHANKOT",
+        "id": "680",
+        "color": "#ffffff",
+        "balloonText": "PATHANKOT :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "FAZILKA",
+        "id": "678",
+        "color": "#ffffff",
+        "balloonText": "FAZILKA :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "YANAM",
+        "id": "677",
+        "color": "#4dff4d",
+        "balloonText": "YANAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-01"
+    },
+    {
+        "title": "MAHE",
+        "id": "676",
+        "color": "#004de6",
+        "balloonText": "MAHE :<\/br> Widespread <\/br> Stations=76-100%<br>2026-10-05"
+    },
+    {
+        "title": "KARAIKAL",
+        "id": "675",
+        "color": "#00b31e",
+        "balloonText": "KARAIKAL :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "NORTH GARO HILLS",
+        "id": "674",
+        "color": "#4dff4d",
+        "balloonText": "NORTH GARO HILLS :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SOUTH WEST GARO HILLS",
+        "id": "673",
+        "color": "#4dff4d",
+        "balloonText": "SOUTH WEST GARO HILLS :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SOUTH WEST KHASI HILLS",
+        "id": "672",
+        "color": "#00b31e",
+        "balloonText": "SOUTH WEST KHASI HILLS :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KAKCHING",
+        "id": "671",
+        "color": "#4dff4d",
+        "balloonText": "KAKCHING :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "WEST JAINTIA HILLS",
+        "id": "575",
+        "color": "#00b31e",
+        "balloonText": "WEST JAINTIA HILLS :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PASHCHIM BARDHAMAN",
+        "id": "576",
+        "color": "#4dff4d",
+        "balloonText": "PASHCHIM BARDHAMAN :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "SIANG",
+        "id": "577",
+        "color": "#4dff4d",
+        "balloonText": "SIANG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "SHI YOMI",
+        "id": "578",
+        "color": "#00b31e",
+        "balloonText": "SHI YOMI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "LEPA RADA",
+        "id": "579",
+        "color": "#4dff4d",
+        "balloonText": "LEPA RADA :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "PAKKE KESSANG",
+        "id": "580",
+        "color": "#4dff4d",
+        "balloonText": "PAKKE KESSANG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KRA DAADI",
+        "id": "581",
+        "color": "#4dff4d",
+        "balloonText": "KRA DAADI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "KAMLE",
+        "id": "619",
+        "color": "#4dff4d",
+        "balloonText": "KAMLE :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "LONGDING",
+        "id": "620",
+        "color": "#4dff4d",
+        "balloonText": "LONGDING :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "CHARAIDEO",
+        "id": "621",
+        "color": "#4dff4d",
+        "balloonText": "CHARAIDEO :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "BISWANATH",
+        "id": "630",
+        "color": "#4dff4d",
+        "balloonText": "BISWANATH :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "MAJULI",
+        "id": "631",
+        "color": "#4dff4d",
+        "balloonText": "MAJULI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "HOJAI",
+        "id": "632",
+        "color": "#4dff4d",
+        "balloonText": "HOJAI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "SOUTH SALMARA MANCACHAR",
+        "id": "633",
+        "color": "#00b31e",
+        "balloonText": "SOUTH SALMARA MANCACHAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-04"
+    },
+    {
+        "title": "WEST KARBI ANGLONG",
+        "id": "635",
+        "color": "#4dff4d",
+        "balloonText": "WEST KARBI ANGLONG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "SHAHADRA",
+        "id": "636",
+        "color": "#ffffff",
+        "balloonText": "SHAHADRA :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "SOUTH EAST DELHI",
+        "id": "637",
+        "color": "#ffffff",
+        "balloonText": "SOUTH EAST DELHI :<\/br> Dry <\/br> No rain<br>2026-10-04"
+    },
+    {
+        "title": "CHARKI DADRI",
+        "id": "639",
+        "color": "#ffffff",
+        "balloonText": "CHARKI DADRI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "KOLAR",
+        "id": "659",
+        "color": "#00b31e",
+        "balloonText": "KOLAR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "NIWARI",
+        "id": "662",
+        "color": "#ffffff",
+        "balloonText": "NIWARI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "JIRBAM",
+        "id": "663",
+        "color": "#4dff4d",
+        "balloonText": "JIRBAM :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "KAMJONG",
+        "id": "664",
+        "color": "#4dff4d",
+        "balloonText": "KAMJONG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "NONEY",
+        "id": "665",
+        "color": "#4dff4d",
+        "balloonText": "NONEY :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "PHERZAWL",
+        "id": "666",
+        "color": "#4dff4d",
+        "balloonText": "PHERZAWL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "TENGNOUPAL",
+        "id": "667",
+        "color": "#4dff4d",
+        "balloonText": "TENGNOUPAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "KANGPOKPI",
+        "id": "668",
+        "color": "#4dff4d",
+        "balloonText": "KANGPOKPI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "RANIPPETTAI",
+        "id": "693",
+        "color": "#00b31e",
+        "balloonText": "RANIPPETTAI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SORENG",
+        "id": "733",
+        "color": "#4dff4d",
+        "balloonText": "SORENG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "PAKYONG",
+        "id": "734",
+        "color": "#4dff4d",
+        "balloonText": "PAKYONG :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "ALLURI SITHARAMA RAJU",
+        "id": "735",
+        "color": "#00b31e",
+        "balloonText": "ALLURI SITHARAMA RAJU :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ANAKAPALLI",
+        "id": "736",
+        "color": "#00b31e",
+        "balloonText": "ANAKAPALLI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ANNAMAYYA",
+        "id": "737",
+        "color": "#00b31e",
+        "balloonText": "ANNAMAYYA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "BAPATLA",
+        "id": "738",
+        "color": "#00b31e",
+        "balloonText": "BAPATLA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "ELURU",
+        "id": "739",
+        "color": "#00b31e",
+        "balloonText": "ELURU :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KAKINADA",
+        "id": "740",
+        "color": "#00b31e",
+        "balloonText": "KAKINADA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "KONASEEMA",
+        "id": "741",
+        "color": "#00b31e",
+        "balloonText": "KONASEEMA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "NANDYAL",
+        "id": "742",
+        "color": "#4dff4d",
+        "balloonText": "NANDYAL :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-05"
+    },
+    {
+        "title": "NTR",
+        "id": "743",
+        "color": "#00b31e",
+        "balloonText": "NTR :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PALNADU",
+        "id": "744",
+        "color": "#00b31e",
+        "balloonText": "PALNADU :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "PARVATHIPURAMMANYAM",
+        "id": "745",
+        "color": "#00b31e",
+        "balloonText": "PARVATHIPURAMMANYAM :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "SRISATHYASAI",
+        "id": "746",
+        "color": "#00b31e",
+        "balloonText": "SRISATHYASAI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "TIRUPATHI",
+        "id": "747",
+        "color": "#00b31e",
+        "balloonText": "TIRUPATHI :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "GAURELA PENDRA MARWAHI",
+        "id": "748",
+        "color": "#ffffff",
+        "balloonText": "GAURELA PENDRA MARWAHI :<\/br> Dry <\/br> No rain<br>2026-10-05"
+    },
+    {
+        "title": "VIJAYANAGARA",
+        "id": "807",
+        "color": "#00b31e",
+        "balloonText": "VIJAYANAGARA :<\/br> Scattered <\/br> Stations=26-50%<br>2026-10-05"
+    },
+    {
+        "title": "BAJALI",
+        "id": "814",
+        "color": "#4dff4d",
+        "balloonText": "BAJALI :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    },
+    {
+        "title": "TAMULPUR",
+        "id": "815",
+        "color": "#4dff4d",
+        "balloonText": "TAMULPUR :<\/br> Isolated <\/br> Stations=1-25%<br>2026-10-04"
+    }
+],
+			},
+			"balloon": {
+				"adjustBorderColor": true,
+				"color": "#000000",
+				"cornerRadius": 5,
+				"fontSize": 18,
+				"fillAlpha":1,
+				"fillColor": "#FFFFFF"
+			},
+			"areasSettings": {
+				"color":"#FCF3CF",
+				"autoZoom": true,
+				"outlineColor":"#000000",
+				"rollOverColor":undefined,
+				"selectedColor": undefined,
+				"rollOverColor":undefined
+			},
+			legend: {
+				enabled: false
+			},
+			"hideCredits":"true",
+			mouseWheelZoomEnabled: false
+		});
+
+		//map.addListener("rollOverMapObject", function(event) {
+			//document.getElementById("info").innerHTML = '<p><b>' + event.mapObject.title + '</b></p><p>' + event.mapObject.info + '</p>';
+		//});  
+	});
+
+	/**
+	 * Convert GeoJSON to SVG
+	 */
+	AmCharts.parseGeoJSON = function(geojson, fieldMap) {
+  
+		// init field map
+		if (typeof(fieldMap) !== "object")
+			fieldMap = {};
+  
+		// init calibration
+		var bounds = {
+			"left": -180,
+			"bottom": -90,
+			"right": 180,
+			"top": 90
+		};
+  
+		// init empty map
+		var mapVar = {
+			"svg": {
+				"defs": {
+					"amcharts:ammap": {
+						"projection":"mercator",
+						"leftLongitude":"-180",
+						"topLatitude":"90",
+						"rightLongitude":"180",
+						"bottomLatitude":"-90"
+					}   
+				},
+				"g":{
+					"path":[]
+				}
+			}
+		};
+  
+		// convert GeoJSON to SVG paths
+		var converter = geojson2svg({
+			"output": "svg",
+			"explode": false,
+			"attributes": {"class": "land"},
+			"mapExtent": bounds,
+			"viewportSize": {
+				"width": 800,
+				"height": 800
+			}
+		});
+		
+		var svg = converter.convert(geojson, {});
+  
+		// parse each path into JavaScript Maps data structure
+		for(var i = 0; i < svg.length; i++) {
+			var path = svg[i];
+			var attrs = path.match(/\w+=".*?"/g);
+			var area = {};
+			for(var x = 0; x < attrs.length; x++) {
+				var parts = attrs[x].replace(/"/g, '').split("=");
+				var key = fieldMap[parts[0]] || parts[0];
+				area[key] = parts[1];
+			}
+			mapVar.svg.g.path.push(area);
+		}
+  
+		return mapVar;
+	}
+	
+</script>

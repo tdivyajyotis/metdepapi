@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+  border: 1px solid coral;
+  border-collapse: collapse;
+}
+.outer-box{
+	border: 1px solid #777;
+	padding: 20px;
+	border-radius: 4px;
+	margin: 0 auto;
+	width:70%;
+}
+textarea{
+	width:96%;
+}
+.td-1{
+	width:25%;
+	color:  #922109 ;
+}
+.td-2{
+	width:70%;
+}
+.tr{
+	width:100%;
+}
+
+.tr tr:nth-child(even) { background-color: #f2f2f2; }
+.tr tr td {	padding: 5px; }
+.date-right{
+	text-align:right; 
+	margin-right:20px;
+	font-weight: bold;
+}
+.caption{
+	text-align:left; 
+	font-weight: bold;
+	color: blue;
+}
+.button {
+  background-color: #4CAF50;
+	color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+	border: 0;
+	border-radius: 4px;
+	padding: 8px 12px;
+  font-size: 14px;
+  margin: 4px 2px;
+  }
+
+	.sur-chart {
+		width: 100%;
+		max-width: 920px;
+	}
+
+	@media print {
+		/* All your print styles go here */
+		html, body { margin: 0; padding: 0;}
+		.outer-box{ width: 100%; margin: 0; padding: 0; border:0; }
+		.button { display: none; }
+		.tr tr td { width: 1; }
+		.td-1 {width: 1;}
+	}
+
+</style>
+</head>
+<body>
+<div class="outer-box">
+<div style="float:right;">
+	<!-- <button class=button onclick="window.location = 'https://mausam.imd.gov.in/Forecast/seaarea_bulletin_txt.php?id=4'">Download Txt</button> -->
+	<button class=button onclick="window.print()">Print</button>
+</div>
+<div>
+	<img src="../../responsive/img/logo/imd_logo.png" style="margin-left: auto; margin-right: auto; display: block; width:80px; height:120px; ">
+</div>
+<div>
+	<p style="text-align:center; font-weight: bold; color: #922109 ;">India Meteorological Department/ भारत मौसम विज्ञान विभाग</p>
+	<p style="text-align:center; font-weight: bold;">ACWC MUMBAI	/ ए .सी .डब्लू .सी  मुंबई 	</p>
+</div>
+
+<div style="text-align:center; font-weight: bold;">
+	<p style="color: blue;"><u>Sea Area Bulletin</u></p>
+		<p > Bulletin Valid for 12 hrs from 21 UTC of 2026-10-04 
+		to 09 UTC of 2026-10-05</p>
+
+<!--	<p id='datetime'></p>-->
+</div>
+
+
+<div class="tr caption">&nbsp;</div>
+<table class="tr">
+	<tr >
+		<td class="td-1">TTT Warning</td>
+		<td >NIL</td>
+	</tr>
+</table>
+<br>
+
+
+<div class="tr caption">&nbsp;</div>	
+<table class="tr">
+	<tr>
+		<td class="td-1">Synoptic Situation</td>
+		<td >The upper air cyclonic circulation over Gulf of Mannar & adjoining south coastal Tamil Nadu at 0.9 km above mean sea level persists.  The trough from above cyclonic circulation over Gulf of Mannar & adjoining south coastal Tamil Nadu to Eastcentral Arabian Sea across interior Tamil Nadu and north Kerala at 0.9 km above mean sea level persists.  Southwest monsoon weak to moderate over entire Arabian sea to the south of latitude 17.5 Deg N . Weather seasonal over Arabian sea to the north of latitude 17.5 deg N.						</td>
+	</tr>
+</table>
+<br>
+<div class="tr caption">&nbsp;</div>
+
+
+	
+
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		North West Arabian Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Mainly Southwesterly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Fair.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		North East Arabian Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >East of 68 deg East Long: Westerly to Northwesterly 10 to 15 knots gusting to 20 knots; West of 68 deg East Long; Southwesterly to Westerly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Fair.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good except in Rain/Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		West Central Arabian Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Northeasterly to Easterly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered Rain/Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming poor in Rain or Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		East Central Arabian Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Northeasterly to Northerly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered Rain/Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming poor in Rain or Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		South West Arabian Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >East of 53 Deg. E Long : Northeasterly to Northerly 10 to 15 knots gusting to 20 knots; West of 53 Deg. E Long : Northeasterly to Easterly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered Rain/Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good except in Rain/Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		South East Arabian Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >East of 70 Deg E Long : Southwesterly to Westerly 10 to 15 knots gusting to 20 knots; West of 70 Deg E Long : Northeasterly to Easterly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered Rain/Thundershowers with isolated squall.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming poor in Rain or Thundershowers and very poor in squall.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		Lakshadweep Area 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Southwesterly to Westerly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered Rain/Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming poor in Rain or Thundershowers.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		Maldives Area 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Southwesterly to Westerly 10 to 15 knots gusting to 20 knots.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered Rain/Thundershowers with isolated squall.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming poor in Rain or Thundershowers and very poor in squall.</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Slight to Moderate.</td>
+	</tr>
+</table>
+<br>
+	
+
+<table class="tr ">
+<tr >
+		<td class="td-1">Part 4</td>
+		<td ><img src="https://rsmcnewdelhi.imd.gov.in/uploads/charts/mor_Sur.jpg" class="sur-chart" alt="Surface Chart"></td>
+	</tr>
+</table><BR>
+<table class="tr ">
+	<tr >
+		<td class="td-1">Part 5</td>
+		<td >NIL</td>
+	</tr>
+	</table><BR>
+<table class="tr ">
+<tr >
+		<td class="td-1">Part 6</td>
+		<td >AAXX	00412	99942	339	31995	02302	10372
+40083	539	32996	02305	10342	40104	634
+32996	02306	10326	40117	731	32996	02502
+10304	40123	754	32595	22010	10324	40101
+838	32896	20904	10336	40119	840	32996
+03404	10344	40115	909	32996	09902	10312
+40122						
+						
+99943	057	31595	10000	10314	40111	109
+31996	03203	10316	40122	110	32996	03204
+10320	40114	117	32597	30902	10336	40095
+192	32596	63601	10304	40108	226	32397
+32702	10306	40114	284	31496	72306	10308
+40107	311	22597	60000	10304	40105	314
+32597	62303	10334	40113	353	31496	52904
+10298	40111	369	32597	20000	10302	40116
+371	21496	70504	10302	40110		
+						
+						
+PPAA	54121	43110	44385	10001	26003	24502
+PPAA	54121	43371	44385	11004	11503	05512</td>
+	</tr>
+</table><BR>
+<table class="tr ">
+<tr><td class="td-1">Time of Issue</td><td>23:03 IST of 2026-10-04</td></tr></table>
+	
+</div>
+</body>
+
+<script type="text/javascript">
+	var date = new Date(); 
+	var tomorrow = date.getDate()+1+'-'+(date.getMonth()+1)+'-'+date.getFullYear();
+	var today = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear();
+			
+	document.getElementById("datetime").innerHTML = "Daily Bulletin Valid for 12 Hours From "+today+" to "+tomorrow;
+	
+	document.getElementById("date-right").innerHTML = today;
+		</script>
+
+</html>

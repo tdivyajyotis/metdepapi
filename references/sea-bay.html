@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+  border: 1px solid coral;
+  border-collapse: collapse;
+}
+.outer-box{
+	border: 1px solid #777;
+	padding: 20px;
+	border-radius: 4px;
+	margin: 0 auto;
+	width:70%;
+}
+textarea{
+	width:96%;
+}
+.td-1{
+	width:25%;
+	color:  #922109 ;
+}
+.td-2{
+	width:70%;
+}
+.tr{
+	width:100%;
+}
+
+.tr tr:nth-child(even) { background-color: #f2f2f2; }
+.tr tr td {	padding: 5px; }
+.date-right{
+	text-align:right; 
+	margin-right:20px;
+	font-weight: bold;
+}
+.caption{
+	text-align:left; 
+	font-weight: bold;
+	color: blue;
+}
+.button {
+  background-color: #4CAF50;
+	color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+	border: 0;
+	border-radius: 4px;
+	padding: 8px 12px;
+  font-size: 14px;
+  margin: 4px 2px;
+  }
+
+	.sur-chart {
+		width: 100%;
+		max-width: 920px;
+	}
+
+	@media print {
+		/* All your print styles go here */
+		html, body { margin: 0; padding: 0;}
+		.outer-box{ width: 100%; margin: 0; padding: 0; border:0; }
+		.button { display: none; }
+		.tr tr td { width: 1; }
+		.td-1 {width: 1;}
+	}
+
+</style>
+</head>
+<body>
+<div class="outer-box">
+<div style="float:right;">
+	<!-- <button class=button onclick="window.location = 'https://mausam.imd.gov.in/Forecast/seaarea_bulletin_txt.php?id=1'">Download Txt</button> -->
+	<button class=button onclick="window.print()">Print</button>
+</div>
+<div>
+	<img src="../../responsive/img/logo/imd_logo.png" style="margin-left: auto; margin-right: auto; display: block; width:80px; height:120px; ">
+</div>
+<div>
+	<p style="text-align:center; font-weight: bold; color: #922109 ;">India Meteorological Department/ भारत मौसम विज्ञान विभाग</p>
+	<p style="text-align:center; font-weight: bold;">ACWC KOLKATA	/ ए .सी .डब्लू .सी कोलकाता 	</p>
+</div>
+
+<div style="text-align:center; font-weight: bold;">
+	<p style="color: blue;"><u>Sea Area Bulletin</u></p>
+		<p > Bulletin Valid for 12 hrs from 21 UTC of 2026-10-04 
+		to 09 UTC of 2026-10-05</p>
+
+<!--	<p id='datetime'></p>-->
+</div>
+
+
+<div class="tr caption">&nbsp;</div>
+<table class="tr">
+	<tr >
+		<td class="td-1">TTT Warning</td>
+		<td >No Storm Warning.</td>
+	</tr>
+</table>
+<br>
+
+
+<div class="tr caption">&nbsp;</div>	
+<table class="tr">
+	<tr>
+		<td class="td-1">Synoptic Situation</td>
+		<td >Southwest Monsoon Weak to Moderate over North Bay of Bengal ; Weak over rest Bay of Bengal & Andaman Sea.
+
+</td>
+	</tr>
+</table>
+<br>
+<div class="tr caption">&nbsp;</div>
+
+
+	
+
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		South West Bay 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >South to Southwesterly, 5 - 10 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		South East Bay 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Variable, 5 - 10 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Isolated rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		West Central Bay 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Southwest to Westerly, 5 - 10 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Isolated rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		East Central Bay 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >West to Northwesterly, 5 - 10 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Isolated rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		North West Bay 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Southwest to Westerly, 10 - 15 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Isolated rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth to Slight</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		North East Bay 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >West to Northwesterly, 10 - 15 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Isolated rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth to Slight</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		South Andaman Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Variable, 5 - 10 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth</td>
+	</tr>
+</table>
+<br>
+	
+<!-- Layer -->
+<table class="tr ">
+	<caption class="caption">
+		North Andaman Sea 	</caption>
+	
+	<tr>
+		<td class="td-1">Wind</td>
+		<td >Mainly Northwesterly, 5 - 10 kts</td>
+	</tr>
+	<tr>
+		<td class="td-1">Weather</td>
+		<td >Scattered rain or thundershowers</td>
+	</tr>
+	<tr>
+		<td class="td-1">Visibility</td>
+		<td >Good becoming Moderate in rain/thundershower</td>
+	</tr>
+	<tr>
+		<td class="td-1">Sea Condition</td>
+		<td >Smooth</td>
+	</tr>
+</table>
+<br>
+	
+
+<table class="tr ">
+<tr >
+		<td class="td-1">Part 4</td>
+		<td ><img src="https://rsmcnewdelhi.imd.gov.in/uploads/charts/mor_Sur.jpg" class="sur-chart" alt="Surface Chart"></td>
+	</tr>
+</table><BR>
+<table class="tr ">
+	<tr >
+		<td class="td-1">Part 5</td>
+		<td >NIL</td>
+	</tr>
+	</table><BR>
+<table class="tr ">
+<tr >
+		<td class="td-1">Part 6</td>
+		<td >AAXX,00412,,,
+99942,,,,
+807,21595,51401,10302,40095
+811,32596,30000,10304,40096
+901,32996,10000,10310,40089
+806,32596,31801,10308,40096
+895,32596,40000,10302,40100
+976,31595,10000,10314,40102=
+99943,,,,
+049,32996,01602,10320,40105
+053,31595,61802,10322,40102
+105,32597,31803,10308,40100
+150,31596,52003,10302,40116
+185,21597,21603,10312,40102
+245,32597,21103,10322,40104
+346,32597,30704,10302,40105
+279,32597,51405,10308,40109=</td>
+	</tr>
+</table><BR>
+<table class="tr ">
+<tr><td class="td-1">Time of Issue</td><td>21:24 IST of 2026-10-04</td></tr></table>
+	
+</div>
+</body>
+
+<script type="text/javascript">
+	var date = new Date(); 
+	var tomorrow = date.getDate()+1+'-'+(date.getMonth()+1)+'-'+date.getFullYear();
+	var today = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear();
+			
+	document.getElementById("datetime").innerHTML = "Daily Bulletin Valid for 12 Hours From "+today+" to "+tomorrow;
+	
+	document.getElementById("date-right").innerHTML = today;
+		</script>
+
+</html>

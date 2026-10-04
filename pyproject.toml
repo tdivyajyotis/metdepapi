@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imd-local"
+version = "0.1.0"
+description = "Local IMD product collection with documented field names and replaceable providers"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+system-trust = ["truststore>=0.10,<1"]
+documents = ["pypdf>=5,<7"]
+
+[project.scripts]
+imd = "imd_local.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["imd_local*"]
+
+[tool.setuptools.package-data]
+imd_local = ["catalog.json"]

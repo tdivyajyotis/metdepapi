@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:gml="http://www.opengis.net/gml" xmlns:imd="https://reactjs.imd.gov.in/geoserver/imd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="https://reactjs.imd.gov.in/geoserver/imd">
+  <xsd:import namespace="http://www.opengis.net/gml" schemaLocation="https://reactjs.imd.gov.in/geoserver/schemas/gml/3.1.1/base/gml.xsd"/>
+</xsd:schema>

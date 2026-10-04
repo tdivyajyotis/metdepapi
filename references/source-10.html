@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+	<meta charset="utf-8">
+	<title>RSMC</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:700,700i" rel="stylesheet">
+<link href="css/font-awesome.min.css" rel="stylesheet">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/comman.css" rel="stylesheet">
+<link rel="stylesheet" href="admin/dist/css/jquery-ui.css">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="https://apis.mapmyindia.com/advancedmaps/v1/uu8dnktrw7o63nzu4s2vi5spl5nn5lpb/map_load?v=1.3&plugin=polylinedecorator,path.drag"></script>
+	<style>
+	/* Set the size of the div element that contains the map */
+	#map 
+	{
+		height: 700px;  /* The height is 400 pixels */
+		width: 100%;  /* The width is the width of the web page */
+	}
+	.leaflet-popup-content p
+	{
+	    font-size:14px !important;
+	    line-height:20px !important;
+	}
+	.leaflet-popup-content
+	{
+	    line-height:8px !important;
+	    margin:12px !important;
+	}
+	</style>
+</head>
+<body>
+<header class="top-navbar">
+	<div class="container header_top">
+	<nav class="navbar navbar-default">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" id="navbar-toggle" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar bar-1"></span>
+				<span class="icon-bar bar-2"></span>
+				<span class="icon-bar bar-3"></span>
+			</button>
+			<div id="headerTop">
+				<!--<div class="addthis_inline_share_toolbox" style="position:absolute;"></div>-->
+				<div style="position:absolute;"><a href="https://www.facebook.com/India.Meteorological.Department/"><i class="fa fa-facebook fa-lg" aria-hidden="true" style="background-color:#3B5998; color:white; padding:8px; width:35px; text-align:center;"></i></a>&nbsp;<a href="https://twitter.com/Indiametdept"><i class="fa fa-twitter fa-lg" aria-hidden="true" style="background-color:#55ACEE; color:white; padding:8px; width:35px; text-align:center;"></i></a></div>
+				<ul class="color-them pull-right">
+					<li class="last"><a href="#">A</a></li>
+					<li class="last"><a href="#">A</a></li>
+				</ul>
+				<ul class="accessControl pull-right">
+					<li class="last"><a href="#">A</a></li>
+					<li class="last"><a href="#">A<sup>+</sup></a></li>
+					<li class="last"><a href="#">A<sup>+</sup></a></li>
+				</ul>
+				<ul class="topmiscmenu pull-right">
+					<li><a href="#main-content" class="firstitem">Skip to main content</a></li>
+					<li class="last"><a href="screen-reader-access.php">Screen Reader Access</a></li>
+				</ul>
+          </div>
+        </div>
+		<div class="logoPart">
+          	<div class="col-xs-3 col-sm-2 text-left">
+				<a href="index.php"><img src="images/logo-new-1.png" alt="Regional Specialized Meteorological Centre"></a>
+            </div>
+            <div class="text-logo col-xs-6 col-sm-8 text-center">
+				<a href="index.php"><img src="images/logo-text-new1.png" class="img-responsive" alt="Regional Specialized Meteorological Centre"></a>
+            </div>
+            <div class="col-xs-3 col-sm-2  text-right">
+				<img src="images/wmo-logo-new.png" alt="WMO" title="WMO">
+            </div>
+		</div>
+        <div id="navbar" class="navbar-collapse collapse pull-left" aria-expanded="false">
+			<div>
+				<ul class="nav navbar-nav text-capitalize main-menu">
+					<li class="active"><a href="index.php">Home</a></li>
+					<li class="dropdown"><a href="historical-perspective.php" class="dropdown-toggle" data-toggle="dropdown">RSMC</a>
+						<ul class="dropdown-menu">
+							<li><a href="historical-perspective.php">Historical Perspective</a></li>
+							<li><a href="rsmc-tropical-cyclones.php">RSMCs - Tropical Cyclones</a></li>
+							<li><a href="activities-of-rsmc-new-delhi.php">Activities  of RSMC, New Delhi</a></li>
+							<li><a href="bulletins-products.php">Bulletins & Products</a></li>
+						</ul>
+					</li>            
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">CWD</a>
+						<ul class="dropdown-menu">
+							<li> <a href="historical-perspective-cwd.php">Historical Perspective</a></li>
+							<li> <a href="present-organisational-structure.php">Present Organisational Structure</a></li>
+							<li> <a href="bulletins-products-cwd.php">Bulletins & Products</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Vision</a>
+						<ul class="dropdown-menu">
+																<li><a href="report.php?internal_menu=Njg=">Cyclone Warning Services</a></li>
+																		<li><a href="report.php?internal_menu=Njk=">Marine Weather Services</a></li>
+															</ul>							
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">DM Act &amp; Guidelines</a>
+						<ul class="dropdown-menu">
+							<li> <a href="images/pdf/DM_act2005.pdf" target="_blank">DM Act-2005</a></li>
+							<li> <a href="images/pdf/NDMA_Guidelines_Cyclone_2008.pdf" target="_blank">NDMA Guidelines-2008</a></li>
+							<li> <a href="images/pdf/National_DM_Policy2009.pdf" target="_blank">NDM Policy-2009</a></li>
+							<li> <a href="images/pdf/NDM_Plan_2019.pdf" target="_blank">NDM Plan-2019</a></li>
+							<li> <a href="images/pdf/NMSAR_Plan_2022.pdf" target="_blank">NMSAR Plan-2022</a></li>
+						</ul>
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">SOP</a>
+						<ul class="dropdown-menu">
+																<li><a href="report.php?internal_menu=NjE=">Cyclone Warning Services SOP</a></li>
+																		<li><a href="report.php?internal_menu=NzE=">Marine Weather Services SOP</a></li>
+																		<li><a href="report.php?internal_menu=NzI=">Cyclone and Marine Weather Bulletins SOP</a></li>
+																		<li><a href="report.php?internal_menu=Mjg=">TCP-21</a></li>
+															</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Awareness</a>
+						<ul class="dropdown-menu">
+							<li> <a href="dos-and-dont-does.php">Do's and Don't</a></li>
+							<li> <a href="images/pdf/faq.pdf">FAQs</a></li>
+							<li> <a href="images/pdf/terminology.pdf">Terminology</a></li>
+							<li> <a href="warning-graphics-legend.php">Warning Graphics Legend </a></li>
+							<li> <a href="images/pdf/tc-names.pdf">TC Names</a></li>
+							<li> <a href="four-stage-warning.php">Four Stage Warning </a></li>
+							<li> <a href="images/pdf/damage.pdf">Damage Potential of Cyclones</a></li>
+							<li> <a href="port-warning-signals.php">Port Warning & Signals</a></li>
+							<li> <a href="acronyms.php">Acronyms </a></li>
+							<li> <a href="images/pdf/Evolution_of_IMD.pdf">Evolution of IMD</a></li>
+					   </ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Publications</a>
+						<ul class="dropdown-menu">
+							                                    <li><a href="report.php?internal_menu=MjY=">Preliminary Report</a></li>
+                                                                        <li><a href="report.php?internal_menu=Mjc=">Annual RSMC Report</a></li>
+                                                                        <li><a href="report.php?internal_menu=Mjk=">Annual Cyclone Review</a></li>
+                                                                        <li><a href="report.php?internal_menu=MzA=">FDP Implementation Plan</a></li>
+                                                                        <li><a href="report.php?internal_menu=MzE=">FDP Implementation Report</a></li>
+                                                                        <li><a href="report.php?internal_menu=NjI=">Brochure</a></li>
+                                    							<li><a href="images/pdf/cyclone_science_plan.pdf">FDP Science Plan</a></li>
+							<li class="dropdown-submenu"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Met. Monograph</a>
+								<ul class="dropdown-menu">
+									<li> <a href="images/pdf/ogni.pdf">Ogni</a></li>
+									<li> <a href="images/pdf/gonu.pdf">Gonu</a></li>
+								</ul>
+							</li>
+							<li><a href="images/pdf/Global_Guide_TCF.pdf">Global Guide to TC Forecasting</a></li>
+							<li><a href="images/pdf/Souvenir_RSMC_17Aug.pdf">Souvenir_RSMC New Delhi</a></li>
+							
+						</ul>
+					</li>
+                    <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools</a>
+						<ul class="dropdown-menu">
+							<li class="dropdown-submenu"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Surface and Upper Air Charts</a>
+								<ul class="dropdown-menu">
+										    <li><a href="surface_chart00.php">00/03 UTC</a></li>
+                                            <li><a href="surface_chart12.php">12 UTC</a></li>
+								</ul>
+							</li>
+							<li class="dropdown-submenu"><a href="#">Observations</a>
+										<ul class="dropdown-menu">
+										    <li><a href="http://aws.imd.gov.in:8091/">AWS/ARG</a></li>
+                                            <li><a href="https://mausam.imd.gov.in/responsive/coastal_observations.php">Marine Observations</a></li>
+										</ul>
+							
+							</li>
+							<li class="dropdown-submenu"> 
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">Satellite Products</a>
+								<ul class="dropdown-menu">
+									<li><a href="cyclone-enhancement.php">Cyclone Enhancement</a></li>
+									<li><a href="http://www.rapid.imd.gov.in/rapid/">RAPID</a></li>
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Infra Red Channel</a>
+										<ul class="dropdown-menu">
+										    <li><a href="infra-red-sector.php">Infra Red Sector</a></li>
+                                            <li><a href="infra-red-globe.php">Infra Red Globe</a></li>
+										</ul>
+									</li>
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Water Vapour Channel</a>
+										<ul class="dropdown-menu">
+										    <li><a href="water-vapour-sector.php">Water Vapour Sector</a></li>
+                                            <li><a href="water-vapour-globe.php">Water Vapour Globe</a></li>
+										</ul>
+									</li>
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Color Composite</a>
+										<ul class="dropdown-menu">
+										    <li><a href="color-composite-sector.php">Color Composite Sector</a></li>
+                                            <li><a href="color-composite-globe.php">Color Composite Globe</a></li>
+										</ul>
+									</li>
+									
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Visible Channel</a>
+										<ul class="dropdown-menu">
+										    <li><a href="visible-sector.php">Visible Sector</a></li>
+                                            <li><a href="visible-globe.php">Visible Globe</a></li>
+										</ul>
+									</li>
+								    <li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Satellite Bulletin</a>
+										<ul class="dropdown-menu">
+        								                                                            <li><a href="download.php?path=uploads/archive/22/22_8115e5_SAT_BLTN_1200_UTC.pdf">Routine</a></li>
+                                                    											
+											<li><a href="archive-information.php?internal_menu=MjI=&menu_id=OQ=="> Routine Archive</a></li>
+											
+											                                                        <li><a href="download.php?path=uploads/archive/73/73_01350b_splbltn.pdf">Special</a></li>
+                                                    											
+											<li><a href="archive-information.php?internal_menu=NzM=&menu_id=OQ==">Special Archive</a></li>
+										</ul>
+									</li>
+									<li><a href="cloud-top-temperature.php">Cloud Top Temperature</a></li>
+								</ul>
+							</li>
+							
+							
+							<li class="dropdown-submenu"> 
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">Radar Products</a>
+								<ul class="dropdown-menu">
+									<li><a href="https://mausam.imd.gov.in/responsive/radar.php" target="_blank">Radar</a></li>
+								    <li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Radar Bulletin</a>
+										<ul class="dropdown-menu">
+        								                                                            <li><a href="download.php?path=uploads/archive/74/74_122960_1123.asp">Current</a></li>
+                                                    											
+											<li><a href="archive-information.php?internal_menu=NzQ=&menu_id=OQ=="> Archive</a></li>
+										</ul>
+									</li>
+									
+								</ul>
+							</li>
+							
+							<li><a href="http://nwp.imd.gov.in/gfsproducts_cycle00_mausam.php" target="_blank">NWP Products</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Verification</a>
+						<ul class="dropdown-menu">
+														<li><a href="genesis-forecast.php">TC Genesis</a></li>
+							<li><a href="track-forecast.php">TC Track</a></li>
+							<li><a href="intensity-forecast.php">TC Intensity</a></li>
+							<li><a href="landfall-forecast.php">TC Landfall</a></li>
+														<li><a href="https://nwp.imd.gov.in/sea_area_fr_rsmc.php">Marine Weather(Real Time)</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Archive</a>
+						<ul class="dropdown-menu">
+							<li><a href="http://14.139.191.203/login.aspx?ReturnUrl=%2f">Cyclone E-Atlas</a></li>
+							                                <li><a href="report.php?internal_menu=MzM=">Best Track</a></li>
+                                                                <li><a href="report.php?internal_menu=MzQ=">Bulletins</a></li>
+                                							<li><a href="Sat_Radar_Animation.php">Animations</a></li>
+							<li><a href="archive-information.php?internal_menu=NzQ=&menu_id=OQ==">Radar Bulletin</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Climatology</a>
+						<ul class="dropdown-menu">
+								<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tropical Cyclone</a>
+										<ul class="dropdown-menu">
+											<li><a href="download.php?path=uploads/climatology/hazard.pdf" target="_blank">Cyclones Hazard Climatology</a></li>
+											<li><a href="genesis.php">Genesis</a></li>
+											<li><a href="download.php?path=uploads/climatology/uniquecyclone-tracks.pdf">Unique Tracks</a></li>
+											<li><a href="intensification.php">Intensification</a></li>
+											<li><a href="movement.php">Movement</a></li>
+											<li><a href="landfall.php">Landfall</a></li>
+											<li><a href="genesis-and-landfall-of-cycloneic-disturbances.php">Genesis and Landfall of Cyclonic Disturbances</a></li>
+											<li><a href="frequency-of-formation-of-cyclone.php">Frequency of Formation of Depression and Above</a></li>
+											<li><a href="frequency-of-landfalling-cyclone.php">Frequency of Landfalling Cyclones</a></li>
+											<li><a href="download.php?path=uploads/climatology/scs.xls">Frequency of SCS and Above(Since 1965)</a></li>
+											<li><a href="download.php?path=uploads/climatology/tcenergymatrix.pdf">TC Energy Matrix</a></li>
+											<li><a href="download.php?path=uploads/climatology/tcintensity.xls">TC Intensity</a></li>
+											<li><a href="download.php?path=uploads/climatology/transpeed.pdf">Translational Speed of Cyclonic Disturbances</a></li>
+											<li><a href="download.php?path=uploads/climatology/lifeperiod.pdf">Life Period of TCs</a></li>
+											<li><a href="download.php?path=uploads/climatology/tcstructure.pdf">Structure of TC</a></li>
+										</ul>
+								</li>
+								<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Marine Weather</a>
+										<ul class="dropdown-menu">
+										    
+                                            <li><a href="download.php?path=uploads/climatology/RainfallExtremesoverCoastalStations.pdf">Rainfall Extremes over Coastal Stations</a></li>
+											<li><a href="download.php?path=uploads/climatology/IMDMarineSurfaceStations.pdf">Surface Stations</a></li>
+                                            <li><a href="download.php?path=uploads/climatology/MarineClimatogicalAtlas.pdf">Climatogical Atlas 1961-1990</a></li>
+                                            <li><a href="download.php?path=uploads/climatology/Marine_Climatological_Charts.pdf" target="_blank">Climatological Atlas 1991-2000</a></li>
+											<li><a href="download.php?path=uploads/climatology/Marine_Climate_summry2001-10.pdf" target="_blank">Climatological Atlas 2001-2010</a></li>
+											<li><a href="download.php?path=uploads/climatology/Marine_Climate_summry2011-20.pdf" target="_blank">Climatological Atlas 2011-2020</a></li>
+											<li><a href="download.php?path=uploads/climatology/Marine_Climate_summry1991-2020.pdf" target="_blank">Climatological Atlas 1991-2020</a></li>
+											<li><a href="download.php?path=uploads/climatology/Metadata.pdf">Metadata of Coastal Stations</a></li>
+											<li><a href="download.php?path=uploads/climatology/INCOIS_MHVM_Atlas_Document_HS.pdf">Multi Hazard Vulnerability Atlas_INCOIS</a></li>
+										</ul>
+								</li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Survey Reports</a>
+						<ul class="dropdown-menu">
+							<li><a href="uploads/survey/NCAER2020.pdf" target="_blank">NCAER Reports 2020</a></li>
+							<li><a href="uploads/survey/NCAER2015.pdf" target="_blank">NCAER Reports 2015</a></li>
+							<li><a href="uploads/survey/NCAER2012.pdf" target="_blank">NCAER Reports 2012</a></li>
+							<li><a href="uploads/survey/NCAER2010.pdf" target="_blank">NCAER Reports 2010</a></li>
+						</ul>
+					</li>
+									</ul>
+			</div>
+        </div>
+    </nav>
+</div></header>
+<div class="main-content" id="main-content">
+	<div class="container">
+		<div class="cyclon-map-cont inner-pages">
+			<div class="row">
+				<div class="col-sm-9 left-cont">
+				    <div class="inner-pages-left">
+						<h2><span>Port Warning</span></h2>
+						<div class="col-md-12">
+							<a href="warning-archive-information.php?internal_menu=NTc=&menu_id=OA==" class="btn btn-warning" id="archive-button">Archive</a>
+						</div>
+												<div id="map"></div>
+                    </div>
+				</div>
+				<div class="col-sm-3">
+				    <div class="right-col">
+	<div class="contentHome">	
+		<h2>Marine Forecast/Warnings</h2>
+		<ul class="menu">
+						<li><a href="https://incois.gov.in/portal/osf/osf.jsp" target="_blank">Ocean State Forecast</a></li>
+		    					<li><a href="uploads/archive/51/51_b258a8_graphics.png" target="_blank">Fishermen Warning Graphics</a></li>
+							
+								<li><a href="uploads/archive/65/65_81f72e_probability.png" target="_blank">Probability of Exceedance</a></li>
+							
+			<li><a href="sea-area-bulletin.php">Sea Area Bulletin</a></li>
+			<li><a href="coastal-weather-bulletin.php">Coastal Weather Bulletin</a></li>
+			<li><a href="port-warning.php">Port Warning</a></li>
+		    <li><a href="fishermen-warning.php">Fishermen Warning</a></li>
+			
+		</ul>
+	</div>
+</div>				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+	<div class="row">
+		<div class="col-sm-9 text-left">
+			<ul class="footer-menu">
+				<li><a href="index.php">Home</a></li>
+				<li><a href="dos-and-dont-does.php">Cyclone Awareness</a></li>
+				<li><a href="report.php?internal_menu=MjY=">Publications</a></li>
+				<li><a href="surface-charts.php">Tools &amp; Data</a></li>
+				<!-- li><a href="track-forecast.php">Forecast Verification</a></li -->
+				<li><a href="report.php?internal_menu=MzQ=">Archive</a></li>
+				<!--li><a href="genesis.php">Climatalogy</a></li-->
+				<li><a href="recruitment-rule.php">Recruitment Rules</a></li>
+				<li><a href="uploads/duty_charter.pdf">Duty Charter</a></li>
+				<li><a href="sitemap.php">Sitemap</a></li>
+				<li><a href="contact.php?contact=Contact Us">Contact</a></li>
+				
+			</ul>
+			<ul class="footer-menu">
+				<li><a href="terms-conditions.php">Terms & Conditions</a></li>
+				<li><a href="privacy-policy.php">Privacy Policy</a></li>
+				<li><a href="copyright-policy.php">Copyright Policy</a></li>
+				<li><a href="hyperlinking-policy.php">Hyperlinking Policy</a></li>
+				<li><a href="accessibility-statement.php">Accessibility Statement</a></li>
+				<li><a href="disclaimer.php">Disclaimer</a></li>
+				<li><a href="help.php">Help</a></li>
+			</ul>
+			<p class="copyright">Copyright © 2013 - RSMC. All rights reserved. <img src="images/valid-xhtml10.gif" border="0" alt="Valid XHTML 1.0 Transitional"> <img src="images/vcss.gif" border="0" alt="Valid XHTML 1.0 Transitional"></p>
+		</div>
+		<div class="col-sm-3 text-right">
+			<div><a href="https://www.facebook.com/India.Meteorological.Department/" target="_blank"><i class="fa fa-facebook fa-lg" aria-hidden="true" style="background-color:#3B5998; color:white; padding:8px; width:35px; text-align:center;"></i></a>&nbsp;<a href="https://twitter.com/Indiametdept" target="_blank"><i class="fa fa-twitter fa-lg" aria-hidden="true" style="background-color:#55ACEE; color:white; padding:8px; width:35px; text-align:center;"></i></a></div>
+			<p>
+			Website updated on : 05/Oct/2026			</p>
+		     
+			
+		</div>
+	</div>
+</div></footer>
+<script src="js/jquery.min.js"></script>
+<script src="js/slick.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="admin/dist/js/jquery-ui.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-167223165-1"></script>
+<script src="js/custom.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PSHMF7HZ');</script>
+<!-- End Google Tag Manager --><script>
+
+	var id_array=["NDg1ODU5", "NDg1ODUx", "NDg1ODUw", "NDg1ODUy", "NDg1NjY3", "NDg1NjY0", "NDg1NjY1", "NDg1NjYx", "NDg1NjYy", "NDg1NjU5", "NDg1Njc5", "NDg1Njg1", "NDg1Njg0", "NDg1Njg3", "NDg1Njc3", "NDg1Njc4", "NDg1Njgz", "NDg1Njgy", "NDg1Njg2", "NDg1NzI5", "NDg1NzM2", "NDg1NzMy", "NDg1NzI0", "NDg1NzI3", "NDg1NzIy", "NDg1NzI1", "NDg1NzM0", "NDg1NzM1", "NDg1NzMw", "NDg1NzI4", "NDg1NzI2", "NDg1NzQz", "NDg1NzM3", "NDg1NzQy", "NDg1NzQw", "NDg1NzMx", "NDg1NzM4", "NDg1NzMz", "NDg1NzQx", "NDg1NzIz", "NDg1OTA2", "NDg1OTA1", "NDg1ODkz", "NDg1OTIy", "NDg1OTIw", "NDg1OTA5", "NDg1OTE4", "NDg1ODk4", "NDg1ODg5", "NDg1ODg3", "NDg1ODg4", "NDg1OTI1", "NDg1ODk2", "NDg1OTAy", "NDg1OTI5", "NDg1ODg1", "NDg1OTIz", "NDg1OTA0", "NDg1ODk3", "NDg1OTIx", "NDg1OTE2", "NDg1ODgz", "NDg1OTA3", "NDg1OTEz", "NDg1OTE5", "NDg1OTE3", "NDg1ODg2", "NDg1ODky", "NDg1ODk0", "NDg1OTI2", "NDg1OTE0", "NDg1OTEy", "NDg1ODk1", "NDg1ODkx", "NDg1ODgy", "NDg1OTAw", "NDg1OTEw", "NDg1OTI4", "NDg1ODk5", "NDg1OTE1", "NDg1OTEx", "NDg1OTI0", "NDg1NzY2", "NDg1NzY5", "NDg1NzY4", "NDg1NzU2", "NDg1Nzcw", "NDg1Nzcy", "NDg1Nzc1", "NDg1NzU4", "NDg1NzY0", "NDg1NzY3", "NDg1NzYy", "NDg1NzU5", "NDg1NzU3", "NDg1Njgx", "NDg1NzIx", "NDg1ODU4", "NDg1ODYw", "NDg1NzM5", "NDg1Nzc0", "NDg1NzYx", "NDg1NzYz", "NDg1Nzcx", "NDg1NzU1", "NDg1NzY1", "NDg1NzYw", "NDg1Nzcz", "NDg1NjYw", "NDg1NjY2", "NDg1NjYz", "NDg1OTA4", "NDg1ODg0", "NDg1ODkw", "NDg1OTAz", "NDg1OTI3", "NDg1OTAx", "NDg1ODU3", "NDg1ODQ5", "NDg1Njgw"];
+	var internal_menu_array=["57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57", "57"];
+    var name_array=["Port Blair", "Paradip", "Gopalpur", "Puri", "Visakhapatanam", "Machilipatnam", "Nizampatnam", "Kakinada", "Kalingapatnam", "Bhimunipatnam", "Ennore", "Puducherry", "Pamban", "Toothukudi", "Chennai", "Cuddalore", "Nagapattinam", "Kolachel", "Rameswaram", "Karwar", "Mangalore", "Kozikode", "Beypore", "Cochin", "Azhikkal", "Bhatkal", "Kundapur", "Malpe", "Kasargode", "Honavar", "Cannanore", "Thiruvanathapuram", "Minicoy", "Thalacherry", "Ponnani", "Kollam", "Murudeshwar", "Kumta", "Tadri", "Belekeri", "Mumbai", "Mormugao Goa", "J.N.P.T. Raigad", "Thane (Thane)", "Tarapur", "Nawarur (Thane)", "Satpati", "Kelva Mahim (Thane)", "Dantiware (Palghar)", "Bassein (Vasai)", "Dahanu", "Uttan", "Kalyan ( Thane)", "Manori ( Malad)(Mumbai)", "Versova ( Andheri)(Mumbai)", "Bandra ( Mumbai)", "Trombay ( Devnar)", "Mora (Uran) (Raigad)", "Karanja ( Raigad)", "Thal ( Raigad)", "Revas( Raigad)", "Alibag( Raigad)", "Murud (Raigad)", "Rajapuri ( Raigad)", "Shrivardhan ( Raigad)", "Revdanda ( Raigad)", "Bankot (Ratnagiri)", "Harnai (Ratnagiri)", "Jaigad( Ratnagiri)", "Varoda ( Ratnagiri)", "Ratnagiri ( Ratnagiri)", "Purnagad( Ratnagiri)", "Jaitapur (Vengurla)", "Devgad (Vengurla)", "Achra ( Sindhudurg)", "Malvan (Vengurla)", "Nivti (Vengurla)", "Vengurla (Vengurla)", "Kiranpani ( Aronda)", "Redi (Vengurla)", "Panjim (Goa)", "Ulwa Belapur (Thane)", "Mandvi(Kutch)", "New Kandla", "Navlakhi", "Bedi", "Okha", "Porbandar", "Veraval", "Bhavnagar", "Jakhau", "Mundra", "Dwarka", "Dahej", "Bharuch", "Kattupalli", "Alapuzha", "Kolkata Port", "Sagar Island", "Panambur", "Sikka", "Diu", "Jafrabad", "Pipavav", "Alang", "Magdalla", "Daman", "Port Victor", "Gangavaram", "Vadarevu", "Krishnapatnam", "Navapur", "Arnala", "Datiware", "Marve", "Varsova", "Mandwa (Raigad)", "Haldia", "Dhamra", "Karaikkal"];
+    var latitude_array= ["11.6700", "20.2700", "19.2700", "19.8100", "17.7200", "16.1800", "15.9000", "16.9400", "18.3300", "17.8800", "13.4100", "11.5500", "9.1700", "8.3800", "13.6600", "11.7600", "10.7700", "8.1000", "9.1100", "14.8100", "12.9100", "11.2588", "11.1730", "9.9300", "11.9100", "13.9900", "13.6300", "13.6000", "12.5100", "14.2700", "11.8700", "8.5200", "8.1800", "11.7500", "10.7670", "8.8900", "14.0900", "14.43", "14.52", "14.7000", "19.0760", "15.3860", "18.9498", "19.2183", "19.8582", "19.218330", "19.7212", "19.6000", "19.5282", "19.3927", "19.9667", "19.2800", "19.2412", "19.1800", "19.1156", "19.0552", "19.0235", "18.9100", "18.8800", "18.7000", "18.7898", "18.6555", "18.3132", "18.3000", "18.0500", "18.5512", "17.9796", "17.7700", "17.2943", "17.1700", "16.9900", "16.8115", "16.6262", "16.3735", "16.1885", "16.1700", "15.9400", "15.8500", "15.7200", "15.7300", "15.4956", "19.0190", "22.8100", "23.0136", "22.9700", "22.5500", "22.4600", "21.6300", "20.9000", "21.7500", "23.2300", "22.7600", "20.7600", "21.6600", "21.7000", "13.3100", "9.4980", "22.3200", "21.7200", "12.9500", "22.7800", "20.7000", "20.8600", "20.9000", "21.4000", "21.1300", "20.4100", "21.0100", "17.6200", "15.8000", "14.2800", "19.2200", "19.4600", "19.5104", "19.2000", "19.1500", "18.7900", "22.0200", "20.7800", "10.8400"];
+    var longtitude_array=["92.5000", "86.6700", "84.9200", "85.8300", "83.3200", "81.1800", "80.6600", "82.2600", "84.1200", "83.4400", "80.5500", "79.5000", "79.1300", "78.0900", "80.2500", "79.7600", "79.8500", "77.1500", "79.2500", "74.1000", "74.8500", "75.7804", "75.8040", "76.2670", "75.3300", "74.5400", "74.6900", "74.7000", "74.9800", "74.4400", "75.3700", "76.9300", "73.0000", "75.4900", "75.9200", "76.6100", "74.4800", "74.41", "74.35", "74.2670", "72.8777", "73.8440", "72.9505", "72.9781", "72.6816", "72.978088", "72.7068", "72.7300", "72.7629", "72.8616", "72.7333", "72.7900", "73.1291", "72.8400", "72.8353", "72.8308", "72.9254", "72.9200", "72.9400", "72.8700", "72.9298", "72.8679", "72.9645", "72.9700", "73.1000", "72.9269", "73.0516", "73.1200", "73.2198", "73.2700", "73.2900", "73.3149", "73.3694", "73.3778", "73.4450", "73.4600", "73.5200", "73.6300", "73.7200", "73.6800", "73.8252", "73.0392", "69.3500", "70.2135", "70.4500", "70.0300", "69.0800", "69.6100", "70.3600", "72.2300", "68.5800", "69.7000", "70.6600", "72.5300", "72.9600", "80.3400", "76.3400", "88.1800", "88.1000", "74.8000", "69.8000", "71.0100", "71.3600", "71.5000", "72.1800", "72.7300", "72.8800", "71.9000", "83.2500", "80.4200", "80.1100", "72.9800", "72.7500", "72.7723", "72.8000", "72.8000", "72.8700", "88.0600", "86.9700", "79.8600"];
+    var message_array=["NIL", "PORT WARNING", "PORT WARNING", "PORT WARNING", "PORT WARNING: NIL", "PORT WARNING: NIL", "PORT WARNING: NIL", "PORT WARNING: NIL", "PORT WARNING: NIL", "PORT WARNING: NIL", "", "", "", "", "", "", "", "", "", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "NIL", "PORT WARNING: NIL", "PORT WARNING: NIL", "PORT WARNING: NIL", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "Port Warning", "NIL", "PORT WARNING", ""];
+    var highlight_port_array=["No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No"];
+    var warning_array=["No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning", "No Warning"];
+    var file_array=["57_db6a53_AN_port.pdf", "57_625c37_port.pdf", "57_625c37_port.pdf", "57_625c37_port.pdf", "57_d9282a_port_warning_nil.pdf", "57_d9282a_port_warning_nil.pdf", "57_d9282a_port_warning_nil.pdf", "57_d9282a_port_warning_nil.pdf", "57_d9282a_port_warning_nil.pdf", "57_d9282a_port_warning_nil.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_597870_port.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_597870_port.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_db6a53_AN_port.pdf", "57_db6a53_AN_port.pdf", "57_239ca1_port_warning_2_dated_04.10.2026.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_081290_Port_warning.pdf", "57_d9282a_port_warning_nil.pdf", "57_d9282a_port_warning_nil.pdf", "57_d9282a_port_warning_nil.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_7d976a_port.pdf", "57_db6a53_AN_port.pdf", "57_625c37_port.pdf", "57_597870_port.pdf"];
+    var date_array=["04-10-2026 20:30:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 05:30:00", "04-10-2026 05:30:00", "04-10-2026 05:30:00", "04-10-2026 05:30:00", "04-10-2026 05:30:00", "04-10-2026 05:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 09:30:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 09:30:00", "04-10-2026 12:00:00", "04-10-2026 20:30:00", "04-10-2026 20:30:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 12:00:00", "04-10-2026 05:30:00", "04-10-2026 05:30:00", "04-10-2026 05:30:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 21:00:00", "04-10-2026 20:30:00", "04-10-2026 21:00:00", "04-10-2026 09:30:00"];
+    
+	var default_latitude=latitude_array[0];
+	var default_longtitude=longtitude_array[0];
+    
+    var map=new MapmyIndia.Map("map",{ center:[default_latitude, default_longtitude], zoomControl: true, zoom :5 ,hybrid:true, search:true, location:true}); 
+    
+    var icon = L.icon({
+			iconUrl: 'admin/images/icon.png',
+			iconSize: [35, 35],
+			});
+			
+	var high_icon = L.icon({
+			iconUrl: 'admin/images/high-marker.gif',
+			iconSize: [35, 40],
+			});
+			
+    
+    for (var i = 0; i < latitude_array.length; i++) 
+	{
+		var id=id_array[i];
+	    var internal_menu=internal_menu_array[i];
+	    var name=name_array[i];
+		var latitude=latitude_array[i];
+		var longtitude=longtitude_array[i];
+		//var longtitude=longtitude_array[i];
+		var message=message_array[i];
+		var datetime=date_array[i];
+		
+		if(message!="")
+		{
+		    message='<p><b>Warning Message : </b></p><p>'+message+'</p>';
+		}
+		else
+		{
+		    message="";
+		}
+		
+		var highlight_port=highlight_port_array[i];
+		
+		var warning=warning_array[i];
+		if(warning!="")
+		{
+		    warning='<p><b>Warning Signal :</b></p><p>'+warning+'</p>';
+		}
+		else
+		{
+		    warning="";
+		}
+		
+		
+		var datetime=date_array[i];
+		if(datetime!="")
+		{
+		    datetime='<p><b>Issue Date Time (IST) :</b></p><p>'+datetime+'</p>';
+		}
+		else
+		{
+		    datetime="";
+		}
+		
+		var file=file_array[i];
+		if(file!="")
+		{
+		    if(file=="common_pdf.php")
+			{
+				var href="uploads/archive/"+internal_menu+"/"+file+"?id="+id; 
+			}
+			else
+			{
+				var href="uploads/archive/"+internal_menu+"/"+file; 
+		    }
+			var file='<p><b>File :</b></p><p><a href='+encodeURI(href)+' target="_blank">View File</a></p>';
+		}
+		else
+		{
+		    file="";
+		}
+		
+		
+		var popup='<center><h5><b>'+name+'</b></h5></center>'+message+''+warning+''+datetime+''+file;
+		
+		if(highlight_port=='Yes')
+		{
+		    var marker = L.marker([latitude, longtitude],{icon: high_icon}).addTo(map).bindPopup(popup);
+		}
+		else
+		{
+		    var marker = L.marker([latitude, longtitude],{icon: icon}).addTo(map).bindPopup(popup);
+		}
+	}
+</script>
+</body>
+</html>

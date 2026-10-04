@@ -1,0 +1,98 @@
+
+<html>
+<head>
+    <title>Login Page</title>
+    <style>
+        .center {
+            margin: auto;
+        }
+        body {
+            font-family: calibri;
+            width: 610px;
+            align: center;
+        }
+        .demo-error {
+            display: inline-block;
+            color: #FF0000;
+            margin-left: 5px;
+        }
+        .demo-input {
+            width: 100%;
+            border-radius: 5px;
+            border: #CCC 1px solid;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        .demo-btn {
+            padding: 10px;
+            border-radius: 5px;
+            background: #478347;
+            border: #325a32 1px solid;
+            color: #FFF;
+            font-size: 1em;
+            width: 100%;
+            cursor: pointer;
+        }
+        .demo-heading {
+            font-size: 1.5em;
+            border-bottom: #CCC 1px solid;
+            margin-bottom: 5px;
+        }
+        .demo-table {
+            background: #dcfddc;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .demo-success {
+            margin-top: 5px;
+            color: #478347;
+            background: #e2ead1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .captcha-input {
+            background: #FFF url('captcha_code.php') repeat-y;
+            padding-left: 85px;
+        }
+    </style>
+    <META Http-Equiv="Cache-Control" Content="no-cache">
+    <META Http-Equiv="Pragma" Content="no-cache">
+    <META Http-Equiv="Expires" Content="0">
+    <script type="text/javascript">
+        function preventBack() { window.history.forward(); }
+        setTimeout("preventBack()", 0);
+        window.onunload = function() { null };
+    </script>
+</head>
+
+<body bgcolor="#FFFFFF" class="center">
+    <div align="center">
+        <br>
+        <h2><a href="http://mausam.imd.gov.in"><B><I><img src="images/logo.png" width="70px" height="120px"></I></B></a></h2>
+        <div align="center">
+            <p><b><font size="6" color="00008B">Login For Database Updates</font></b></p>
+            <h5 style="color:#FF0000">*Note: Only for IMD user's.</h5>
+            <form action="/Forecast/login.php" method="post" autocomplete="off">
+                <table border="0" cellpadding="10" cellspacing="1" width="100%" class="demo-table">
+                    <tr class="tablerow">
+                        <td width="50%">User Name<br/><input type="text" name="username" class="demo-input"></td>
+                    </tr>
+                    <tr class="tablerow">
+                        <td width="50%">Password<br/><input type="password" name="password" class="demo-input" autocomplete="new-password"></td>
+                    </tr>
+                    <tr class="tablerow">
+                        <td>Captcha Code: <div id="error-captcha" class="demo-error"></div><br/>
+                            <input name="captcha_code" type="text" class="demo-input"  style="background: #FFF url('captcha_code.php') no-repeat; padding-left:85px;background-size:contain;">
+                        </td>
+                    </tr>
+                    <tr class="tablerow">
+                        <td><input type="hidden" name="csrf_token" value="a89c22fa0e03e1a0bb0f53042d565751cf51591c4c28493795ef1c05bac6a138">
+                        <br/><input type="submit" name="submit" value="Submit" class="demo-btn"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <p><b>Note</b>: For any help or support, please send an email with your details to himcse.2012@imd.gov.in / vikash.meena2099@gmail.com / arka.banerjeeit@gmail.com.</p>
+    </div>
+</body>
+</html>

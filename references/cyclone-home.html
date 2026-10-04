@@ -1,0 +1,638 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<title>RSMC</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:700,700i" rel="stylesheet">
+<link href="css/font-awesome.min.css" rel="stylesheet">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/comman.css" rel="stylesheet">
+<link rel="stylesheet" href="admin/dist/css/jquery-ui.css">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+
+</head>
+
+<body>
+	<header class="top-navbar">
+		<div class="container header_top">
+	<nav class="navbar navbar-default">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" id="navbar-toggle" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar bar-1"></span>
+				<span class="icon-bar bar-2"></span>
+				<span class="icon-bar bar-3"></span>
+			</button>
+			<div id="headerTop">
+				<!--<div class="addthis_inline_share_toolbox" style="position:absolute;"></div>-->
+				<div style="position:absolute;"><a href="https://www.facebook.com/India.Meteorological.Department/"><i class="fa fa-facebook fa-lg" aria-hidden="true" style="background-color:#3B5998; color:white; padding:8px; width:35px; text-align:center;"></i></a>&nbsp;<a href="https://twitter.com/Indiametdept"><i class="fa fa-twitter fa-lg" aria-hidden="true" style="background-color:#55ACEE; color:white; padding:8px; width:35px; text-align:center;"></i></a></div>
+				<ul class="color-them pull-right">
+					<li class="last"><a href="#">A</a></li>
+					<li class="last"><a href="#">A</a></li>
+				</ul>
+				<ul class="accessControl pull-right">
+					<li class="last"><a href="#">A</a></li>
+					<li class="last"><a href="#">A<sup>+</sup></a></li>
+					<li class="last"><a href="#">A<sup>+</sup></a></li>
+				</ul>
+				<ul class="topmiscmenu pull-right">
+					<li><a href="#main-content" class="firstitem">Skip to main content</a></li>
+					<li class="last"><a href="screen-reader-access.php">Screen Reader Access</a></li>
+				</ul>
+          </div>
+        </div>
+		<div class="logoPart">
+          	<div class="col-xs-3 col-sm-2 text-left">
+				<a href="index.php"><img src="images/logo-new-1.png" alt="Regional Specialized Meteorological Centre"></a>
+            </div>
+            <div class="text-logo col-xs-6 col-sm-8 text-center">
+				<a href="index.php"><img src="images/logo-text-new1.png" class="img-responsive" alt="Regional Specialized Meteorological Centre"></a>
+            </div>
+            <div class="col-xs-3 col-sm-2  text-right">
+				<img src="images/wmo-logo-new.png" alt="WMO" title="WMO">
+            </div>
+		</div>
+        <div id="navbar" class="navbar-collapse collapse pull-left" aria-expanded="false">
+			<div>
+				<ul class="nav navbar-nav text-capitalize main-menu">
+					<li class="active"><a href="index.php">Home</a></li>
+					<li class="dropdown"><a href="historical-perspective.php" class="dropdown-toggle" data-toggle="dropdown">RSMC</a>
+						<ul class="dropdown-menu">
+							<li><a href="historical-perspective.php">Historical Perspective</a></li>
+							<li><a href="rsmc-tropical-cyclones.php">RSMCs - Tropical Cyclones</a></li>
+							<li><a href="activities-of-rsmc-new-delhi.php">Activities  of RSMC, New Delhi</a></li>
+							<li><a href="bulletins-products.php">Bulletins & Products</a></li>
+						</ul>
+					</li>            
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">CWD</a>
+						<ul class="dropdown-menu">
+							<li> <a href="historical-perspective-cwd.php">Historical Perspective</a></li>
+							<li> <a href="present-organisational-structure.php">Present Organisational Structure</a></li>
+							<li> <a href="bulletins-products-cwd.php">Bulletins & Products</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Vision</a>
+						<ul class="dropdown-menu">
+																<li><a href="report.php?internal_menu=Njg=">Cyclone Warning Services</a></li>
+																		<li><a href="report.php?internal_menu=Njk=">Marine Weather Services</a></li>
+															</ul>							
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">DM Act &amp; Guidelines</a>
+						<ul class="dropdown-menu">
+							<li> <a href="images/pdf/DM_act2005.pdf" target="_blank">DM Act-2005</a></li>
+							<li> <a href="images/pdf/NDMA_Guidelines_Cyclone_2008.pdf" target="_blank">NDMA Guidelines-2008</a></li>
+							<li> <a href="images/pdf/National_DM_Policy2009.pdf" target="_blank">NDM Policy-2009</a></li>
+							<li> <a href="images/pdf/NDM_Plan_2019.pdf" target="_blank">NDM Plan-2019</a></li>
+							<li> <a href="images/pdf/NMSAR_Plan_2022.pdf" target="_blank">NMSAR Plan-2022</a></li>
+						</ul>
+					</li>
+					
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">SOP</a>
+						<ul class="dropdown-menu">
+																<li><a href="report.php?internal_menu=NjE=">Cyclone Warning Services SOP</a></li>
+																		<li><a href="report.php?internal_menu=NzE=">Marine Weather Services SOP</a></li>
+																		<li><a href="report.php?internal_menu=NzI=">Cyclone and Marine Weather Bulletins SOP</a></li>
+																		<li><a href="report.php?internal_menu=Mjg=">TCP-21</a></li>
+															</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Awareness</a>
+						<ul class="dropdown-menu">
+							<li> <a href="dos-and-dont-does.php">Do's and Don't</a></li>
+							<li> <a href="images/pdf/faq.pdf">FAQs</a></li>
+							<li> <a href="images/pdf/terminology.pdf">Terminology</a></li>
+							<li> <a href="warning-graphics-legend.php">Warning Graphics Legend </a></li>
+							<li> <a href="images/pdf/tc-names.pdf">TC Names</a></li>
+							<li> <a href="four-stage-warning.php">Four Stage Warning </a></li>
+							<li> <a href="images/pdf/damage.pdf">Damage Potential of Cyclones</a></li>
+							<li> <a href="port-warning-signals.php">Port Warning & Signals</a></li>
+							<li> <a href="acronyms.php">Acronyms </a></li>
+							<li> <a href="images/pdf/Evolution_of_IMD.pdf">Evolution of IMD</a></li>
+					   </ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Publications</a>
+						<ul class="dropdown-menu">
+							                                    <li><a href="report.php?internal_menu=MjY=">Preliminary Report</a></li>
+                                                                        <li><a href="report.php?internal_menu=Mjc=">Annual RSMC Report</a></li>
+                                                                        <li><a href="report.php?internal_menu=Mjk=">Annual Cyclone Review</a></li>
+                                                                        <li><a href="report.php?internal_menu=MzA=">FDP Implementation Plan</a></li>
+                                                                        <li><a href="report.php?internal_menu=MzE=">FDP Implementation Report</a></li>
+                                                                        <li><a href="report.php?internal_menu=NjI=">Brochure</a></li>
+                                    							<li><a href="images/pdf/cyclone_science_plan.pdf">FDP Science Plan</a></li>
+							<li class="dropdown-submenu"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Met. Monograph</a>
+								<ul class="dropdown-menu">
+									<li> <a href="images/pdf/ogni.pdf">Ogni</a></li>
+									<li> <a href="images/pdf/gonu.pdf">Gonu</a></li>
+								</ul>
+							</li>
+							<li><a href="images/pdf/Global_Guide_TCF.pdf">Global Guide to TC Forecasting</a></li>
+							<li><a href="images/pdf/Souvenir_RSMC_17Aug.pdf">Souvenir_RSMC New Delhi</a></li>
+							
+						</ul>
+					</li>
+                    <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools</a>
+						<ul class="dropdown-menu">
+							<li class="dropdown-submenu"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Surface and Upper Air Charts</a>
+								<ul class="dropdown-menu">
+										    <li><a href="surface_chart00.php">00/03 UTC</a></li>
+                                            <li><a href="surface_chart12.php">12 UTC</a></li>
+								</ul>
+							</li>
+							<li class="dropdown-submenu"><a href="#">Observations</a>
+										<ul class="dropdown-menu">
+										    <li><a href="http://aws.imd.gov.in:8091/">AWS/ARG</a></li>
+                                            <li><a href="https://mausam.imd.gov.in/responsive/coastal_observations.php">Marine Observations</a></li>
+										</ul>
+							
+							</li>
+							<li class="dropdown-submenu"> 
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">Satellite Products</a>
+								<ul class="dropdown-menu">
+									<li><a href="cyclone-enhancement.php">Cyclone Enhancement</a></li>
+									<li><a href="http://www.rapid.imd.gov.in/rapid/">RAPID</a></li>
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Infra Red Channel</a>
+										<ul class="dropdown-menu">
+										    <li><a href="infra-red-sector.php">Infra Red Sector</a></li>
+                                            <li><a href="infra-red-globe.php">Infra Red Globe</a></li>
+										</ul>
+									</li>
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Water Vapour Channel</a>
+										<ul class="dropdown-menu">
+										    <li><a href="water-vapour-sector.php">Water Vapour Sector</a></li>
+                                            <li><a href="water-vapour-globe.php">Water Vapour Globe</a></li>
+										</ul>
+									</li>
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Color Composite</a>
+										<ul class="dropdown-menu">
+										    <li><a href="color-composite-sector.php">Color Composite Sector</a></li>
+                                            <li><a href="color-composite-globe.php">Color Composite Globe</a></li>
+										</ul>
+									</li>
+									
+									<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Visible Channel</a>
+										<ul class="dropdown-menu">
+										    <li><a href="visible-sector.php">Visible Sector</a></li>
+                                            <li><a href="visible-globe.php">Visible Globe</a></li>
+										</ul>
+									</li>
+								    <li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Satellite Bulletin</a>
+										<ul class="dropdown-menu">
+        								                                                            <li><a href="download.php?path=uploads/archive/22/22_8115e5_SAT_BLTN_1200_UTC.pdf">Routine</a></li>
+                                                    											
+											<li><a href="archive-information.php?internal_menu=MjI=&menu_id=OQ=="> Routine Archive</a></li>
+											
+											                                                        <li><a href="download.php?path=uploads/archive/73/73_01350b_splbltn.pdf">Special</a></li>
+                                                    											
+											<li><a href="archive-information.php?internal_menu=NzM=&menu_id=OQ==">Special Archive</a></li>
+										</ul>
+									</li>
+									<li><a href="cloud-top-temperature.php">Cloud Top Temperature</a></li>
+								</ul>
+							</li>
+							
+							
+							<li class="dropdown-submenu"> 
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown">Radar Products</a>
+								<ul class="dropdown-menu">
+									<li><a href="https://mausam.imd.gov.in/responsive/radar.php" target="_blank">Radar</a></li>
+								    <li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Radar Bulletin</a>
+										<ul class="dropdown-menu">
+        								                                                            <li><a href="download.php?path=uploads/archive/74/74_122960_1123.asp">Current</a></li>
+                                                    											
+											<li><a href="archive-information.php?internal_menu=NzQ=&menu_id=OQ=="> Archive</a></li>
+										</ul>
+									</li>
+									
+								</ul>
+							</li>
+							
+							<li><a href="http://nwp.imd.gov.in/gfsproducts_cycle00_mausam.php" target="_blank">NWP Products</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Verification</a>
+						<ul class="dropdown-menu">
+														<li><a href="genesis-forecast.php">TC Genesis</a></li>
+							<li><a href="track-forecast.php">TC Track</a></li>
+							<li><a href="intensity-forecast.php">TC Intensity</a></li>
+							<li><a href="landfall-forecast.php">TC Landfall</a></li>
+														<li><a href="https://nwp.imd.gov.in/sea_area_fr_rsmc.php">Marine Weather(Real Time)</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Archive</a>
+						<ul class="dropdown-menu">
+							<li><a href="http://14.139.191.203/login.aspx?ReturnUrl=%2f">Cyclone E-Atlas</a></li>
+							                                <li><a href="report.php?internal_menu=MzM=">Best Track</a></li>
+                                                                <li><a href="report.php?internal_menu=MzQ=">Bulletins</a></li>
+                                							<li><a href="Sat_Radar_Animation.php">Animations</a></li>
+							<li><a href="archive-information.php?internal_menu=NzQ=&menu_id=OQ==">Radar Bulletin</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Climatology</a>
+						<ul class="dropdown-menu">
+								<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tropical Cyclone</a>
+										<ul class="dropdown-menu">
+											<li><a href="download.php?path=uploads/climatology/hazard.pdf" target="_blank">Cyclones Hazard Climatology</a></li>
+											<li><a href="genesis.php">Genesis</a></li>
+											<li><a href="download.php?path=uploads/climatology/uniquecyclone-tracks.pdf">Unique Tracks</a></li>
+											<li><a href="intensification.php">Intensification</a></li>
+											<li><a href="movement.php">Movement</a></li>
+											<li><a href="landfall.php">Landfall</a></li>
+											<li><a href="genesis-and-landfall-of-cycloneic-disturbances.php">Genesis and Landfall of Cyclonic Disturbances</a></li>
+											<li><a href="frequency-of-formation-of-cyclone.php">Frequency of Formation of Depression and Above</a></li>
+											<li><a href="frequency-of-landfalling-cyclone.php">Frequency of Landfalling Cyclones</a></li>
+											<li><a href="download.php?path=uploads/climatology/scs.xls">Frequency of SCS and Above(Since 1965)</a></li>
+											<li><a href="download.php?path=uploads/climatology/tcenergymatrix.pdf">TC Energy Matrix</a></li>
+											<li><a href="download.php?path=uploads/climatology/tcintensity.xls">TC Intensity</a></li>
+											<li><a href="download.php?path=uploads/climatology/transpeed.pdf">Translational Speed of Cyclonic Disturbances</a></li>
+											<li><a href="download.php?path=uploads/climatology/lifeperiod.pdf">Life Period of TCs</a></li>
+											<li><a href="download.php?path=uploads/climatology/tcstructure.pdf">Structure of TC</a></li>
+										</ul>
+								</li>
+								<li class="dropdown-submenu"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Marine Weather</a>
+										<ul class="dropdown-menu">
+										    
+                                            <li><a href="download.php?path=uploads/climatology/RainfallExtremesoverCoastalStations.pdf">Rainfall Extremes over Coastal Stations</a></li>
+											<li><a href="download.php?path=uploads/climatology/IMDMarineSurfaceStations.pdf">Surface Stations</a></li>
+                                            <li><a href="download.php?path=uploads/climatology/MarineClimatogicalAtlas.pdf">Climatogical Atlas 1961-1990</a></li>
+                                            <li><a href="download.php?path=uploads/climatology/Marine_Climatological_Charts.pdf" target="_blank">Climatological Atlas 1991-2000</a></li>
+											<li><a href="download.php?path=uploads/climatology/Marine_Climate_summry2001-10.pdf" target="_blank">Climatological Atlas 2001-2010</a></li>
+											<li><a href="download.php?path=uploads/climatology/Marine_Climate_summry2011-20.pdf" target="_blank">Climatological Atlas 2011-2020</a></li>
+											<li><a href="download.php?path=uploads/climatology/Marine_Climate_summry1991-2020.pdf" target="_blank">Climatological Atlas 1991-2020</a></li>
+											<li><a href="download.php?path=uploads/climatology/Metadata.pdf">Metadata of Coastal Stations</a></li>
+											<li><a href="download.php?path=uploads/climatology/INCOIS_MHVM_Atlas_Document_HS.pdf">Multi Hazard Vulnerability Atlas_INCOIS</a></li>
+										</ul>
+								</li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Survey Reports</a>
+						<ul class="dropdown-menu">
+							<li><a href="uploads/survey/NCAER2020.pdf" target="_blank">NCAER Reports 2020</a></li>
+							<li><a href="uploads/survey/NCAER2015.pdf" target="_blank">NCAER Reports 2015</a></li>
+							<li><a href="uploads/survey/NCAER2012.pdf" target="_blank">NCAER Reports 2012</a></li>
+							<li><a href="uploads/survey/NCAER2010.pdf" target="_blank">NCAER Reports 2010</a></li>
+						</ul>
+					</li>
+									</ul>
+			</div>
+        </div>
+    </nav>
+</div>	</header>
+	<div class="main-content" id="main-content">
+		<div class="container">
+			<div class="cyclon-map-cont">
+				<div class="row">
+					<div class="col-sm-8">
+						<div class="map-col">
+							<div class="row" id="important-information-marquee">
+								<div class="col-sm-12">
+									<marquee direction="left" onmouseover="this.stop();" onmouseout="this.start();">
+																			</marquee>
+								</div>
+							</div>
+
+							<div class="scrollMsgNew">
+								<marquee direction="left" onmouseover="this.stop();" onmouseout="this.start();">
+									<!-- <a href="uploads/uploads/Tropical Weather Outlook based on 0300 UTC of 14.05.2025.pdf" target="_blank">Tropical Weather Outlook based on 0300 UTC of 14.05.2025</a> -->
+																			<img src="images/warning.png"><a href="uploads/archive/47/47_2427d6_Tropical_Weather_Outlook_based_on_0300_UTC_of_04.10.2026_f.pdf" target="_blank">Tropical Weather Outlook based on 0300 UTC of 04-10-2026</a>
+																	</marquee>
+							</div>
+							<div class="mapArea mapAreaHeight" style="overflow:scroll;">
+								<!-- <img src="images/satelliteImage/sector-ir.jpg" alt="mapimage"> -->
+								<img src="images/satelliteImage/3Dasiasec_ir1.jpg" alt="mapimage">
+																	<div class="indicators0 dot3" style="right:0px; top:0px; left:0px;">
+										<div class="indiInner" id="indiInner"><a href="javascript:void(0)" class="indicator" onclick="showPopup('40179');"><img src="images/Marker 1.gif" alt="imagemap"></a>
+											<div class="hid_shw tdot0tip" id="mypopup_40179">
+												<dl class="clearfix">
+													<dd class="tipTop"><a href="javascript:void(0)"><img src="images/close.png" style="float:right;" onclick="closePopup('40179');" /></a></dd>
+													<dd class="tipMid">
+														Tropical Weather Outlook based on 0300 UTC of 04-10-2026														<br>
+														<strong><a href="uploads/archive/47/47_2427d6_Tropical_Weather_Outlook_based_on_0300_UTC_of_04.10.2026_f.pdf" target="_blank" class="readDetail">Read More</a></strong>
+													</dd>
+													<dd class="tipBot"></dd>
+												</dl>
+											</div>
+										</div>
+									</div>
+															</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="right-col">
+														<div class="contentHome">
+								<h2><span>Important Links</span></h2>
+								<ul class="menu">
+									<li><a href="https://mausam.imd.gov.in/event/" target="_blank">IMD@150</a></li>
+									<li><a href="http://dss.imd.gov.in/dwr_img/GIS/marine.php" target="_blank">Cyclone &amp; Marine Weather Services</a></li>
+									<li><a href="uploads/archive/24/24_4fd8b0_Extended_Range_Outlook_01Oct2026.pdf" target="_blank">Extended Range Outlook</a></li>
+									<li><a href="uploads/archive/64/64_969997_COU3000.png" target="_blank">Graphical Tropical Weather Outlook</a></li>
+									<li><a href="uploads/archive/2/2_c2c667_Tropical_Weather_Outlook_based_on_0300_UTC_of_04.10.2026_f.pdf" target="_blank">Tropical Weather Outlook</a></li>
+									<li><a href="uploads/archive/1/1_298d73_11.National_Bulletin_No.11-30_Sept2026_0530IST.pdf" target="_blank">National Bulletin</a></li>
+									<li><a href="https://nwp.imd.gov.in/mme/fdp-bob/login.php" target="_blank">SWFP South Asia</a></li>
+									<li><a href="uploads/archive/23/23_d23c2d_no_fdp.pdf" target="_blank">FDP Cyclone</a></li>
+									<li><a href="https://mausam.imd.gov.in/imd_latest/contents/all_india_forcast_bulletin.php" target="_blank">All India Weather Forecast</a></li>
+									<li><a href="uploads/archive/21/21_ffae33_Press_Release_dated_27_SEPT_2026.pdf" target="_blank">Press Release</a></li>
+									<li><a href="uploads/archive/22/22_b6de68_satbltn.pdf" target="_blank">Satellite Bulletin</a></li>
+									<li><a href="infra-red-sector.php">Satellite Imagery</a></li>
+									<li><a href="https://mausam.imd.gov.in/responsive/radar.php" target="_blank">Radar Imagery</a></li>
+									<li><a href="https://nwp.imd.gov.in/gfsfront_cycle00_mausam.php" target="_blank">NWP</a></li>
+								</ul>
+								<a class="viewMore" href="archive.php?menu_id=Mg==">Archive</a>
+							</div>
+
+							<div class="contentHome">
+								<h2><span>Quick Links</span></h2>
+								<ul class="menu">
+									<li><a href="https://mausam.imd.gov.in/ptc/">WMO/ESCAP PTC</a></li>
+									<li><a href="wmo.php">WMO/ESCAP Panel Member Countries</a></li>
+									<li><a href="other-rsmc.php">Other RSMCs</a></li>
+									<li><a href="tcwc.php">TCWCs</a></li>
+									<li><a href="https://www.niot.res.in/" target="_blank">NIOT</a></li>
+									<li><a href="https://incois.gov.in/" target="_blank">INCOIS</a></li>
+									<li><a href="https://www.nccr.gov.in/" target="_blank">NCCR</a></li>
+									<li><a href="http://saarc-sdmc.org/" target="_blank">SDMC</a></li>
+									<li><a href="https://ndma.gov.in/" target="_blank">NDMA</a></li>
+								</ul>
+							</div>
+
+							<div class="contentHome">
+								<h2><span>Outreach Activities</span></h2>
+								<ul class="menu">
+									<li><a href="documentary-film.php">Documentary Films</a></li>
+									<li><a href="conference-workshop.php">Training & Conferences</a> <img src="uploads/new_blink.gif" /></li>
+									<li><a href="uploads/home/conference/ships_cert.pdf" target="_blank">Recognition to Ships</a></li>
+								</ul>
+							</div>
+						</div>
+						<div class="row" id="register-with-us">
+							<div class="col-sm-12">								<center><a href="#"><img border="0" alt="register with us" src="images/register-with-us.png" width="100%" height="60%"></a></center>
+							</div>
+							<div class="col-sm-12">
+								<a href="feedback.php" class="btn btn-primary" style="width:100%; font-family: cursive; font-size: 19px; margin-top: 5px;">Send Feedback</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="featureBlock">
+					<div class="row">
+						<div class="col-sm-3">
+							<div class="featurcol">
+								<div class="imgCon"><img src="images/img-1.jpg" border="0" alt=""></div>
+								<h3>Cyclone Warnings/Advisory</h3>
+								<ul class="menu">
+																				<li><a href="uploads/No Cyclone.pdf" target="_blank">National Bulletin</a></li>
+																				<li><a href="uploads/archive/2/2_c2c667_Tropical_Weather_Outlook_based_on_0300_UTC_of_04.10.2026_f.pdf" target="_blank">RSMC Bulletin</a></li>
+																					<li><a href="uploads/No Cyclone.pdf" target="_blank">TCAC Bulletin</a></li>
+																				<li><a href="uploads/No Cyclone.pdf" target="_blank">Quadrant Wind Bulletin</a></li>
+																				<li><a href="uploads/archive/5/5_656b51_gmdss.pdf" target="_blank">GMDSS bulletin</a></li>
+																					<li><a href="uploads/No Cyclone.pdf" target="_blank">Hourly Bulletin</a></li>
+																										</ul>
+								<a class="viewMore" href="archive.php?menu_id=NA==">Archive</a>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<div class="featurcol">
+								<div class="imgCon"><img src="images/img-2.jpg" border="0" alt=""></div>
+								<h3>Cyclone Warning Graphics</h3>
+								<ul class="menu">
+									<li><a href="https://dss.imd.gov.in/dwr_img/GIS/cyclone.html" target="_blank">Interactive Track</a></li>
+																				<li><a href="uploads/No Cyclone.pdf" target="_blank">Observed & Forecast Track</a></li>
+																				<li><a href="uploads/No Cyclone.pdf" target="_blank">Storm Surge Guidance</a></li>
+																				<li><a href="uploads/No Cyclone.pdf" target="_blank">Heavy Rainfall</a></li>
+																				<li><a href="uploads/No Cyclone.pdf" target="_blank">Quadrant Wind Graphics</a></li>
+																				<li><a href="uploads/No Cyclone.pdf" target="_blank">TCAC Graphics</a></li>
+																	</ul>
+								<a class="viewMore" href="archive.php?menu_id=NQ==">Archive</a>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<div class="featurcol">
+								<div class="imgCon"><img src="images/img-3.jpg" border="0" alt=""></div>
+								<h3>NWP Guidance</h3>
+								<ul class="menu">
+									<li><a href="https://incois.gov.in/portal/osf/hwa.jsp" target="_blank">Ocean State Forecast</a></li>
+									<li><a href="http://nwp.imd.gov.in/hwrf/IMDHWRFv3.6/index1.html" target="_blank">HWRF</a></li>
+									<li><a href="eps.php" target="_blank">EPS</a></li>
+																					<li><a href="uploads/No Cyclone.pdf" target="_blank">MME</a></li>
+																		<li><a href="https://nwp.imd.gov.in/potentialparameterpro_new.php" target="_blank">GPP</a></li>
+								</ul>
+								<a class="viewMore" href="archive.php?menu_id=Ng==">Archive</a>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<div class="featurcol">
+								<div class="imgCon"><img src="images/img-4.jpg" border="0" alt=""></div>
+								<h3>Marine Forecast/Warnings</h3>
+								<ul class="menu">
+																																						<li><a href="uploads/archive/51/51_b258a8_graphics.png" target="_blank">Fishermen Warning Graphics</a></li>
+																					<li><a href="uploads/archive/65/65_81f72e_probability.png" target="_blank">Probability of Exceedance 45Kmph (25 Knots)</a></li>
+																					<li><a href="uploads/archive/67/67_a481f9_probability.png" target="_blank">Probability of Exceedance 62 Kmph (34 Knots)</a></li>
+										
+
+
+
+									<li><a href="sea-area-bulletin.php">Sea Area Bulletin</a></li>
+									<li><a href="coastal-weather-bulletin.php">Coastal Weather Bulletin</a></li>
+									<li><a href="port-warning.php">Port Warning</a></li>
+									<li><a href="fishermen-warning.php">Fishermen Warning</a></li>
+
+
+								</ul>
+								<a class="viewMore" href="archive.php?menu_id=OA==">Archive</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<footer>
+		<div class="container">
+	<div class="row">
+		<div class="col-sm-9 text-left">
+			<ul class="footer-menu">
+				<li><a href="index.php">Home</a></li>
+				<li><a href="dos-and-dont-does.php">Cyclone Awareness</a></li>
+				<li><a href="report.php?internal_menu=MjY=">Publications</a></li>
+				<li><a href="surface-charts.php">Tools &amp; Data</a></li>
+				<!-- li><a href="track-forecast.php">Forecast Verification</a></li -->
+				<li><a href="report.php?internal_menu=MzQ=">Archive</a></li>
+				<!--li><a href="genesis.php">Climatalogy</a></li-->
+				<li><a href="recruitment-rule.php">Recruitment Rules</a></li>
+				<li><a href="uploads/duty_charter.pdf">Duty Charter</a></li>
+				<li><a href="sitemap.php">Sitemap</a></li>
+				<li><a href="contact.php?contact=Contact Us">Contact</a></li>
+				
+			</ul>
+			<ul class="footer-menu">
+				<li><a href="terms-conditions.php">Terms & Conditions</a></li>
+				<li><a href="privacy-policy.php">Privacy Policy</a></li>
+				<li><a href="copyright-policy.php">Copyright Policy</a></li>
+				<li><a href="hyperlinking-policy.php">Hyperlinking Policy</a></li>
+				<li><a href="accessibility-statement.php">Accessibility Statement</a></li>
+				<li><a href="disclaimer.php">Disclaimer</a></li>
+				<li><a href="help.php">Help</a></li>
+			</ul>
+			<p class="copyright">Copyright © 2013 - RSMC. All rights reserved. <img src="images/valid-xhtml10.gif" border="0" alt="Valid XHTML 1.0 Transitional"> <img src="images/vcss.gif" border="0" alt="Valid XHTML 1.0 Transitional"></p>
+		</div>
+		<div class="col-sm-3 text-right">
+			<div><a href="https://www.facebook.com/India.Meteorological.Department/" target="_blank"><i class="fa fa-facebook fa-lg" aria-hidden="true" style="background-color:#3B5998; color:white; padding:8px; width:35px; text-align:center;"></i></a>&nbsp;<a href="https://twitter.com/Indiametdept" target="_blank"><i class="fa fa-twitter fa-lg" aria-hidden="true" style="background-color:#55ACEE; color:white; padding:8px; width:35px; text-align:center;"></i></a></div>
+			<p>
+			Website updated on : 05/Oct/2026			</p>
+		     
+			
+		</div>
+	</div>
+</div>	</footer>
+	<style>
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 999; /* Sit on top */
+/*  padding-top: 100px; /* Location of the box */*/
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  padding: 4px;
+}
+
+/* Caption of Modal Image */
+#caption {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 900px;
+  text-align: center;
+  color: #ccc;
+  padding: 10px 0;
+  height: 150px;
+}
+
+#countDown {
+  color: #b13f23;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 10px;
+  text-align: center;
+  display: block;
+  margin: 1px auto;
+  max-width: 700px;
+  border-radius: 5px;
+  background: #e5faf9;
+}
+
+/* Add Animation */
+.modal-content, #caption {  
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+.link-cross {
+  position: relative;
+  display: block;
+  margin: 13% auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+@-webkit-keyframes zoom {
+  from {-webkit-transform:scale(0)} 
+  to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+  from {transform:scale(0)} 
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  color: #f1f1f1;
+  font-size: 28px;
+  transition: 0.3s;
+  z-index: 10;
+  padding: 0;
+  line-height: 50px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+  background: rgba(150,150,150,0.75);
+  opacity: .75 !important;
+}
+
+.close:hover,
+.close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 1000px){
+  .modal-content {
+    width: 100%;
+  }
+  #countDown {
+    font-size: 16px;
+    padding: 10px;
+  }
+  .link-cross {
+    margin: 40% auto;
+  }
+  .close {
+    color: #fff;
+    top: 5px;
+    right: 5px;
+    width: 30px;
+    line-height: 30px;
+  height: 30px;
+  border-radius: 30px;
+  }
+}
+</style>
+
+<script>
+  // function for close button 
+  function clocse() { 
+    document.getElementById("myModal").style.display = "none";
+  }
+</script>
+
+
+	<script src="js/jquery.min.js"></script>
+<script src="js/slick.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="admin/dist/js/jquery-ui.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-167223165-1"></script>
+<script src="js/custom.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PSHMF7HZ');</script>
+<!-- End Google Tag Manager --></body>
+
+</html>

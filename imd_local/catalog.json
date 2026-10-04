@@ -1,0 +1,894 @@
+{
+  "cityforecast": {
+    "official_path": "cityforecast",
+    "documented_fields": [
+      "Date",
+      "Station_Code",
+      "Station_Name",
+      "Today_Max_temp",
+      "Today_Max_Departure_from_Normal",
+      "Previous_Day_Max_temp",
+      "Previous_Day_Max_Departure_from_Normal",
+      "Today_Min_temp",
+      "Today_Min_Departure_from_Normal",
+      "Past_24_hrs_Rainfall",
+      "Relative_Humidity_at_0830",
+      "Relative_Humidity_at_1730",
+      "Previous_Day_Relative_Humidity_at_1730",
+      "Sunset_time",
+      "Sunrise_time",
+      "Moonset_time",
+      "Moonrise_time",
+      "Todays_Forecast_Max_Temp",
+      "Todays_Forecast_Min_temp",
+      "Todays_Forecast",
+      "Day_2_Max_Temp",
+      "Day_2_Min_temp",
+      "Day_2_Forecast",
+      "Day_3_Max_Temp",
+      "Day_3_Min_temp",
+      "Day_3_Forecast",
+      "Day_4_Max_Temp",
+      "Day_4_Min_temp",
+      "Day_4_Forecast",
+      "Day_5_Max_Temp",
+      "Day_5_Min_temp",
+      "Day_5_Forecast",
+      "Day_6_Max_Temp",
+      "Day_6_Min_temp",
+      "Day_6_Forecast",
+      "Day_7_Max_Temp",
+      "Day_7_Min_temp",
+      "Day_7_Forecast"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "reference_only",
+    "public_provider": "city",
+    "documented_example": null
+  },
+  "cityforecast_mapping": {
+    "official_path": "cityforecast_mapping",
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "endpoint_only",
+    "public_provider": null
+  },
+  "cityforecastloc": {
+    "official_path": "cityforecastloc",
+    "documented_fields": [
+      "Date",
+      "Station_Code",
+      "Station_Name",
+      "Today_Max_temp",
+      "Today_Max_Departure_from_Normal",
+      "Previous_Day_Max_temp",
+      "Previous_Day_Max_Departure_from_Normal",
+      "Today_Min_temp",
+      "Today_Min_Departure_from_Normal",
+      "Past_24_hrs_Rainfall",
+      "Relative_Humidity_at_0830",
+      "Relative_Humidity_at_1730",
+      "Previous_Day_Relative_Humidity_at_1730",
+      "Sunset_time",
+      "Sunrise_time",
+      "Moonset_time",
+      "Moonrise_time",
+      "Todays_Forecast_Max_Temp",
+      "Todays_Forecast_Min_temp",
+      "Todays_Forecast",
+      "Day_2_Max_Temp",
+      "Day_2_Min_temp",
+      "Day_2_Forecast",
+      "Day_3_Max_Temp",
+      "Day_3_Min_temp",
+      "Day_3_Forecast",
+      "Day_4_Max_Temp",
+      "Day_4_Min_temp",
+      "Day_4_Forecast",
+      "Day_5_Max_Temp",
+      "Day_5_Min_temp",
+      "Day_5_Forecast",
+      "Day_6_Max_Temp",
+      "Day_6_Min_temp",
+      "Day_6_Forecast",
+      "Day_7_Max_Temp",
+      "Day_7_Min_temp",
+      "Day_7_Forecast",
+      "Latitude",
+      "Longitude"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "reference_only",
+    "public_provider": "city",
+    "documented_example": null
+  },
+  "current_wx": {
+    "official_path": "current_wx",
+    "documented_fields": [
+      "Station Id",
+      "Station",
+      "Date of Observation",
+      "Time of Observation",
+      "M.S.L.P",
+      "Wind Direction",
+      "Wind Speed",
+      "Temperature",
+      "Weather Code",
+      "Nebulosity",
+      "Humidity",
+      "Last 24 hrs Rainfall"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "provisional_public_mapping",
+    "public_provider": "feed",
+    "documented_example": null
+  },
+  "districtnowcast": {
+    "official_path": "districtnowcast",
+    "documented_fields": [
+      "Station",
+      "Date",
+      "Cat1",
+      "Cat2",
+      "Cat3",
+      "Cat4",
+      "Cat5",
+      "Cat6",
+      "Cat7",
+      "Cat8",
+      "Cat9",
+      "Cat10",
+      "Cat11",
+      "Cat12",
+      "Cat13",
+      "Cat14",
+      "Cat15",
+      "Cat16",
+      "Cat17",
+      "Cat18",
+      "Cat19",
+      "message",
+      "toi",
+      "Vupto",
+      "color"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "reference_only",
+    "public_provider": "warnings",
+    "documented_example": null
+  },
+  "districtrainfall": {
+    "official_path": "districtrainfall",
+    "documented_fields": [
+      "OBJ_ID",
+      "District",
+      "Date",
+      "Daily Actual",
+      "Daily Normal",
+      "Daily Departure Per",
+      "Daily Category",
+      "Week Date",
+      "Weekly Actual",
+      "Weekly Normal",
+      "Weekly Departure Per",
+      "Weekly Category",
+      "Cumulative Date",
+      "Cumulative Actual",
+      "Cumulative Normal",
+      "Cumulative Departure Per",
+      "Cumulative Category",
+      "Monthly Date",
+      "Monthly Actual",
+      "Monthly Normal",
+      "Monthly Departure Per",
+      "Monthly Category"
+    ],
+    "documented_shape": "object",
+    "contract_status": "reference_only",
+    "public_provider": "rainfall",
+    "documented_example": {
+      "OBJ_ID": "164",
+      "District": "ADILABAD",
+      "Date": "2023-01-31",
+      "Daily Actual": "0.00",
+      "Daily Normal": "1.70",
+      "Daily Departure Per": "-100%",
+      "Daily Category": "NR",
+      "Week Date": "19-01-2023 To 25-01-2023",
+      "Weekly Actual": "0.00",
+      "Weekly Normal": "1.70",
+      "Weekly Departure Per": "-100%",
+      "Weekly Category": "NR",
+      "Cumulative Date": "2023-01-01",
+      "Cumulative Actual": "0.00",
+      "Cumulative Normal": "11.60",
+      "Cumulative Departure Per": "-100%",
+      "Cumulative Category": "NR",
+      "Monthly Date": "01-12-2022 To 31-12-2022\r",
+      "Monthly Actual": "5.10",
+      "Monthly Normal": "5.00",
+      "Monthly Departure Per": "1%",
+      "Monthly Category": "N"
+    }
+  },
+  "districtwarning": {
+    "official_path": "districtwarning",
+    "documented_fields": [
+      "Obj_id",
+      "Date",
+      "UTC",
+      "District",
+      "Day_1",
+      "Day_2",
+      "Day_3",
+      "Day_4",
+      "Day_5",
+      "Day1_Color",
+      "Day2_Color",
+      "Day3_Color",
+      "Day4_Color",
+      "Day5_Color"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "reference_only",
+    "public_provider": "warnings",
+    "documented_example": null
+  },
+  "stationnowcast": {
+    "official_path": "stationnowcast",
+    "documented_fields": [
+      "Station",
+      "Date",
+      "Cat1",
+      "Cat2",
+      "Cat3",
+      "Cat4",
+      "Cat5",
+      "Cat6",
+      "Cat7",
+      "Cat8",
+      "Cat9",
+      "Cat10",
+      "Cat11",
+      "Cat12",
+      "Cat13",
+      "Cat14",
+      "Cat15",
+      "Cat16",
+      "Cat17",
+      "Cat18",
+      "Cat19",
+      "message",
+      "toi",
+      "Vupto",
+      "color"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "reference_only",
+    "public_provider": "warnings",
+    "documented_example": null
+  },
+  "staterainfall": {
+    "official_path": "staterainfall",
+    "documented_fields": [
+      "State",
+      "Date",
+      "Daily Actual",
+      "Daily Normal",
+      "Daily Departure Per",
+      "Daily Category",
+      "Week Date",
+      "Weekly Actual",
+      "Weekly Normal",
+      "Weekly Departure Per",
+      "Weekly Category",
+      "Cumulative Date",
+      "Cumulative Actual",
+      "Cumulative Normal",
+      "Cumulative Departue Per",
+      "Cumulative Category",
+      "Monthly Date",
+      "Monthly Acutual",
+      "Monthly Normal",
+      "Monthly Departure Per",
+      "Monthly Category"
+    ],
+    "documented_shape": "object",
+    "contract_status": "reference_only",
+    "public_provider": "rainfall",
+    "documented_example": {
+      "State": "DADAR & NAGAR HAVELI (UT)",
+      "Date": "31-05-2022",
+      "Daily Actual": "0.00",
+      "Daily Normal": "3.30",
+      "Daily Departure Per": "-100%",
+      "Daily Category": "NR",
+      "Week Date": "26-05-2022 To 01-06-2022",
+      "Weekly Actual": "0.00",
+      "Weekly Normal": "11.00",
+      "Weekly Departure Per": "-100%",
+      "Weekly Category": "NR",
+      "Cumulative Date": "01-03-2022 To 31-05-2022\r",
+      "Cumulative Actual": "0.00",
+      "Cumulative Normal": "9.00",
+      "Cumulative Departue Per": "-100%",
+      "Cumulative Category": "NR",
+      "Monthly Date": "01-05-2022 To 31-05-2022\r",
+      "Monthly Acutual": "0.00",
+      "Monthly Normal": "9.00",
+      "Monthly Departure Per": "-100%",
+      "Monthly Category": "NR"
+    }
+  },
+  "aws_data": {
+    "official_path": "aws_data",
+    "documented_fields": [
+      "ID",
+      "CALL_SIGN",
+      "DISTRICT",
+      "STATE",
+      "STATION",
+      "DATE",
+      "TIME",
+      "CURR_TEMP",
+      "DEW_POINT_TEMP",
+      "RH",
+      "WIND_DIRECTION",
+      "WIND_SPEED",
+      "MSLP",
+      "MIN_TEMP",
+      "MAX_TEMP",
+      "Latitude",
+      "Longitude",
+      "WEATHER_CODE",
+      "NEBULOSITY",
+      "Feel Like"
+    ],
+    "documented_shape": "object",
+    "contract_status": "provisional_public_mapping",
+    "public_provider": "feed",
+    "documented_example": {
+      "ID": "B48970CA",
+      "CALL_SIGN": "NDL",
+      "DISTRICT": "NEW_DELHI",
+      "STATE": "DELHI",
+      "STATION": "LODI ROAD",
+      "DATE": "2024-06-06",
+      "TIME": "07:00:00",
+      "CURR_TEMP": "40.8",
+      "DEW_POINT_TEMP": "13.7",
+      "RH": "20",
+      "WIND_DIRECTION": "189",
+      "WIND_SPEED": "1",
+      "MSLP": "1003.0",
+      "MIN_TEMP": "39.9",
+      "MAX_TEMP": "40.9",
+      "Latitude": "28.5885",
+      "Longitude": "77.2224",
+      "WEATHER_CODE": "5",
+      "NEBULOSITY": "4",
+      "Feel Like": "40.5"
+    },
+    "state_ids": {
+      "1": "TELANGANA",
+      "2": "ANDHRA_PRADESH",
+      "3": "HIMACHAL_PRADESH",
+      "4": "KERALA",
+      "5": "UTTAR_PRADESH",
+      "6": "MEGHALAYA",
+      "7": "DELHI",
+      "8": "RAJASTHAN",
+      "9": "GUJARAT",
+      "10": "ODISHA",
+      "11": "BIHAR",
+      "12": "CHHATTISGARH",
+      "13": "KARNATAKA",
+      "14": "MIZORAM",
+      "15": "JHARKHAND",
+      "16": "TRIPURA",
+      "17": "CHANDIGARH",
+      "18": "JAMMU_AND_KASHMIR",
+      "19": "GOA",
+      "20": "SIKKIM",
+      "21": "MAHARASHTRA",
+      "22": "HARYANA",
+      "23": "LADAKH",
+      "24": "ASSAM",
+      "25": "TAMIL_NADU",
+      "26": "WEST_BENGAL",
+      "27": "MADHYA_PRADESH",
+      "28": "ARUNACHAL_PRADESH",
+      "29": "LAKSHADWEEP",
+      "30": "MANIPUR",
+      "31": "UTTARAKHAND",
+      "32": "NAGALAND",
+      "33": "PUDUCHERRY",
+      "34": "PUNJAB",
+      "35": "ANDAMAN_AND_NICOBAR",
+      "36": "DAMAN_AND_DIU"
+    }
+  },
+  "aws_data_mapping": {
+    "official_path": "aws_data_mapping",
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "endpoint_only",
+    "public_provider": null
+  },
+  "basinqpf": {
+    "official_path": "basinqpf",
+    "documented_fields": [
+      "Obj_Id",
+      "Date",
+      "FMO",
+      "Basin",
+      "SubBasin",
+      "Area (Sq. Km.)",
+      "Day1",
+      "Day2",
+      "Day3",
+      "Day4",
+      "Day5",
+      "AAP"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "provisional_public_mapping",
+    "public_provider": "feed",
+    "documented_example": null
+  },
+  "portwarning": {
+    "official_path": "portwarning",
+    "documented_fields": [
+      "Port Id",
+      "Port Name",
+      "Issued By",
+      "Date of Issue",
+      "Warning"
+    ],
+    "documented_shape": "unspecified",
+    "contract_status": "IMD_reference_field_contract",
+    "public_provider": "extended",
+    "documented_example": null
+  },
+  "seabulletin": {
+    "official_path": "seabulletin",
+    "documented_fields": [
+      "Id",
+      "Date of Observation",
+      "Layer",
+      "Issued by",
+      "Valid From",
+      "Validity",
+      "TTT Warning",
+      "Wind",
+      "Synoptic Situation",
+      "Weather",
+      "Visibility",
+      "Sea Condition",
+      "Part 4",
+      "Part 5",
+      "Part 6",
+      "Update Time"
+    ],
+    "documented_shape": "array",
+    "contract_status": "IMD_reference_field_contract",
+    "public_provider": "extended",
+    "documented_example": [
+      {
+        "Id": "109",
+        "Date of Observation": "2023-03-28",
+        "Layer": "South West Bay ",
+        "Issued by": "ACWC KOLKATA",
+        "Valid From": "2023-03-28 21:00:00",
+        "Validity": "12",
+        "TTT Warning": "NIL",
+        "Wind": "East/ South Easterly, 5 - 10 Knots ",
+        "Synoptic Situation": "Weather seasonal over bay of bengal and andaman sea.",
+        "Weather": "Isolated Rain/ Thunderstorm ",
+        "Visibility": "Good Becoming Moderate ",
+        "Sea Condition": "Smooth to Smooth",
+        "Part 4": "NIL",
+        "Part 5": "NIL",
+        "Part 6": "nil",
+        "Update Time": "2023-03-28 20:40:07"
+      }
+    ]
+  },
+  "coastalbulletin": {
+    "official_path": "coastalbulletin",
+    "documented_fields": [
+      "Id",
+      "Date of Observation",
+      "Layer",
+      "Issued by",
+      "Valid From",
+      "Validity",
+      "TTT Warning",
+      "Wind",
+      "Synoptic Situation",
+      "Weather",
+      "Visibility",
+      "Sea Condition",
+      "Port Signal",
+      "Update Time"
+    ],
+    "documented_shape": "array",
+    "contract_status": "IMD_reference_field_contract",
+    "public_provider": "extended",
+    "documented_example": [
+      {
+        "Id": "108",
+        "Date of Observation": "2023-03-28",
+        "Layer": "South Tamilnadu coast",
+        "Issued by": "ACWC CHENNAI",
+        "Valid From": "2023-03-28 22:00:00",
+        "Validity": "12",
+        "TTT Warning": "",
+        "Wind": "South Westerly/ South Easterly, 10 - 15 Knots ",
+        "Synoptic Situation": "NIL",
+        "Weather": "Isolated Rain/ Thunderstorm ",
+        "Visibility": "Good Becoming Poor ",
+        "Sea Condition": "Smooth to Slight",
+        "Port Signal": "NIL at all Ports",
+        "Update Time": "2023-03-28 22:27:17"
+      }
+    ]
+  },
+  "subdivisionwarning": {
+    "official_path": "subdivisionwarning",
+    "documented_fields": [
+      "date_obs",
+      "SUBDIV",
+      "day1_color",
+      "day1_warning",
+      "day2_color",
+      "day2_warning",
+      "day3_color",
+      "day3_warning",
+      "day4_color",
+      "day4_warning",
+      "day5_color",
+      "day5_warning"
+    ],
+    "documented_shape": "array",
+    "contract_status": "IMD_reference_field_contract",
+    "public_provider": "extended",
+    "documented_example": [
+      {
+        "date_obs": "2023-09-18",
+        "SUBDIV": "Gangetic West Bengal",
+        "day1_color": "#FFFF00",
+        "day1_warning": "Heavy Rain and Thunderstorm & Lightning",
+        "day2_color": "#FFFF00",
+        "day2_warning": "Thunderstorm & Lightning",
+        "day3_color": "#FFFF00",
+        "day3_warning": "Thunderstorm & Lightning",
+        "day4_color": "#FFFF00",
+        "day4_warning": "Heavy Rain",
+        "day5_color": "#FFFF00",
+        "day5_warning": "Heavy Rain"
+      }
+    ]
+  },
+  "sunmoon": {
+    "official_path": "sunmoon",
+    "documented_fields": [
+      "status",
+      "message",
+      "totalCount",
+      "data"
+    ],
+    "documented_shape": "object",
+    "contract_status": "IMD_reference_field_contract",
+    "public_provider": "astronomy_station",
+    "documented_example": {
+      "status": true,
+      "message": "SunMoon Time",
+      "totalCount": null,
+      "data": [
+        {
+          "sunrise": "06:45",
+          "sunset": "18:31"
+        },
+        {
+          "moonrise": "22:14",
+          "moonset": "08:39"
+        }
+      ]
+    }
+  },
+  "subdivision_rainfall_forecast": {
+    "official_path": "subdivision_rainfall_forecast",
+    "documented_fields": [
+      "date_obs",
+      "SUBDIV",
+      "day1_color",
+      "day1_distribution",
+      "day1_distribution_percentage",
+      "day2_color",
+      "day2_distribution",
+      "day2_distribution_percentage",
+      "day3_color",
+      "day3_distribution",
+      "day3_distribution_percentage",
+      "day4_color",
+      "day4_distribution",
+      "day4_distribution_percentage",
+      "day5_color",
+      "day5_distribution",
+      "day5_distribution_percentage",
+      "day6_color",
+      "day6_distribution",
+      "day6_distribution_percentage",
+      "day7_color",
+      "day7_distribution",
+      "day7_distribution_percentage"
+    ],
+    "documented_shape": "array",
+    "contract_status": "IMD_reference_field_contract",
+    "public_provider": "extended",
+    "documented_example": [
+      {
+        "date_obs": "2026-06-06",
+        "SUBDIV": "Andaman & Nicobar Islands",
+        "day1_color": "#004de6",
+        "day1_distribution": "Widespread",
+        "day1_distribution_percentage": "Stations [76-100]%",
+        "day2_color": "#004de6",
+        "day2_distribution": "Widespread",
+        "day2_distribution_percentage": "Stations [76-100]%",
+        "day3_color": "#004de6",
+        "day3_distribution": "Widespread",
+        "day3_distribution_percentage": "Stations [76-100]%",
+        "day4_color": "#004de6",
+        "day4_distribution": "Widespread",
+        "day4_distribution_percentage": "Stations [76-100]%",
+        "day5_color": "#004de6",
+        "day5_distribution": "Widespread",
+        "day5_distribution_percentage": "Stations [76-100]%",
+        "day6_color": "#004de6",
+        "day6_distribution": "Widespread",
+        "day6_distribution_percentage": "Stations [76-100]%",
+        "day7_color": "#004de6",
+        "day7_distribution": "Widespread",
+        "day7_distribution_percentage": "Stations [76-100]%"
+      }
+    ]
+  },
+  "state_district_rainfall_forecast": {
+    "official_path": "state_district_rainfall_forecast",
+    "documented_fields": [
+      "date_obs",
+      "Obj_id",
+      "District",
+      "State",
+      "day1_color",
+      "day1_distribution",
+      "day1_distribution_percentage",
+      "day2_color",
+      "day2_distribution",
+      "day2_distribution_percentage",
+      "day3_color",
+      "day3_distribution",
+      "day3_distribution_percentage",
+      "day4_color",
+      "day4_distribution",
+      "day4_distribution_percentage",
+      "day5_color",
+      "day5_distribution",
+      "day5_distribution_percentage"
+    ],
+    "documented_shape": "array",
+    "contract_status": "IMD_reference_field_contract",
+    "public_provider": "extended",
+    "documented_example": [
+      {
+        "date_obs": "2026-06-06",
+        "Obj_id": "573",
+        "District": "NICOBAR",
+        "State": "ANDAMAN AND NICOBAR",
+        "day1_color": "#004de6",
+        "day1_distribution": "Widespread",
+        "day1_distribution_percentage": "Stations [76-100]%",
+        "day2_color": "#004de6",
+        "day2_distribution": "Widespread",
+        "day2_distribution_percentage": "Stations [76-100]%",
+        "day3_color": "#004de6",
+        "day3_distribution": "Widespread",
+        "day3_distribution_percentage": "Stations [76-100]%",
+        "day4_color": "#004de6",
+        "day4_distribution": "Widespread",
+        "day4_distribution_percentage": "Stations [76-100]%",
+        "day5_color": "#004de6",
+        "day5_distribution": "Widespread",
+        "day5_distribution_percentage": "Stations [76-100]%"
+      }
+    ]
+  },
+  "cyclone_track": {
+    "official_path": "cyclone_track",
+    "documented_fields": [
+      "status",
+      "message",
+      "totalCount",
+      "data"
+    ],
+    "documented_shape": "object",
+    "contract_status": "reference_only",
+    "public_provider": null,
+    "documented_example": {
+      "status": true,
+      "message": "Cyclone Track",
+      "totalCount": {
+        "observed": 9,
+        "forecast": 7
+      },
+      "data": {
+        "observed": [
+          {
+            "CYCLONE_NAME": "BULBUL",
+            "Hour": "12",
+            "Date/Time": "05.11.19/1200",
+            "lat": "13.2",
+            "lon": "91.2",
+            "MSW range (kmph)": "50-60",
+            "Mean MSW (kmph)": "55",
+            "MSW (kt)": "29.7",
+            "Category": "DEEP DEPRESSION"
+          }
+        ]
+      }
+    }
+  },
+  "cyclone_wind": {
+    "official_path": "cyclone_wind",
+    "documented_fields": [
+      "status",
+      "message",
+      "totalCount",
+      "data"
+    ],
+    "documented_shape": "object",
+    "contract_status": "reference_only",
+    "public_provider": null,
+    "documented_example": {
+      "status": true,
+      "message": "Cyclone Wind Warning",
+      "totalCount": {
+        "27kt": 1,
+        "34kt": 1,
+        "50kt": 1,
+        "64kt": 1
+      },
+      "data": {
+        "27kt": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  80.685399494754,
+                  9.7315954161175
+                ],
+                [
+                  80.656202956528,
+                  9.7321064634526
+                ],
+                [
+                  80.62701983373,
+                  9.7331284015843
+                ],
+                [
+                  80.597859065414,
+                  9.7346609174839
+                ],
+                [
+                  80.568729583786,
+                  9.7367035417279
+                ]
+              ]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "cyclone_cou": {
+    "official_path": "cyclone_cou",
+    "documented_fields": [
+      "status",
+      "message",
+      "totalCount",
+      "data"
+    ],
+    "documented_shape": "object",
+    "contract_status": "reference_only",
+    "public_provider": null,
+    "documented_example": {
+      "status": true,
+      "message": "Cone of Uncertainty",
+      "totalCount": 1,
+      "data": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                80.698599865156,
+                11.240006126297
+              ],
+              [
+                80.695800024341,
+                11.24005513386
+              ],
+              [
+                80.693001470016,
+                11.240153133975
+              ],
+              [
+                80.690205059405,
+                11.240300096623
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "planned:All India Weather Forecast Bulletin": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  },
+  "planned:Mausamgram": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  },
+  "planned:Fishermen Warning": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  },
+  "planned:Highway Nowcast Warning": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  },
+  "planned:Highway Warning - 5 Days": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  },
+  "planned:Radar Image": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  },
+  "planned:Lightning Data": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  },
+  "planned:Agromet Advisory": {
+    "official_path": null,
+    "documented_fields": [],
+    "documented_shape": "unspecified",
+    "contract_status": "index_only",
+    "public_provider": null
+  }
+}

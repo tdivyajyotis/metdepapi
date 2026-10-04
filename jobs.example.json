@@ -1,0 +1,14 @@
+{
+  "jobs": [
+    {"product": "cityforecast", "params": {"id": "43049"}, "interval_seconds": 10800},
+    {"product": "current_wx", "interval_seconds": 3600},
+    {"product": "aws_data", "interval_seconds": 3600},
+    {"product": "districtnowcast", "interval_seconds": 1800},
+    {"product": "districtwarning", "interval_seconds": 10800},
+    {"product": "basinqpf", "interval_seconds": 21600},
+    {"product": "staterainfall", "params": {"id": "odisha"}, "interval_seconds": 21600},
+    {"product": "artifact:mausamgram", "params": {"lat": "19.27", "lon": "84.88"}, "interval_seconds": 21600},
+    {"product": "artifact:national", "interval_seconds": 21600},
+    {"product": "artifact:port", "interval_seconds": 10800}
+  ]
+}

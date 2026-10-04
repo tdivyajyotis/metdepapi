@@ -1,0 +1,171 @@
+{
+  "jobs": [
+    {
+      "product": "aws_data",
+      "params": {
+        "id": "NDL"
+      },
+      "interval_seconds": 10800
+    },
+    {
+      "product": "basinqpf",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "cityforecast",
+      "params": {
+        "id": "43049"
+      },
+      "interval_seconds": 10800
+    },
+    {
+      "product": "cityforecastloc",
+      "params": {
+        "id": "43049"
+      },
+      "interval_seconds": 10800
+    },
+    {
+      "product": "coastalbulletin",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "current_wx",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "districtnowcast",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "districtrainfall",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "districtwarning",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "portwarning",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "seabulletin",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "state_district_rainfall_forecast",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "staterainfall",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "stationnowcast",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "subdivision_rainfall_forecast",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "subdivisionwarning",
+      "params": {},
+      "interval_seconds": 10800
+    },
+    {
+      "product": "sunmoon",
+      "params": {
+        "lat": "19.27",
+        "lon": "84.88"
+      },
+      "interval_seconds": 10800
+    },
+    {
+      "product": "artifact:national",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:marine",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:sea",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:coastal-bulletins",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:fishermen",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:port",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:highway",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:agromet",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:radar",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:radar-status",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:lightning",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:city-stations",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:aws-stations",
+      "params": {},
+      "interval_seconds": 21600
+    },
+    {
+      "product": "artifact:mausamgram",
+      "params": {
+        "lat": "19.27",
+        "lon": "84.88"
+      },
+      "interval_seconds": 21600
+    }
+  ]
+}
