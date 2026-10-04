@@ -2,6 +2,8 @@
 
 Local IMD collection with replaceable public and official providers. Seventeen public products use documented API field names: city forecasts and coordinates, district/state rainfall, district warnings, district/station nowcasts, synoptic observations, AWS observations, basin QPF, subdivision warnings, subdivision rainfall forecasts, five-day district rainfall forecasts, port warnings, sea bulletins, coastal bulletins and station-issued sun/moon times. Public documents and additional forecast datasets have a separate artifact interface. Includes city search, official JSON passthrough, SQLite snapshots, bounded retries, portable periodic collection and a local HTTP API. See [COVERAGE.md](COVERAGE.md) for limitations and remaining work.
 
+See [EXTRA_CAPABILITIES.md](EXTRA_CAPABILITIES.md) for the official-reference mapping, every source-native collector, local routes, automation, validation, and Docker operation.
+
 See [PLAN.md](PLAN.md) for the full implementation roadmap and compatibility rules. Runs on Python 3.11+ on Windows, macOS and Linux, without platform shell commands. The core uses the standard library; optional `truststore` uses system certificate trust across platforms and `pypdf` extracts public PDF text. Not affiliated with IMD.
 
 ## Install (any supported OS)
