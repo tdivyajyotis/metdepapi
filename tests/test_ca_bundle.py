@@ -6,9 +6,8 @@ import importlib.util
 import io
 import json
 import ssl
+import unittest
 from pathlib import Path
-
-import pytest
 
 
 ROOT = Path(__file__).parents[1]
@@ -36,54 +35,63 @@ def _archive_members(archive: bytes) -> list[bytes]:
     return members
 
 
-def test_committed_ca_bundle_matches_manifest() -> None:
-    data = FIRMWARE / "data"
-    archive = (data / "certs.ar").read_bytes()
-    manifest = json.loads((data / "ca-bundle-manifest.json").read_text())
+class CaBundleTests(unittest.TestCase):
+    def test_committed_ca_bundle_matches_manifest(self) -> None:
+        data = FIRMWARE / "data"
+        archive = (data / "certs.ar").read_bytes()
+        manifest = json.loads((data / "ca-bundle-manifest.json").read_text())
 
-    members = _archive_members(archive)
-    assert len(members) == manifest["certificate_count"]
-    assert len(members) == len(manifest["certificates"])
-    assert hashlib.sha256(archive).hexdigest() == manifest["archive_sha256"]
-    assert [hashlib.sha256(member).hexdigest().upper() for member in members] == [
-        certificate["fingerprint_sha256"]
-        for certificate in manifest["certificates"]
-    ]
+        members = _archive_members(archive)
+        self.assertEqual(len(members), manifest["certificate_count"])
+        self.assertEqual(len(members), len(manifest["certificates"]))
+        self.assertEqual(
+            hashlib.sha256(archive).hexdigest(), manifest["archive_sha256"]
+        )
+        self.assertEqual(
+            [hashlib.sha256(member).hexdigest().upper() for member in members],
+            [
+                certificate["fingerprint_sha256"]
+                for certificate in manifest["certificates"]
+            ],
+        )
+
+    def test_generator_rejects_report_fingerprint_mismatch(self) -> None:
+        header = (FIRMWARE / "include" / "gts_root_r4.h").read_text()
+        begin = header.index("-----BEGIN CERTIFICATE-----")
+        end = header.index("-----END CERTIFICATE-----") + len(
+            "-----END CERTIFICATE-----"
+        )
+        pem = header[begin:end]
+
+        output = io.StringIO(newline="")
+        fieldnames = [
+            "Common Name or Certificate Name",
+            "SHA-256 Fingerprint",
+            "Valid From [GMT]",
+            "Valid To [GMT]",
+            "Trust Bits",
+            "Distrust for TLS After Date",
+            "PEM Info",
+        ]
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(
+            {
+                "Common Name or Certificate Name": "GTS Root R4",
+                "SHA-256 Fingerprint": "00" * 32,
+                "Valid From [GMT]": "2016.06.22",
+                "Valid To [GMT]": "2036.06.22",
+                "Trust Bits": "Websites",
+                "Distrust for TLS After Date": "",
+                "PEM Info": f"'{pem}'",
+            }
+        )
+
+        with self.assertRaisesRegex(ValueError, "fingerprint mismatch"):
+            GENERATOR.load_tls_roots(output.getvalue().encode())
+
+        self.assertTrue(ssl.PEM_cert_to_DER_cert(pem))
 
 
-def test_generator_rejects_report_fingerprint_mismatch() -> None:
-    header = (FIRMWARE / "include" / "gts_root_r4.h").read_text()
-    begin = header.index("-----BEGIN CERTIFICATE-----")
-    end = header.index("-----END CERTIFICATE-----") + len(
-        "-----END CERTIFICATE-----"
-    )
-    pem = header[begin:end]
-
-    output = io.StringIO(newline="")
-    fieldnames = [
-        "Common Name or Certificate Name",
-        "SHA-256 Fingerprint",
-        "Valid From [GMT]",
-        "Valid To [GMT]",
-        "Trust Bits",
-        "Distrust for TLS After Date",
-        "PEM Info",
-    ]
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
-    writer.writeheader()
-    writer.writerow(
-        {
-            "Common Name or Certificate Name": "GTS Root R4",
-            "SHA-256 Fingerprint": "00" * 32,
-            "Valid From [GMT]": "2016.06.22",
-            "Valid To [GMT]": "2036.06.22",
-            "Trust Bits": "Websites",
-            "Distrust for TLS After Date": "",
-            "PEM Info": f"'{pem}'",
-        }
-    )
-
-    with pytest.raises(ValueError, match="fingerprint mismatch"):
-        GENERATOR.load_tls_roots(output.getvalue().encode())
-
-    assert ssl.PEM_cert_to_DER_cert(pem)
+if __name__ == "__main__":
+    unittest.main()
