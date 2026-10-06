@@ -159,14 +159,16 @@ missing fields, source failures, and stale status separate.
 
 ## Automation and validation utilities
 
-`jobs.example.json` contains a small starter schedule. `jobs.full.json` covers
-every schema adapter plus every accessible non-redundant artifact family with
-representative parameters. Batch mode continues other jobs if one source fails,
+`jobs.example.json` contains a small starter IMD schedule. `jobs.full.json` covers
+every IMD schema adapter plus every accessible non-redundant IMD artifact family
+with representative parameters. `jobs.incois.json` adds 18 INCOIS jobs.
+Batch mode continues other jobs if one source fails,
 and a failed run never overwrites the last successful snapshot.
 
 ```text
 python -m imd_local batch jobs.example.json
 python -m imd_local batch jobs.full.json --watch
+python -m imd_local batch jobs.incois.json --watch
 ```
 
 Other safeguards and utilities:
@@ -186,20 +188,39 @@ GIS requests, and ambiguous state/district boundaries remain `null`.
 
 ## Docker deployment
 
-The supplied image runs the same portable Python program. A collector and an
-API container share a persistent Docker volume:
+The supplied image runs the same portable Python program. Separate IMD and
+INCOIS collectors and the API share a persistent Docker volume:
 
 ```text
 docker build -t imd-local .
 docker volume create imd-data
 docker run -d --name imd-collector --restart unless-stopped -v imd-data:/app/data imd-local batch jobs.full.json --watch
+docker run -d --name incois-collector --restart unless-stopped -v imd-data:/app/data imd-local batch jobs.incois.json --watch
 docker run -d --name imd-api --restart unless-stopped -p 127.0.0.1:8000:8000 -v imd-data:/app/data imd-local serve --host 0.0.0.0
 ```
 
 This exposes the service only on the host machine. The named volume keeps
 snapshots, cached geographic data, and downloaded artifacts after the containers
-are recreated. Refer to [README.md](README.md) for the shorter installation and
-Docker quick-start.
+are recreated. Collection parameters must match retrieval URLs, including
+`sampling=ncss` for scheduled INCOIS forecasts. The `/marine` route preserves
+missing/stale/unavailable component status. Docker is not installed in this
+workspace, so image execution remains unverified. Refer to [DOCKER.md](DOCKER.md)
+for full run, inspection, lifecycle, custom schedule and certificate steps,
+or [README.md](README.md) for the quick-start.
+
+## INCOIS extension
+
+Fifteen INCOIS products cover wave/current/SST/MLD/swell forecasts,
+high-wave/swell-surge and current advisories, PFZ geometry, ABIS images,
+public buoy/radar/tide chart series and station/location registries. NCSS
+subsets retain actual cell coordinates and distance; verified-unit conversions
+retain source values. `/marine` provides stored inspection with independent
+IMD/INCOIS provenance and freshness. The collectors use public INCOIS
+THREDDS catalog, WMS capabilities, and numerical point service. They have a
+separate `incois:` product namespace and `/incois/` stored-snapshot routes;
+they do not modify any IMD contract. See the
+[INCOIS source and usage guide](imd_local/incois/SOURCES.md) for verified
+variables, parameters, sampling/units limitations, scheduling and current scope.
 
 ## Source, licensing, and scope
 

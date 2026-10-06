@@ -25,3 +25,8 @@ Scope: collect every accessible product found in the IMD reference and its linke
 Two mapping endpoints have no documented record schema. Three cyclone structured sources are failing/empty. Some agromet PDFs are empty, some PDF documents are image-only, lightning/subdivision rainfall are stale, and several mapped fields are absent from public sources. These are recorded source limitations, not unfinished parser work or permission requests. Collection preserves the available data and reports the unavailable parts.
 
 Run `python -m imd_local batch jobs.full.json`, then `python -m imd_local serve`. Use `--watch` for periodic collection. Initial national city/AWS collection may require thousands of requests; seed it separately from frequent warning jobs.
+
+The separate [INCOIS extension](PLAN-INCOIS.md) adds fifteen source-native
+products and its own `jobs.incois.json` schedule without changing IMD schemas.
+See [DOCKER.md](DOCKER.md) for running both collectors and the API with shared
+persistent storage. Docker image execution remains unverified here.

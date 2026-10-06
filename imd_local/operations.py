@@ -68,7 +68,12 @@ def load_jobs(path):
 def run_job(job, store, transport):
     product = job["product"]
     try:
-        if product.startswith("artifact:"):
+        if product.startswith("incois:"):
+            if job.get("provider", "public") != "public":
+                raise CollectionError("invalid_parameters", "INCOIS requires the public provider")
+            from .incois import collect_incois
+            result, raw = collect_incois(product[7:], job.get("params", {}), transport, directory=store.path.parent / "artifacts")
+        elif product.startswith("artifact:"):
             if job.get("provider", "public") != "public":
                 raise CollectionError("invalid_parameters", "Artifacts require the public provider")
             from .artifacts import collect_artifact
@@ -78,8 +83,12 @@ def run_job(job, store, transport):
             result, raw = collect(product, job.get("params", {}), job.get("provider", "public"), transport)
         store.save(result, raw)
         count = len(result.data) if isinstance(result.data,list) else (len(result.data["data"]) if isinstance(result.data,dict) and isinstance(result.data.get("data"),list) else 1)
-        return {"product": product, "status": result.status, "records": count,
-                "freshness": freshness(result.envelope())}
+        if product.startswith("incois:"):
+            from .incois import forecast_quality
+            quality = forecast_quality(result.envelope())
+        else:
+            quality = freshness(result.envelope())
+        return {"product": product, "status": result.status, "records": count, "freshness": quality}
     except CollectionError as exc:
         # Failed runs never overwrite the last good snapshot.
         return {"product": product, "status": exc.status, "message": str(exc), "failed": True}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Environmental station</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+    header, .controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    header { justify-content: space-between; }
+    select, button { font: inherit; padding: .55rem .7rem; }
+    .status { color: #5a8f3d; }
+    .error { color: #c44; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; margin: 1.5rem 0; }
+    .card { border: 1px solid color-mix(in srgb, currentColor 20%, transparent); border-radius: .6rem; padding: 1rem; }
+    .card small { opacity: .7; display: block; overflow-wrap: anywhere; }
+    .value { font-size: 1.5rem; font-variant-numeric: tabular-nums; margin-top: .3rem; }
+    svg { width: 100%; height: 280px; border: 1px solid color-mix(in srgb, currentColor 20%, transparent); border-radius: .6rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+    th, td { padding: .65rem; text-align: left; border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+    code { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Environmental station</h1><div id="status">Loading…</div></div>
+    <button id="refresh" type="button">Refresh</button>
+  </header>
+  <div class="controls">
+    <label>Device <select id="device"></select></label>
+    <label>Metric <select id="metric"></select></label>
+  </div>
+  <div id="latest" class="grid"></div>
+  <svg id="chart" viewBox="0 0 1000 280" role="img" aria-label="Selected sensor time series"></svg>
+  <table>
+    <thead><tr><th>Observed</th><th>Device</th><th>Sequence</th><th>Firmware</th><th>RSSI</th></tr></thead>
+    <tbody id="readings"></tbody>
+  </table>
+  <script>
+    const $ = id => document.getElementById(id);
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    async function json(url) { const response = await fetch(url); if (!response.ok) throw new Error(`${response.status} ${response.statusText}`); return response.json(); }
+    function numericLeaves(value, prefix = '', out = []) {
+      if (Array.isArray(value)) value.forEach((v, i) => numericLeaves(v, `${prefix}.${i}`, out));
+      else if (value && typeof value === 'object') Object.entries(value).forEach(([k,v]) => numericLeaves(v, prefix ? `${prefix}.${k}` : k, out));
+      else if (typeof value === 'number') out.push([prefix, value]);
+      return out;
+    }
+    function draw(items) {
+      const svg = $('chart');
+      if (!items.length) { svg.innerHTML = '<text x="500" y="140" text-anchor="middle" fill="currentColor">No data</text>'; return; }
+      const values = items.map(x => Number(x.value));
+      let min = Math.min(...values), max = Math.max(...values); if (min === max) { min -= 1; max += 1; }
+      const points = values.map((v,i) => `${40 + i * 920 / Math.max(1, values.length-1)},${240 - (v-min)*200/(max-min)}`).join(' ');
+      svg.innerHTML = `<text x="40" y="25" fill="currentColor">${escapeHtml(max.toFixed(2))}</text><text x="40" y="265" fill="currentColor">${escapeHtml(min.toFixed(2))}</text><polyline points="${points}" fill="none" stroke="currentColor" stroke-width="3"/>`;
+    }
+    async function loadMetrics() {
+      const id = $('device').value;
+      const data = await json(`/v1/metrics?device_id=${encodeURIComponent(id)}`);
+      $('metric').innerHTML = data.items.map(x => `<option>${escapeHtml(x)}</option>`).join('');
+      await loadSeries();
+    }
+    async function loadSeries() {
+      const device = $('device').value, metric = $('metric').value;
+      if (!device || !metric) return draw([]);
+      draw((await json(`/v1/series?device_id=${encodeURIComponent(device)}&metric=${encodeURIComponent(metric)}&limit=500`)).items);
+    }
+    async function load() {
+      try {
+        const devices = (await json('/v1/devices')).items;
+        const previous = $('device').value;
+        $('device').innerHTML = devices.map(x => `<option${x.device_id === previous ? ' selected' : ''}>${escapeHtml(x.device_id)}</option>`).join('');
+        const data = await json(`/v1/readings?limit=25${$('device').value ? `&device_id=${encodeURIComponent($('device').value)}` : ''}`);
+        const newest = data.items[0];
+        $('latest').innerHTML = newest ? numericLeaves(newest.sensors).slice(0, 18).map(([name,value]) => `<div class="card"><small>${escapeHtml(name)}</small><div class="value">${escapeHtml(value)}</div></div>`).join('') : '';
+        $('readings').innerHTML = data.items.map(x => `<tr><td>${escapeHtml(new Date(x.observed_at || x.received_at).toLocaleString())}</td><td>${escapeHtml(x.device_id)}</td><td>${escapeHtml(x.sequence)}</td><td>${escapeHtml(x.firmware)}</td><td>${escapeHtml(x.wifi_rssi_dbm)}</td></tr>`).join('');
+        await loadMetrics();
+        $('status').className = 'status'; $('status').textContent = `${data.items.length} recent readings`;
+      } catch (error) { $('status').className = 'error'; $('status').textContent = error.message; }
+    }
+    $('device').addEventListener('change', load); $('metric').addEventListener('change', loadSeries); $('refresh').addEventListener('click', load); load();
+  </script>
+</body>
+</html>
+

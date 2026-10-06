@@ -1,0 +1,22 @@
+{
+  "jobs": [
+    {"product": "incois:lsf-wave", "params": {"lat": "19.24", "lon": "84.94", "sampling": "ncss", "layers": "HS,T02,DIR,UWND,VWND"}, "interval_seconds": 10800},
+    {"product": "incois:lsf-wave", "params": {"lat": "19.24", "lon": "84.94", "sampling": "ncss"}, "interval_seconds": 10800},
+    {"product": "incois:lsf-current", "params": {"lat": "19.24", "lon": "84.94", "sampling": "ncss"}, "interval_seconds": 10800},
+    {"product": "incois:osf-sst", "params": {"lat": "19.24", "lon": "84.94", "sampling": "ncss"}, "interval_seconds": 10800},
+    {"product": "incois:osf-mld", "params": {"lat": "19.24", "lon": "84.94", "sampling": "ncss"}, "interval_seconds": 10800},
+    {"product": "incois:osf-swell", "params": {"lat": "19.24", "lon": "84.94", "sampling": "ncss"}, "interval_seconds": 10800},
+    {"product": "incois:wave-alerts", "params": {}, "interval_seconds": 10800},
+    {"product": "incois:current-alerts", "params": {}, "interval_seconds": 10800},
+    {"product": "incois:pfz", "params": {}, "interval_seconds": 21600},
+    {"product": "incois:abis", "params": {}, "interval_seconds": 86400},
+    {"product": "incois:locations", "params": {}, "interval_seconds": 86400},
+    {"product": "incois:hf-radar-stations", "params": {}, "interval_seconds": 86400},
+    {"product": "incois:hf-radar", "params": {}, "interval_seconds": 21600},
+    {"product": "incois:tide-stations", "params": {}, "interval_seconds": 86400},
+    {"product": "incois:waman", "params": {}, "interval_seconds": 86400},
+    {"product": "incois:waman", "params": {"parameter": "t1"}, "interval_seconds": 86400},
+    {"product": "incois:waman", "params": {"parameter": "dirp"}, "interval_seconds": 86400},
+    {"product": "incois:tide-gauge", "params": {}, "interval_seconds": 21600}
+  ]
+}

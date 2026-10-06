@@ -4,6 +4,12 @@ Local IMD collection with replaceable public and official providers. Seventeen p
 
 See [EXTRA_CAPABILITIES.md](EXTRA_CAPABILITIES.md) for the official-reference mapping, every source-native collector, local routes, automation, validation, and Docker operation.
 
+The INCOIS extension includes fifteen products: wave/current/SST/MLD/swell
+forecasts, advisories, PFZ, ABIS images, public buoy/radar/tide chart data and
+registries. It adds verified-unit normalization, actual NCSS cell distances
+and a stored `/marine` inspection view. See [sources and usage](imd_local/incois/SOURCES.md)
+and [delivery status](PLAN-INCOIS.md). Missing and stale source data remain explicit.
+
 See [PLAN.md](PLAN.md) for the full implementation roadmap and compatibility rules. Runs on Python 3.11+ on Windows, macOS and Linux, without platform shell commands. The core uses the standard library; optional `truststore` uses system certificate trust across platforms and `pypdf` extracts public PDF text. Not affiliated with IMD.
 
 ## Install (any supported OS)
@@ -50,6 +56,10 @@ Warnings use the public map's WFS feeds without geographic geometry. Undated pla
 - `http://127.0.0.1:8000/data/cityforecast?id=43049`: same data with metadata/quality status.
 - `/coverage`: documented fields, official endpoint availability and implemented public providers.
 - `/health`: server health, not upstream availability.
+- `/incois/coverage`: INCOIS products and source selection.
+- `/incois/lsf-wave?lat=19.24&lon=84.94&sampling=ncss`: stored scheduled wave forecast.
+- `/incois/data/waman`: default buoy observation envelope, including stale data.
+- `/marine?lat=19.24&lon=84.94&city_id=43049`: independent stored IMD/INCOIS components.
 
 The server reads collected snapshots and never fetches on incoming requests. Missing or stale API snapshots return 503; unsupported public products return 501. `/data/<product>` retains stale snapshots with freshness metadata. Defaults reject retrieval age over 24 hours or any known record source age over 48 hours; configure `serve --max-age 86400 --max-source-age 172800` in seconds. Date-only source ages use a conservative UTC reporting-day bound. Unknown source times remain explicitly unknown; age checks do not establish forecast validity. Use tighter policies appropriate to your application, especially nowcasts.
 
@@ -101,12 +111,13 @@ python scripts/build_catalog.py
 python -m unittest discover -s tests -v
 ```
 
-Tests use captured city, rainfall, warnings, district/subdivision forecasts and marine sources, plus PDF content verification. They verify documented keys, missing values, identity, temporal separation, category boundaries, official passthrough, feed completeness and cache isolation. Captures are under `references/` and `tests/fixtures/`; collected snapshots go to ignored `data/imd.sqlite`. GitHub Actions checks Python 3.11 and 3.13 on Windows, macOS and Linux. Only local Windows execution has been verified in this workspace so far.
+The 61 passing tests cover captured IMD sources, PDF content verification and synthetic INCOIS parser/service cases. They verify documented keys, missing values, identity, temporal separation, official passthrough, feed completeness, actual sampling distance, verified-unit conversions, stale observations, restricted document redirects and unavailable-series routes. Captures are under `references/` and `tests/fixtures/`; collected snapshots go to ignored `data/imd.sqlite`. GitHub Actions is configured for Python 3.11 and 3.13 on Windows, macOS and Linux. Cross-platform CI execution remains deferred; local Windows Python and live-source checks are the validation performed here.
 
 ## Complete available-source collection
 
 ```text
 python -m imd_local batch jobs.full.json
+python -m imd_local batch jobs.incois.json
 python -m imd_local artifact city-stations
 python -m imd_local collect cityforecast
 python -m imd_local collect sunmoon --param lat=19.27 --param lon=84.88
@@ -114,7 +125,7 @@ python -m imd_local collect aws_data --param id=NDL
 python -m imd_local collect aws_data --param sid=7
 ```
 
-`jobs.full.json` includes every implemented schema adapter and all non-redundant accessible artifact families. It uses a representative city and AWS call sign for a practical first run; omit the city/AWS filters to collect the national registries. National city collection and the first full AWS geographic assignment can require thousands of sequential requests. Do that initial capture separately before running frequent warning jobs. Failed stations do not cancel the remaining city collection.
+`jobs.full.json` includes every implemented IMD schema adapter and all non-redundant accessible IMD artifact families. `jobs.incois.json` separately contains 18 INCOIS jobs. The IMD schedule uses a representative city and AWS call sign for a practical first run; omit the city/AWS filters to collect the national registries. National city collection and the first full AWS geographic assignment can require thousands of sequential requests. Do that initial capture separately before running frequent warning jobs. Failed stations do not cancel the remaining city collection.
 
 The public `sunmoon` adapter supports exact, unambiguous station coordinates only, checks the city source coordinates again, and never substitutes a nearby station or calculated events. It uses the documented status/message/totalCount/data wrapper. The city source does not state the event-validity date; metadata labels that unknown and keeps observation date separate.
 
@@ -138,29 +149,36 @@ docker build -t imd-local .
 docker volume create imd-data
 ```
 
-Start the scheduled collector and the API server, sharing the same volume:
+Start the IMD collector, INCOIS collector and API server with the same volume:
 
 ```text
 docker run -d --name imd-collector --restart unless-stopped -v imd-data:/app/data imd-local batch jobs.full.json --watch
+docker run -d --name incois-collector --restart unless-stopped -v imd-data:/app/data imd-local batch jobs.incois.json --watch
 docker run -d --name imd-api --restart unless-stopped -p 127.0.0.1:8000:8000 -v imd-data:/app/data imd-local serve --host 0.0.0.0
 ```
 
-Open <http://localhost:8000/health> for server health and
-<http://localhost:8000/coverage> for available products. The collector populates
-snapshots asynchronously; API routes can return 503 until a matching fresh
-snapshot is available. The host port is bound to localhost. Use
-`jobs.example.json` instead of `jobs.full.json` for a smaller initial collection.
+Open [health](http://localhost:8000/health),
+[INCOIS coverage](http://localhost:8000/incois/coverage),
+[wave data](http://localhost:8000/incois/lsf-wave?lat=19.24&lon=84.94&sampling=ncss)
+and the [marine view](http://localhost:8000/marine?lat=19.24&lon=84.94&city_id=43049).
+Collectors populate snapshots asynchronously; payload routes can return 503
+for missing, stale or unavailable data. Scheduled forecasts use `sampling=ncss`;
+retrieval parameters must match collection. The host port is bound to localhost.
+Use `jobs.example.json` instead of `jobs.full.json` for a smaller IMD schedule.
+For INCOIS-only operation, run `incois-collector` and `imd-api`.
 
 ```text
 docker logs -f imd-collector
+docker logs -f incois-collector
 docker logs imd-api
-docker stop imd-collector imd-api
-docker start imd-collector imd-api
+docker stop imd-collector incois-collector imd-api
+docker start imd-collector incois-collector imd-api
 ```
 
 The named volume keeps the SQLite database, downloaded files and caches across
-container replacement. The image's default command prints coverage; it does
-not start collection or serving by itself. Docker image execution has not been
-verified in this workspace.
+container replacement. The image's default command prints IMD coverage; it does
+not start collection or serving by itself. Docker is not installed here, so
+image execution remains unverified. See [DOCKER.md](DOCKER.md) for one-time runs,
+custom schedules, certificate configuration, backups and container updates.
 
 For products whose reference illustrates a single record object (AWS and rainfall), an `id` filter yielding one record returns that documented object. National/state aggregate responses use arrays because the reference does not illustrate their aggregate wrapper. Validation checks each documented record shape in those arrays.

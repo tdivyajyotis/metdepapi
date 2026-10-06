@@ -36,6 +36,16 @@ Retain source URLs, publisher attribution, retrieval dates, and any source
 notices when sharing material under an applicable permission or license.
 Collection success and schema validation do not establish reuse rights.
 
+## INCOIS content
+
+Collected INCOIS forecasts, source metadata, observations, images, and documents
+are excluded from this project's MIT license. The
+[INCOIS disclaimer](https://incois.gov.in/site/disclaimer.jsp) states that
+commercial reproduction of website material requires permission from the
+competent authority. Applicable dataset terms may impose additional conditions.
+Public THREDDS access and successful local collection do not grant a blanket
+redistribution license. Retain INCOIS attribution and source provenance.
+
 ## Third-party software
 
 Dependencies remain under their own licenses. Any third-party source code

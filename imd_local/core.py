@@ -1,4 +1,6 @@
 import hashlib
+import gzip
+import io
 import http.client
 import json
 import os
@@ -46,16 +48,16 @@ class Transport:
         self.last_request = 0.0
         self.retries = retries
 
-    def request(self, url, form=None, headers=None, max_bytes=10 * 1024 * 1024):
+    def request(self, url, form=None, headers=None, max_bytes=10 * 1024 * 1024, allowed_domains=None):
         for attempt in range(self.retries + 1):
             try:
-                return self._request(url, form, headers, max_bytes)
+                return self._request(url, form, headers, max_bytes, allowed_domains)
             except CollectionError as exc:
                 if exc.status not in ("network_error", "retryable_upstream") or attempt == self.retries:
                     raise
                 time.sleep(min(2 ** attempt, 8))
 
-    def _request(self, url, form=None, headers=None, max_bytes=10 * 1024 * 1024):
+    def _request(self, url, form=None, headers=None, max_bytes=10 * 1024 * 1024, allowed_domains=None):
         time.sleep(max(0, self.interval - (time.monotonic() - self.last_request)))
         self.last_request = time.monotonic()
         data = urllib.parse.urlencode(form).encode() if form is not None else None
@@ -64,10 +66,30 @@ class Transport:
         context = tls_context()
         request = urllib.request.Request(url, data=data, headers=request_headers)
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout, context=context) as response:
+            if allowed_domains:
+                from urllib.parse import urlsplit
+                class RestrictedRedirect(urllib.request.HTTPRedirectHandler):
+                    def redirect_request(self, req, fp, code, msg, hdrs, newurl):
+                        target = urlsplit(newurl)
+                        if target.scheme != "https" or not any(target.hostname == d or (target.hostname or "").endswith("." + d) for d in allowed_domains):
+                            raise CollectionError("invalid_source", "Document redirect left its publisher hosts")
+                        return super().redirect_request(req, fp, code, msg, hdrs, newurl)
+                opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context), RestrictedRedirect())
+                opened = opener.open(request, timeout=self.timeout)
+            else:
+                opened = urllib.request.urlopen(request, timeout=self.timeout, context=context)
+            with opened as response:
                 raw = response.read(max_bytes + 1)
                 if len(raw) > max_bytes:
                     raise CollectionError("invalid_response", "Response exceeds configured byte limit")
+                if getattr(response, "headers", {}).get("Content-Encoding", "").lower() == "gzip":
+                    try:
+                        with gzip.GzipFile(fileobj=io.BytesIO(raw)) as zipped:
+                            raw = zipped.read(max_bytes + 1)
+                    except (OSError, EOFError) as exc:
+                        raise CollectionError("invalid_response", "Invalid gzip response") from exc
+                    if len(raw) > max_bytes:
+                        raise CollectionError("invalid_response", "Expanded response exceeds configured byte limit")
         except urllib.error.HTTPError as exc:
             status = "requires_access" if exc.code in (401, 403) else ("retryable_upstream" if exc.code in (429, 500, 502, 503, 504) else "upstream_error")
             raise CollectionError(status, f"Upstream HTTP {exc.code}") from exc

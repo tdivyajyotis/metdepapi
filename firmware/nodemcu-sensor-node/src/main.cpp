@@ -1,0 +1,431 @@
+#include <Arduino.h>
+#include <ArduinoJson.h>
+#include <DallasTemperature.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WiFi.h>
+#include <OneWire.h>
+#include <SoftwareSerial.h>
+#include <WiFiClient.h>
+#include <WiFiClientSecureBearSSL.h>
+#include <Wire.h>
+#include <time.h>
+
+#include <Adafruit_SHT4x.h>
+#include <Adafruit_TCS3448.h>
+
+#include "Tsl2584.h"
+#include "config.h"
+
+#if __has_include("secrets.h")
+#include "secrets.h"
+#else
+#define WIFI_SSID ""
+#define WIFI_PASSWORD ""
+#define DEVICE_API_TOKEN ""
+#define TLS_ROOT_CA_PEM ""
+#define ALLOW_INSECURE_TLS 0
+#warning "Copy include/secrets.example.h to include/secrets.h before deployment"
+#endif
+
+namespace {
+
+OneWire oneWire(config::ONE_WIRE_PIN);
+DallasTemperature ds18b20(&oneWire);
+SoftwareSerial unoSerial(config::UNO_RX_PIN, config::UNO_TX_PIN);
+Adafruit_SHT4x sht45;
+Adafruit_TCS3448 tcs3448;
+Tsl2584 tsl1(config::TSL2584_1_ADDRESS);
+Tsl2584 tsl2(config::TSL2584_2_ADDRESS);
+
+bool hasSht45 = false;
+bool hasTcs3448 = false;
+bool hasTsl1 = false;
+bool hasTsl2 = false;
+
+uint32_t lastSampleAt = 0;
+uint32_t lastWifiAttemptAt = 0;
+uint32_t sequenceNumber = 0;
+uint32_t bootId = 0;
+
+String romToString(const DeviceAddress address) {
+  char text[17] = {};
+  for (uint8_t i = 0; i < 8; ++i) {
+    snprintf(text + i * 2, sizeof(text) - i * 2, "%02X", address[i]);
+  }
+  return String(text);
+}
+
+String iso8601Now() {
+  const time_t now = time(nullptr);
+  if (now < 1609459200) {
+    return String();
+  }
+  struct tm utc {};
+  gmtime_r(&now, &utc);
+  char timestamp[25] = {};
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%SZ", &utc);
+  return String(timestamp);
+}
+
+void connectWifi() {
+  if (WiFi.status() == WL_CONNECTED || strlen(WIFI_SSID) == 0) {
+    return;
+  }
+
+  const uint32_t now = millis();
+  if (lastWifiAttemptAt != 0 &&
+      now - lastWifiAttemptAt < config::WIFI_RETRY_INTERVAL_MS) {
+    return;
+  }
+
+  lastWifiAttemptAt = now;
+  WiFi.mode(WIFI_STA);
+  WiFi.hostname(config::DEVICE_ID);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.printf("Connecting to WiFi '%s'...\n", WIFI_SSID);
+}
+
+bool soilPercent(int16_t counts, uint8_t channel, float &percent) {
+  const int16_t dry = config::SOIL_DRY_COUNTS[channel];
+  const int16_t wet = config::SOIL_WET_COUNTS[channel];
+  if (dry == wet) {
+    return false;
+  }
+  percent = 100.0f * static_cast<float>(counts - dry) /
+            static_cast<float>(wet - dry);
+  percent = constrain(percent, 0.0f, 100.0f);
+  return true;
+}
+
+bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
+  while (unoSerial.available() > 0) {
+    unoSerial.read();
+  }
+  unoSerial.print(F("READ\n"));
+
+  char response[128] = {};
+  size_t length = 0;
+  const uint32_t startedAt = millis();
+  while (millis() - startedAt < config::UNO_RESPONSE_TIMEOUT_MS) {
+    while (unoSerial.available() > 0) {
+      const char value = static_cast<char>(unoSerial.read());
+      if (value == '\n') {
+        response[length] = '\0';
+        StaticJsonDocument<128> reply;
+        const DeserializationError error = deserializeJson(reply, response);
+        if (error || reply["v"].as<uint8_t>() != 1 ||
+            !reply.containsKey("a0") || !reply.containsKey("a1")) {
+          Serial.printf("Invalid Uno response: %s\n", response);
+          return false;
+        }
+
+        const uint16_t a0 = reply["a0"].as<uint16_t>();
+        const uint16_t a1 = reply["a1"].as<uint16_t>();
+        if (a0 > config::UNO_ADC_MAX_COUNTS ||
+            a1 > config::UNO_ADC_MAX_COUNTS) {
+          Serial.println(F("Uno ADC response is out of range"));
+          return false;
+        }
+        counts[0] = a0;
+        counts[1] = a1;
+        unoSequence = reply["seq"] | 0UL;
+        return true;
+      }
+      if (value != '\r' && length + 1 < sizeof(response)) {
+        response[length++] = value;
+      }
+    }
+    delay(1);
+    yield();
+  }
+
+  Serial.println(F("Timed out waiting for Uno ADC response"));
+  return false;
+}
+
+void addDs18b20Readings(JsonObject sensors) {
+  JsonArray probes = sensors.createNestedArray("ds18b20");
+  const uint8_t discovered = ds18b20.getDeviceCount();
+  const uint8_t count = discovered < 4 ? discovered : 4;
+
+  ds18b20.requestTemperatures();
+  for (uint8_t i = 0; i < count; ++i) {
+    DeviceAddress address;
+    JsonObject probe = probes.createNestedObject();
+    if (!ds18b20.getAddress(address, i)) {
+      probe["ok"] = false;
+      continue;
+    }
+
+    const float temperature = ds18b20.getTempC(address);
+    probe["rom"] = romToString(address);
+    if (temperature == DEVICE_DISCONNECTED_C || temperature < -55.0f ||
+        temperature > 125.0f) {
+      probe["ok"] = false;
+    } else {
+      probe["ok"] = true;
+      probe["temperature_c"] = temperature;
+    }
+  }
+}
+
+void addSht45Reading(JsonObject sensors) {
+  JsonObject out = sensors.createNestedObject("sht45");
+  if (!hasSht45) {
+    out["ok"] = false;
+    return;
+  }
+
+  sensors_event_t humidity;
+  sensors_event_t temperature;
+  if (!sht45.getEvent(&humidity, &temperature)) {
+    out["ok"] = false;
+    return;
+  }
+  out["ok"] = true;
+  out["temperature_c"] = temperature.temperature;
+  out["humidity_pct"] = humidity.relative_humidity;
+}
+
+void addSoilReadings(JsonObject sensors) {
+  JsonArray probes = sensors.createNestedArray("soil_moisture");
+  uint16_t counts[2] = {};
+  uint32_t unoSequence = 0;
+  const bool hasUnoReading = readUnoAdc(counts, unoSequence);
+
+  for (uint8_t channel = 0; channel < 2; ++channel) {
+    JsonObject probe = probes.createNestedObject();
+    probe["channel"] = channel;
+    probe["sensor_type"] = "resistive_lm393_1p3m";
+    probe["adc"] = "arduino_uno_10bit";
+    if (!hasUnoReading) {
+      probe["ok"] = false;
+      continue;
+    }
+
+    probe["ok"] = true;
+    probe["raw_counts"] = counts[channel];
+    probe["voltage_v"] = counts[channel] * config::UNO_ADC_REFERENCE_V /
+                         config::UNO_ADC_MAX_COUNTS;
+    probe["filter"] = "median";
+    probe["sample_count"] = 9;
+    probe["uno_sequence"] = unoSequence;
+
+    float percent = 0;
+    if (soilPercent(counts[channel], channel, percent)) {
+      probe["moisture_pct"] = percent;
+    } else {
+      probe["moisture_pct"] = nullptr;
+    }
+  }
+}
+
+void addTslReading(JsonObject sensors, const char *name, Tsl2584 &sensor,
+                   bool available) {
+  JsonObject out = sensors.createNestedObject(name);
+  out["address"] = sensor.address();
+  Tsl2584Reading reading;
+  if (!available || !sensor.read(reading)) {
+    out["ok"] = false;
+    return;
+  }
+  out["ok"] = true;
+  out["broadband_counts"] = reading.broadbandCounts;
+  out["infrared_counts"] = reading.infraredCounts;
+  out["visible_counts"] = reading.visibleCounts;
+  out["saturated"] = reading.saturated;
+}
+
+void addTcs3448Reading(JsonObject sensors) {
+  JsonObject out = sensors.createNestedObject("tcs3448");
+  if (!hasTcs3448) {
+    out["ok"] = false;
+    return;
+  }
+
+  uint16_t readings[TCS3448_CHANNEL_COUNT] = {};
+  if (!tcs3448.readAllChannels(readings)) {
+    out["ok"] = false;
+    return;
+  }
+
+  out["ok"] = true;
+  out["f1_405nm"] = readings[TCS3448_CHANNEL_F1];
+  out["f2_425nm"] = readings[TCS3448_CHANNEL_F2];
+  out["fz_450nm"] = readings[TCS3448_CHANNEL_FZ];
+  out["f3_475nm"] = readings[TCS3448_CHANNEL_F3];
+  out["f4_515nm"] = readings[TCS3448_CHANNEL_F4];
+  out["f5_550nm"] = readings[TCS3448_CHANNEL_F5];
+  out["fy_555nm"] = readings[TCS3448_CHANNEL_FY];
+  out["fxl_600nm"] = readings[TCS3448_CHANNEL_FXL];
+  out["f6_640nm"] = readings[TCS3448_CHANNEL_F6];
+  out["f7_690nm"] = readings[TCS3448_CHANNEL_F7];
+  out["f8_745nm"] = readings[TCS3448_CHANNEL_F8];
+  out["nir_855nm"] = readings[TCS3448_CHANNEL_NIR];
+  out["visible"] = readings[TCS3448_CHANNEL_VIS_TL_0];
+}
+
+String makePayload() {
+  StaticJsonDocument<4096> doc;
+  doc["schema_version"] = 1;
+  doc["device_id"] = config::DEVICE_ID;
+  doc["firmware"] = config::FIRMWARE_VERSION;
+  doc["sequence"] = sequenceNumber;
+
+  char eventId[64] = {};
+  snprintf(eventId, sizeof(eventId), "%s-%08lx-%lu", config::DEVICE_ID,
+           static_cast<unsigned long>(bootId),
+           static_cast<unsigned long>(sequenceNumber));
+  doc["event_id"] = eventId;
+
+  const String observedAt = iso8601Now();
+  if (observedAt.length() > 0) {
+    doc["observed_at"] = observedAt;
+  } else {
+    doc["observed_at"] = nullptr;
+  }
+  doc["uptime_ms"] = millis();
+  doc["wifi_rssi_dbm"] =
+      WiFi.status() == WL_CONNECTED ? WiFi.RSSI() : 0;
+
+  JsonObject sensors = doc.createNestedObject("sensors");
+  addDs18b20Readings(sensors);
+  addSht45Reading(sensors);
+  addSoilReadings(sensors);
+  addTslReading(sensors, "tsl2584_1", tsl1, hasTsl1);
+  addTslReading(sensors, "tsl2584_2", tsl2, hasTsl2);
+  addTcs3448Reading(sensors);
+
+  String payload;
+  serializeJson(doc, payload);
+  return payload;
+}
+
+template <typename TClient>
+bool postWithClient(TClient &client, const String &payload) {
+  HTTPClient http;
+  http.setTimeout(config::HTTP_TIMEOUT_MS);
+  if (!http.begin(client, config::INGEST_URL)) {
+    Serial.println(F("HTTP begin failed"));
+    return false;
+  }
+
+  http.addHeader(F("Content-Type"), F("application/json"));
+  http.addHeader(F("Authorization"), String(F("Bearer ")) + DEVICE_API_TOKEN);
+  http.addHeader(F("X-Device-ID"), config::DEVICE_ID);
+
+  const int status = http.POST(reinterpret_cast<const uint8_t *>(payload.c_str()),
+                               payload.length());
+  const bool accepted = status >= 200 && status < 300;
+  Serial.printf("POST returned %d (%s)\n", status,
+                accepted ? "accepted" : "not accepted");
+  if (!accepted && status > 0) {
+    Serial.println(http.getString());
+  }
+  http.end();
+  return accepted;
+}
+
+bool postPayload(const String &payload) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println(F("Not posting: WiFi disconnected"));
+    return false;
+  }
+
+  const String url(config::INGEST_URL);
+  if (url.startsWith("https://")) {
+    BearSSL::WiFiClientSecure client;
+    const char *rootCa = TLS_ROOT_CA_PEM;
+    if (strlen(rootCa) > 0 && strstr(rootCa, "paste-root-ca-here") == nullptr) {
+      BearSSL::X509List trustAnchor(rootCa);
+      client.setTrustAnchors(&trustAnchor);
+      return postWithClient(client, payload);
+    }
+#if ALLOW_INSECURE_TLS
+    Serial.println(F("WARNING: HTTPS certificate verification is disabled"));
+    client.setInsecure();
+    return postWithClient(client, payload);
+#else
+    Serial.println(F("Not posting: configure TLS_ROOT_CA_PEM in secrets.h"));
+    return false;
+#endif
+  }
+
+  WiFiClient client;
+  return postWithClient(client, payload);
+}
+
+void scanI2cBus() {
+  Serial.println(F("I2C scan:"));
+  for (uint8_t address = 1; address < 127; ++address) {
+    Wire.beginTransmission(address);
+    if (Wire.endTransmission() == 0) {
+      Serial.printf("  found 0x%02X\n", address);
+    }
+    yield();
+  }
+}
+
+void initializeSensors() {
+  ds18b20.begin();
+  ds18b20.setResolution(12);
+  ds18b20.setWaitForConversion(true);
+
+  hasSht45 = sht45.begin(&Wire);
+  if (hasSht45) {
+    sht45.setPrecision(SHT4X_HIGH_PRECISION);
+    sht45.setHeater(SHT4X_NO_HEATER);
+  }
+
+  hasTsl1 = tsl1.begin(Wire);
+  hasTsl2 = tsl2.begin(Wire);
+  hasTcs3448 = tcs3448.begin();
+  if (hasTcs3448) {
+    hasTcs3448 = tcs3448.setGain(TCS3448_GAIN_64X) &&
+                 tcs3448.setATIME(29) && tcs3448.setASTEP(599) &&
+                 tcs3448.setSMUXMode(TCS3448_SMUX_18CH);
+  }
+
+  Serial.printf("Sensors: DS18B20=%u/4 SHT45=%s UnoADC=serial TSL1=%s "
+                "TSL2=%s TCS3448=%s\n",
+                ds18b20.getDeviceCount() < 4 ? ds18b20.getDeviceCount() : 4,
+                hasSht45 ? "ok" : "missing", hasTsl1 ? "ok" : "missing",
+                hasTsl2 ? "ok" : "missing",
+                hasTcs3448 ? "ok" : "missing");
+}
+
+}  // namespace
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println(F("NodeMCU sensor node starting"));
+
+  bootId = ESP.getChipId() ^ micros() ^ ESP.getCycleCount();
+  unoSerial.begin(config::UNO_SERIAL_BAUD);
+  Wire.begin(config::I2C_SDA_PIN, config::I2C_SCL_PIN);
+  Wire.setClock(config::I2C_CLOCK_HZ);
+  scanI2cBus();
+  initializeSensors();
+
+  WiFi.persistent(false);
+  WiFi.setAutoReconnect(true);
+  connectWifi();
+  configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
+}
+
+void loop() {
+  connectWifi();
+
+  const uint32_t now = millis();
+  if (lastSampleAt == 0 || now - lastSampleAt >= config::SAMPLE_INTERVAL_MS) {
+    lastSampleAt = now;
+    ++sequenceNumber;
+
+    const String payload = makePayload();
+    Serial.println(payload);
+    postPayload(payload);
+  }
+
+  delay(10);
+}

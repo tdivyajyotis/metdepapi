@@ -12,12 +12,19 @@ dependencies = []
 [project.optional-dependencies]
 system-trust = ["truststore>=0.10,<1"]
 documents = ["pypdf>=5,<7"]
+server = [
+    "fastapi>=0.115,<1",
+    "psycopg[binary]>=3.2,<4",
+    "uvicorn[standard]>=0.34,<1",
+]
 
 [project.scripts]
 imd = "imd_local.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["imd_local*"]
+include = ["imd_local*", "sensor_server*"]
 
 [tool.setuptools.package-data]
 imd_local = ["catalog.json"]
+"imd_local.incois" = ["SOURCES.md"]
+sensor_server = ["static/*.html"]

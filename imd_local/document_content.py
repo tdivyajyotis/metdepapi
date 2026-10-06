@@ -8,15 +8,15 @@ from urllib.parse import quote, urlsplit, urlunsplit
 from .core import CollectionError
 
 
-def document_content(item, transport, directory="data/artifacts"):
+def document_content(item, transport, directory="data/artifacts", allowed_domains=("imd.gov.in",)):
     parsed = urlsplit(item["url"])
-    if parsed.scheme not in ("http", "https") or not parsed.hostname or not parsed.hostname.endswith(".imd.gov.in"):
-        raise CollectionError("invalid_source", "Document must be on a public IMD host")
+    if parsed.scheme not in ("http", "https") or not parsed.hostname or not any(parsed.hostname == d or parsed.hostname.endswith("." + d) for d in allowed_domains):
+        raise CollectionError("invalid_source", "Document must be on an allowed publisher host")
     if parsed.scheme == "http":
         parsed = parsed._replace(scheme="https")
     # Quote spaces/unicode in published URLs; already quoted URL components remain intact.
     url = urlunsplit(parsed._replace(path=quote(parsed.path, safe="/%:@"), query=quote(parsed.query, safe="=&%:+,/")))
-    content = transport.request(url, headers={"Accept": "application/pdf,image/*,*/*"})
+    content = transport.request(url, headers={"Accept": "application/pdf,image/*,*/*"}, allowed_domains=allowed_domains)
     if not content:
         raise CollectionError("unavailable", "Document content is empty")
     mime = None

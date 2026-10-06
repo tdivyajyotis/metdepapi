@@ -1,7 +1,46 @@
+# Python caches, environments, and build output
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 .venv/
+venv/
 .deps/
-.env
-data/
+.server-deps/
 *.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local runtime data
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+secrets.h
+credentials.json
+service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# PlatformIO and editor-generated files
+.pio/
+.vscode/
+.idea/
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

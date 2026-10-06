@@ -2,6 +2,10 @@
 
 The requested public-source implementation is complete for the sources that supplied usable data during this audit. **17 documented endpoint adapters** and **21 artifact/source collectors** are implemented. Schemas are taken from the saved [IMD reference](https://api.imd.gov.in/public/api_reference.html) only. Sample strings stay strings, nested sample wrappers are retained where applicable, and unavailable source fields stay null with sidecar quality metadata. No approved official responses or cross-platform CI run are required for this scope.
 
+This report covers IMD. The separate [INCOIS source guide](imd_local/incois/SOURCES.md)
+documents fifteen additional source-native products. [DOCKER.md](DOCKER.md)
+provides run steps for both collectors and their shared stored-snapshot API.
+
 ## Documented endpoint coverage
 
 | Product | Implemented public collection | Source limitations |

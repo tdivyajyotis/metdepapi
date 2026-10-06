@@ -33,6 +33,30 @@ def handler(store, provider, max_age=86400, max_source_age=172800):
                 return self.respond(200, {"status": "running", "provider": provider, "mode": "stored_snapshots"})
             if parts.path == "/coverage":
                 return self.respond(200, CATALOG)
+            if parts.path == "/marine":
+                from .incois.view import marine_view
+                try:
+                    return self.respond(200, marine_view(store, params, max_age))
+                except CollectionError as exc:
+                    return self.respond(400, {"status": exc.status, "message": str(exc)})
+            if parts.path.startswith("/incois/"):
+                from .incois import PRODUCTS, forecast_quality
+                name = parts.path[len("/incois/"):]
+                if name == "coverage":
+                    return self.respond(200, {"publisher": "INCOIS", "products": PRODUCTS})
+                wrapped = name.startswith("data/")
+                if wrapped:
+                    name = name[5:]
+                if name not in PRODUCTS:
+                    return self.respond(404, {"status": "unknown_product"})
+                snapshot = store.latest("incois:" + name, "public", params)
+                if snapshot is None:
+                    return self.respond(503, {"status": "unavailable", "message": "No matching INCOIS snapshot"})
+                quality = forecast_quality(snapshot, max_age)
+                snapshot["metadata"]["freshness"] = quality
+                if (quality["stale"] or quality.get("unavailable")) and not wrapped:
+                    return self.respond(503, {"status": "unavailable" if quality.get("unavailable") else "stale", "freshness": quality})
+                return self.respond(200, snapshot if wrapped else snapshot["data"])
             if parts.path.startswith("/files/"):
                 filename = parts.path[len("/files/"):]
                 if not re.fullmatch(r"[a-f0-9]{64}\.(pdf|png|gif|jpg)", filename):
@@ -108,6 +132,10 @@ def main(argv=None):
     parser.add_argument("--database", default="data/imd.sqlite")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("coverage")
+    from .incois import PRODUCTS
+    incois = commands.add_parser("incois", help="Collect source-native INCOIS products")
+    incois.add_argument("product", choices=sorted(PRODUCTS))
+    incois.add_argument("--param", action="append", default=[])
     search = commands.add_parser("search")
     search.add_argument("query")
     collection = commands.add_parser("collect")
@@ -140,6 +168,11 @@ def main(argv=None):
     try:
         if args.command == "coverage":
             output = CATALOG
+        elif args.command == "incois":
+            from .incois import collect_incois
+            result, raw = collect_incois(args.product, parameters(args.param), transport, directory=Path(args.database).parent / "artifacts")
+            Store(args.database).save(result, raw)
+            output = result.envelope()
         elif args.command == "search":
             from urllib.parse import urlencode
             output = transport.json(PUBLIC_ROOT + "api/search.php?" + urlencode({"query": args.query}))
