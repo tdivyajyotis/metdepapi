@@ -33,7 +33,8 @@ constexpr uint32_t HTTP_TIMEOUT_MS = 12000;
 
 constexpr char DEVICE_ID[] = "station-001";
 constexpr char FIRMWARE_VERSION[] = "0.2.0";
-constexpr char INGEST_URL[] = "https://ingest.example.com/v1/readings";
+
+constexpr char INGEST_URL[] = "https://ingest.atldavunit8.org/v1/readings";
 
 // Calibrate each resistive probe/module pair using your own dry-reference and
 // wet-reference soil readings. The default values are placeholders and
