@@ -1,0 +1,729 @@
+{
+  "source": "https://ccadb.my.salesforce-sites.com/mozilla/IncludedCACertificateReportPEMCSV",
+  "generated_at_utc": "2026-10-06T20:11:34.219795+00:00",
+  "source_sha256": "91a4db5bfa9c96c423634a0cf5d74935b6b7c8f764ee3d34f29714f59f704235",
+  "archive_sha256": "3c15c5f240f865fe14f6183d0a9673ca7bf9a4015028d528fee8f59e6ae6bcf2",
+  "certificate_count": 120,
+  "certificates": [
+    {
+      "name": "Actalis Authentication Root CA",
+      "fingerprint_sha256": "55926084EC963A64B96E2ABE01CE0BA86A64FBFEBCC7AAB5AFC155B37FD76066",
+      "valid_from": "2011.09.22",
+      "valid_to": "2030.09.22"
+    },
+    {
+      "name": "TunTrust Root CA",
+      "fingerprint_sha256": "2E44102AB58CB85419451C8E19D9ACF3662CAFBC614B6A53960A30F7D0E2EB41",
+      "valid_from": "2019.04.26",
+      "valid_to": "2044.04.26"
+    },
+    {
+      "name": "Amazon Root CA 1",
+      "fingerprint_sha256": "8ECDE6884F3D87B1125BA31AC3FCB13D7016DE7F57CC904FE1CB97C6AE98196E",
+      "valid_from": "2015.05.26",
+      "valid_to": "2038.01.17"
+    },
+    {
+      "name": "Amazon Root CA 2",
+      "fingerprint_sha256": "1BA5B2AA8C65401A82960118F80BEC4F62304D83CEC4713A19C39C011EA46DB4",
+      "valid_from": "2015.05.26",
+      "valid_to": "2040.05.26"
+    },
+    {
+      "name": "Amazon Root CA 3",
+      "fingerprint_sha256": "18CE6CFE7BF14E60B2E347B8DFE868CB31D02EBB3ADA271569F50343B46DB3A4",
+      "valid_from": "2015.05.26",
+      "valid_to": "2040.05.26"
+    },
+    {
+      "name": "Amazon Root CA 4",
+      "fingerprint_sha256": "E35D28419ED02025CFA69038CD623962458DA5C695FBDEA3C22B0BFB25897092",
+      "valid_from": "2015.05.26",
+      "valid_to": "2040.05.26"
+    },
+    {
+      "name": "Starfield Services Root Certificate Authority - G2",
+      "fingerprint_sha256": "568D6905A2C88708A4B3025190EDCFEDB1974A606A13C6E5290FCB2AE63EDAB5",
+      "valid_from": "2009.09.01",
+      "valid_to": "2037.12.31"
+    },
+    {
+      "name": "Certum EC-384 CA",
+      "fingerprint_sha256": "6B328085625318AA50D173C98D8BDA09D57E27413D114CF787A0F5D06C030CF6",
+      "valid_from": "2018.03.26",
+      "valid_to": "2043.03.26"
+    },
+    {
+      "name": "Certum Trusted Network CA",
+      "fingerprint_sha256": "5C58468D55F58E497E743982D2B50010B6D165374ACF83A7D4A32DB768C4408E",
+      "valid_from": "2008.10.22",
+      "valid_to": "2029.12.31"
+    },
+    {
+      "name": "Certum Trusted Network CA 2",
+      "fingerprint_sha256": "B676F2EDDAE8775CD36CB0F63CD1D4603961F49E6265BA013A2F0307B6D0B804",
+      "valid_from": "2011.10.06",
+      "valid_to": "2046.10.06"
+    },
+    {
+      "name": "Certum Trusted Root CA",
+      "fingerprint_sha256": "FE7696573855773E37A95E7AD4D9CC96C30157C15D31765BA9B15704E1AE78FD",
+      "valid_from": "2018.03.16",
+      "valid_to": "2043.03.16"
+    },
+    {
+      "name": "Atos TrustedRoot Root CA ECC TLS 2021",
+      "fingerprint_sha256": "B2FAE53E14CCD7AB9212064701AE279C1D8988FACB775FA8A008914E663988A8",
+      "valid_from": "2021.04.22",
+      "valid_to": "2041.04.17"
+    },
+    {
+      "name": "Atos TrustedRoot Root CA RSA TLS 2021",
+      "fingerprint_sha256": "81A9088EA59FB364C548A6F85559099B6F0405EFBF18E5324EC9F457BA00112F",
+      "valid_from": "2021.04.22",
+      "valid_to": "2041.04.17"
+    },
+    {
+      "name": "Autoridad de Certificacion Firmaprofesional CIF A62634068",
+      "fingerprint_sha256": "57DE0583EFD2B26E0361DA99DA9DF4648DEF7EE8441C3B728AFA9BCDE0F9B26A",
+      "valid_from": "2014.09.23",
+      "valid_to": "2036.05.05"
+    },
+    {
+      "name": "ANF Secure Server Root CA",
+      "fingerprint_sha256": "FB8FEC759169B9106B1E511644C618C51304373F6C0643088D8BEFFD1B997599",
+      "valid_from": "2019.09.04",
+      "valid_to": "2039.08.30"
+    },
+    {
+      "name": "BJCA Global Root CA1",
+      "fingerprint_sha256": "F3896F88FE7C0A882766A7FA6AD2749FB57A7F3E98FB769C1FA7B09C2C44D5AE",
+      "valid_from": "2019.12.19",
+      "valid_to": "2044.12.12"
+    },
+    {
+      "name": "BJCA Global Root CA2",
+      "fingerprint_sha256": "574DF6931E278039667B720AFDC1600FC27EB66DD3092979FB73856487212882",
+      "valid_from": "2019.12.19",
+      "valid_to": "2044.12.12"
+    },
+    {
+      "name": "Buypass Class 2 Root CA",
+      "fingerprint_sha256": "9A114025197C5BB95D94E63D55CD43790847B646B23CDF11ADA4A00EFF15FB48",
+      "valid_from": "2010.10.26",
+      "valid_to": "2040.10.26"
+    },
+    {
+      "name": "Buypass Class 3 Root CA",
+      "fingerprint_sha256": "EDF7EBBCA27A2A384D387B7D4010C666E2EDB4843E4C29B4AE1D5B9332E6B24D",
+      "valid_from": "2010.10.26",
+      "valid_to": "2040.10.26"
+    },
+    {
+      "name": "Certainly Root E1",
+      "fingerprint_sha256": "B4585F22E4AC756A4E8612A1361C5D9D031A93FD84FEBB778FA3068B0FC42DC2",
+      "valid_from": "2021.04.01",
+      "valid_to": "2046.04.01"
+    },
+    {
+      "name": "Certainly Root R1",
+      "fingerprint_sha256": "77B82CD8644C4305F7ACC5CB156B45675004033D51C60C6202A8E0C33467D3A0",
+      "valid_from": "2021.04.01",
+      "valid_to": "2046.04.01"
+    },
+    {
+      "name": "Certigna Root CA",
+      "fingerprint_sha256": "D48D3D23EEDB50A459E55197601C27774B9D7B18C94D5A059511A10250B93168",
+      "valid_from": "2013.10.01",
+      "valid_to": "2033.10.01"
+    },
+    {
+      "name": "certSIGN ROOT CA G2",
+      "fingerprint_sha256": "657CFE2FA73FAA38462571F332A2363A46FCE7020951710702CDFBB6EEDA3305",
+      "valid_from": "2017.02.06",
+      "valid_to": "2042.02.06"
+    },
+    {
+      "name": "CFCA EV ROOT",
+      "fingerprint_sha256": "5CC3D78E4E1D5E45547A04E6873E64F90CF9536D1CCC2EF800F355C4C5FD70FD",
+      "valid_from": "2012.08.08",
+      "valid_to": "2029.12.31"
+    },
+    {
+      "name": "HiPKI Root CA - G1",
+      "fingerprint_sha256": "F015CE3CC239BFEF064BE9F1D2C417E1A0264A0A94BE1F0C8D121864EB6949CC",
+      "valid_from": "2019.02.22",
+      "valid_to": "2037.12.31"
+    },
+    {
+      "name": "SecureSign Root CA14",
+      "fingerprint_sha256": "4B009C1034494F9AB56BBA3BA1D62731FC4D20D8955ADCEC10A925607261E338",
+      "valid_from": "2020.04.08",
+      "valid_to": "2045.04.08"
+    },
+    {
+      "name": "SecureSign Root CA15",
+      "fingerprint_sha256": "E778F0F095FE843729CD1A0082179E5314A9C291442805E1FB1D8FB6B8886C3A",
+      "valid_from": "2020.04.08",
+      "valid_to": "2045.04.08"
+    },
+    {
+      "name": "D-TRUST BR Root CA 1 2020",
+      "fingerprint_sha256": "E59AAA816009C22BFF5B25BAD37DF306F049797C1F81D85AB089E657BD8F0044",
+      "valid_from": "2020.02.11",
+      "valid_to": "2035.02.11"
+    },
+    {
+      "name": "D-TRUST BR Root CA 2 2023",
+      "fingerprint_sha256": "0552E6F83FDF65E8FA9670E666DF28A4E21340B510CBE52566F97C4FB94B2BD1",
+      "valid_from": "2023.05.09",
+      "valid_to": "2038.05.09"
+    },
+    {
+      "name": "D-TRUST EV Root CA 1 2020",
+      "fingerprint_sha256": "08170D1AA36453901A2F959245E347DB0C8D37ABAABC56B81AA100DC958970DB",
+      "valid_from": "2020.02.11",
+      "valid_to": "2035.02.11"
+    },
+    {
+      "name": "D-TRUST EV Root CA 2 2023",
+      "fingerprint_sha256": "8E8221B2E7D4007836A1672F0DCC299C33BC07D316F132FA1A206D587150F1CE",
+      "valid_from": "2023.05.09",
+      "valid_to": "2038.05.09"
+    },
+    {
+      "name": "D-TRUST Root Class 3 CA 2 2009",
+      "fingerprint_sha256": "49E7A442ACF0EA6287050054B52564B650E4F49E42E348D6AA38E039E957B1C1",
+      "valid_from": "2009.11.05",
+      "valid_to": "2029.11.05"
+    },
+    {
+      "name": "D-TRUST Root Class 3 CA 2 EV 2009",
+      "fingerprint_sha256": "EEC5496B988CE98625B934092EEC2908BED0B0F316C2D4730C84EAF1F3D34881",
+      "valid_from": "2009.11.05",
+      "valid_to": "2029.11.05"
+    },
+    {
+      "name": "T-TeleSec GlobalRoot Class 2",
+      "fingerprint_sha256": "91E2F5788D5810EBA7BA58737DE1548A8ECACD014598BC0B143E041B17052552",
+      "valid_from": "2008.10.01",
+      "valid_to": "2033.10.01"
+    },
+    {
+      "name": "T-TeleSec GlobalRoot Class 3",
+      "fingerprint_sha256": "FD73DAD31C644FF1B43BEF0CCDDA96710B9CD9875ECA7E31707AF3E96D522BBD",
+      "valid_from": "2008.10.01",
+      "valid_to": "2033.10.01"
+    },
+    {
+      "name": "Telekom Security TLS ECC Root 2020",
+      "fingerprint_sha256": "578AF4DED0853F4E5998DB4AEAF9CBEA8D945F60B620A38D1A3C13B2BC7BA8E1",
+      "valid_from": "2020.08.25",
+      "valid_to": "2045.08.25"
+    },
+    {
+      "name": "Telekom Security TLS RSA Root 2023",
+      "fingerprint_sha256": "EFC65CADBB59ADB6EFE84DA22311B35624B71B3B1EA0DA8B6655174EC8978646",
+      "valid_from": "2023.03.28",
+      "valid_to": "2048.03.27"
+    },
+    {
+      "name": "DigiCert Assured ID Root G2",
+      "fingerprint_sha256": "7D05EBB682339F8C9451EE094EEBFEFA7953A114EDB2F44949452FAB7D2FC185",
+      "valid_from": "2013.08.01",
+      "valid_to": "2038.01.15"
+    },
+    {
+      "name": "DigiCert Assured ID Root G3",
+      "fingerprint_sha256": "7E37CB8B4C47090CAB36551BA6F45DB840680FBA166A952DB100717F43053FC2",
+      "valid_from": "2013.08.01",
+      "valid_to": "2038.01.15"
+    },
+    {
+      "name": "DigiCert Global Root G2",
+      "fingerprint_sha256": "CB3CCBB76031E5E0138F8DD39A23F9DE47FFC35E43C1144CEA27D46A5AB1CB5F",
+      "valid_from": "2013.08.01",
+      "valid_to": "2038.01.15"
+    },
+    {
+      "name": "DigiCert Global Root G3",
+      "fingerprint_sha256": "31AD6648F8104138C738F39EA4320133393E3A18CC02296EF97C2AC9EF6731D0",
+      "valid_from": "2013.08.01",
+      "valid_to": "2038.01.15"
+    },
+    {
+      "name": "DigiCert TLS ECC P384 Root G5",
+      "fingerprint_sha256": "018E13F0772532CF809BD1B17281867283FC48C6E13BE9C69812854A490C1B05",
+      "valid_from": "2021.01.15",
+      "valid_to": "2046.01.14"
+    },
+    {
+      "name": "DigiCert TLS RSA4096 Root G5",
+      "fingerprint_sha256": "371A00DC0533B3721A7EEB40E8419E70799D2B0A0F2C1D80693165F7CEC4AD75",
+      "valid_from": "2021.01.15",
+      "valid_to": "2046.01.14"
+    },
+    {
+      "name": "DigiCert Trusted Root G4",
+      "fingerprint_sha256": "552F7BDCF1A7AF9E6CE672017F4F12ABF77240C78E761AC203D1D9D20AC89988",
+      "valid_from": "2013.08.01",
+      "valid_to": "2038.01.15"
+    },
+    {
+      "name": "QuoVadis Root CA 1 G3",
+      "fingerprint_sha256": "8A866FD1B276B57E578E921C65828A2BED58E9F2F288054134B7F1F4BFC9CC74",
+      "valid_from": "2012.01.12",
+      "valid_to": "2042.01.12"
+    },
+    {
+      "name": "QuoVadis Root CA 2 G3",
+      "fingerprint_sha256": "8FE4FB0AF93A4D0D67DB0BEBB23E37C71BF325DCBCDD240EA04DAF58B47E1840",
+      "valid_from": "2012.01.12",
+      "valid_to": "2042.01.12"
+    },
+    {
+      "name": "QuoVadis Root CA 3 G3",
+      "fingerprint_sha256": "88EF81DE202EB018452E43F864725CEA5FBD1FC2D9D205730709C5D8B8690F46",
+      "valid_from": "2012.01.12",
+      "valid_to": "2042.01.12"
+    },
+    {
+      "name": "CA Disig Root R2",
+      "fingerprint_sha256": "E23D4A036D7B70E9F595B1422079D2B91EDFBB1FB651A0633EAA8A9DC5F80703",
+      "valid_from": "2012.07.19",
+      "valid_to": "2042.07.19"
+    },
+    {
+      "name": "emSign ECC Root CA - C3",
+      "fingerprint_sha256": "BC4D809B15189D78DB3E1D8CF4F9726A795DA1643CA5F1358E1DDB0EDC0D7EB3",
+      "valid_from": "2018.02.18",
+      "valid_to": "2043.02.18"
+    },
+    {
+      "name": "emSign ECC Root CA - G3",
+      "fingerprint_sha256": "86A1ECBA089C4A8D3BBE2734C612BA341D813E043CF9E8A862CD5C57A36BBE6B",
+      "valid_from": "2018.02.18",
+      "valid_to": "2043.02.18"
+    },
+    {
+      "name": "emSign Root CA - C1",
+      "fingerprint_sha256": "125609AA301DA0A249B97A8239CB6A34216F44DCAC9F3954B14292F2E8C8608F",
+      "valid_from": "2018.02.18",
+      "valid_to": "2043.02.18"
+    },
+    {
+      "name": "emSign Root CA - G1",
+      "fingerprint_sha256": "40F6AF0346A99AA1CD1D555A4E9CCE62C7F9634603EE406615833DC8C8D00367",
+      "valid_from": "2018.02.18",
+      "valid_to": "2043.02.18"
+    },
+    {
+      "name": "GDCA TrustAUTH R5 ROOT",
+      "fingerprint_sha256": "BFFF8FD04433487D6A8AA60C1A29767A9FC2BBB05E420F713A13B992891D3893",
+      "valid_from": "2014.11.26",
+      "valid_to": "2040.12.31"
+    },
+    {
+      "name": "GlobalSign",
+      "fingerprint_sha256": "2CABEAFE37D06CA22ABA7391C0033D25982952C453647349763A3AB5AD6CCF69",
+      "valid_from": "2014.12.10",
+      "valid_to": "2034.12.10"
+    },
+    {
+      "name": "GlobalSign",
+      "fingerprint_sha256": "179FBC148A3DD00FD24EA13458CC43BFA7F59C8182D783A513F6EBEC100C8924",
+      "valid_from": "2012.11.13",
+      "valid_to": "2038.01.19"
+    },
+    {
+      "name": "GlobalSign",
+      "fingerprint_sha256": "CBB522D7B7F127AD6A0113865BDF1CD4102E7D0759AF635A7CF4720DC963C53B",
+      "valid_from": "2009.03.18",
+      "valid_to": "2029.03.18"
+    },
+    {
+      "name": "GlobalSign Root E46",
+      "fingerprint_sha256": "CBB9C44D84B8043E1050EA31A69F514955D7BFD2E2C6B49301019AD61D9F5058",
+      "valid_from": "2019.03.20",
+      "valid_to": "2046.03.20"
+    },
+    {
+      "name": "GlobalSign Root R46",
+      "fingerprint_sha256": "4FA3126D8D3A11D1C4855A4F807CBAD6CF919D3A5A88B03BEA2C6372D93C40C9",
+      "valid_from": "2019.03.20",
+      "valid_to": "2046.03.20"
+    },
+    {
+      "name": "Go Daddy Root Certificate Authority - G2",
+      "fingerprint_sha256": "45140B3247EB9CC8C5B4F0D7B53091F73292089E6E5A63E2749DD3ACA9198EDA",
+      "valid_from": "2009.09.01",
+      "valid_to": "2037.12.31"
+    },
+    {
+      "name": "Starfield Root Certificate Authority - G2",
+      "fingerprint_sha256": "2CE1CB0BF9D2F9E102993FBE215152C3B2DD0CABDE1C68E5319B839154DBB7F5",
+      "valid_from": "2009.09.01",
+      "valid_to": "2037.12.31"
+    },
+    {
+      "name": "GlobalSign",
+      "fingerprint_sha256": "B085D70B964F191A73E4AF0D54AE7A0E07AAFDAF9B71DD0862138AB7325A24A2",
+      "valid_from": "2012.11.13",
+      "valid_to": "2038.01.19"
+    },
+    {
+      "name": "GTS Root R1",
+      "fingerprint_sha256": "D947432ABDE7B7FA90FC2E6B59101B1280E0E1C7E4E40FA3C6887FFF57A7F4CF",
+      "valid_from": "2016.06.22",
+      "valid_to": "2036.06.22"
+    },
+    {
+      "name": "GTS Root R3",
+      "fingerprint_sha256": "34D8A73EE208D9BCDB0D956520934B4E40E69482596E8B6F73C8426B010A6F48",
+      "valid_from": "2016.06.22",
+      "valid_to": "2036.06.22"
+    },
+    {
+      "name": "GTS Root R4",
+      "fingerprint_sha256": "349DFA4058C5E263123B398AE795573C4E1313C83FE68F93556CD5E8031B3C7D",
+      "valid_from": "2016.06.22",
+      "valid_to": "2036.06.22"
+    },
+    {
+      "name": "Hongkong Post Root CA 3",
+      "fingerprint_sha256": "5A2FC03F0C83B090BBFA40604B0988446C7636183DF9846E17101A447FB8EFD6",
+      "valid_from": "2017.06.03",
+      "valid_to": "2042.06.03"
+    },
+    {
+      "name": "ACCVRAIZ1",
+      "fingerprint_sha256": "9A6EC012E1A7DA9DBE34194D478AD7C0DB1822FB071DF12981496ED104384113",
+      "valid_from": "2011.05.05",
+      "valid_to": "2030.12.31"
+    },
+    {
+      "name": "AC RAIZ FNMT-RCM",
+      "fingerprint_sha256": "EBC5570C29018C4D67B1AA127BAF12F703B4611EBC17B7DAB5573894179B93FA",
+      "valid_from": "2008.10.29",
+      "valid_to": "2030.01.01"
+    },
+    {
+      "name": "AC RAIZ FNMT-RCM SERVIDORES SEGUROS",
+      "fingerprint_sha256": "554153B13D2CF9DDB753BFBE1A4E0AE08D0AA4187058FE60A2B862B2E4B87BCB",
+      "valid_from": "2018.12.20",
+      "valid_to": "2043.12.20"
+    },
+    {
+      "name": "TUBITAK Kamu SM SSL Kok Sertifikasi - Surum 1",
+      "fingerprint_sha256": "46EDC3689046D53A453FB3104AB80DCAEC658B2660EA1629DD7E867990648716",
+      "valid_from": "2013.11.25",
+      "valid_to": "2043.10.25"
+    },
+    {
+      "name": "HARICA TLS ECC Root CA 2021",
+      "fingerprint_sha256": "3F99CC474ACFCE4DFED58794665E478D1547739F2E780F1BB4CA9B133097D401",
+      "valid_from": "2021.02.19",
+      "valid_to": "2045.02.13"
+    },
+    {
+      "name": "HARICA TLS RSA Root CA 2021",
+      "fingerprint_sha256": "D95D0E8EDA79525BF9BEB11B14D2100D3294985F0C62D9FABD9CD999ECCB7B1D",
+      "valid_from": "2021.02.19",
+      "valid_to": "2045.02.13"
+    },
+    {
+      "name": "Hellenic Academic and Research Institutions ECC RootCA 2015",
+      "fingerprint_sha256": "44B545AA8A25E65A73CA15DC27FC36D24C1CB9953A066539B11582DC487B4833",
+      "valid_from": "2015.07.07",
+      "valid_to": "2040.06.30"
+    },
+    {
+      "name": "Hellenic Academic and Research Institutions RootCA 2015",
+      "fingerprint_sha256": "A040929A02CE53B4ACF4F2FFC6981CE4496F755E6D45FE0B2A692BCD52523F36",
+      "valid_from": "2015.07.07",
+      "valid_to": "2040.06.30"
+    },
+    {
+      "name": "IdenTrust Commercial Root CA 1",
+      "fingerprint_sha256": "5D56499BE4D2E08BCFCAD08A3E38723D50503BDE706948E42F55603019E528AE",
+      "valid_from": "2014.01.16",
+      "valid_to": "2034.01.16"
+    },
+    {
+      "name": "IdenTrust Public Sector Root CA 1",
+      "fingerprint_sha256": "30D0895A9A448A262091635522D1F52010B5867ACAE12C78EF958FD4F4389F2F",
+      "valid_from": "2014.01.16",
+      "valid_to": "2034.01.16"
+    },
+    {
+      "name": "ISRG Root X1",
+      "fingerprint_sha256": "96BCEC06264976F37460779ACF28C5A7CFE8A3C0AAE11A8FFCEE05C0BDDF08C6",
+      "valid_from": "2015.06.04",
+      "valid_to": "2035.06.04"
+    },
+    {
+      "name": "ISRG Root X2",
+      "fingerprint_sha256": "69729B8E15A86EFC177A57AFB7171DFC64ADD28C2FCA8CF1507E34453CCB1470",
+      "valid_from": "2020.09.04",
+      "valid_to": "2040.09.17"
+    },
+    {
+      "name": "vTrus ECC Root CA",
+      "fingerprint_sha256": "30FBBA2C32238E2A98547AF97931E550428B9B3F1C8EEB6633DCFA86C5B27DD3",
+      "valid_from": "2018.07.31",
+      "valid_to": "2043.07.31"
+    },
+    {
+      "name": "vTrus Root CA",
+      "fingerprint_sha256": "8A71DE6559336F426C26E53880D00D88A18DA4C6A91F0DCB6194E206C5C96387",
+      "valid_from": "2018.07.31",
+      "valid_to": "2043.07.31"
+    },
+    {
+      "name": "SZAFIR ROOT CA2",
+      "fingerprint_sha256": "A1339D33281A0B56E557D3D32B1CE7F9367EB094BD5FA72A7E5004C8DED7CAFE",
+      "valid_from": "2015.10.19",
+      "valid_to": "2035.10.19"
+    },
+    {
+      "name": "e-Szigno Root CA 2017",
+      "fingerprint_sha256": "BEB00B30839B9BC32C32E4447905950641F26421B15ED089198B518AE2EA1B99",
+      "valid_from": "2017.08.22",
+      "valid_to": "2042.08.22"
+    },
+    {
+      "name": "e-Szigno TLS Root CA 2023",
+      "fingerprint_sha256": "B49141502D00663D740F2E7EC340C52800962666121A36D09CF7DD2B90384FB4",
+      "valid_from": "2023.07.17",
+      "valid_to": "2038.07.17"
+    },
+    {
+      "name": "Microsec e-Szigno Root CA 2009",
+      "fingerprint_sha256": "3C5F81FEA5FAB82C64BFA2EAECAFCDE8E077FC8620A7CAE537163DF36EDBF378",
+      "valid_from": "2009.06.16",
+      "valid_to": "2029.12.30"
+    },
+    {
+      "name": "Microsoft ECC Root Certificate Authority 2017",
+      "fingerprint_sha256": "358DF39D764AF9E1B766E9C972DF352EE15CFAC227AF6AD1D70E8E4A6EDCBA02",
+      "valid_from": "2019.12.18",
+      "valid_to": "2042.07.18"
+    },
+    {
+      "name": "Microsoft RSA Root Certificate Authority 2017",
+      "fingerprint_sha256": "C741F70F4B2A8D88BF2E71C14122EF53EF10EBA0CFA5E64CFA20F418853073E0",
+      "valid_from": "2019.12.18",
+      "valid_to": "2042.07.18"
+    },
+    {
+      "name": "NAVER Global Root Certification Authority",
+      "fingerprint_sha256": "88F438DCF8FFD1FA8F429115FFE5F82AE1E06E0C70C375FAAD717B34A49E7265",
+      "valid_from": "2017.08.18",
+      "valid_to": "2037.08.18"
+    },
+    {
+      "name": "NetLock Arany (Class Gold) F\u0151tan\u00fas\u00edtv\u00e1ny",
+      "fingerprint_sha256": "6C61DAC3A2DEF031506BE036D2A6FE401994FBD13DF9C8D466599274C446EC98",
+      "valid_from": "2008.12.11",
+      "valid_to": "2028.12.06"
+    },
+    {
+      "name": "OISTE Server Root ECC G1",
+      "fingerprint_sha256": "EEC997C0C30F216F7E3B8B307D2BAE42412D753FC8219DAFD1520B2572850F49",
+      "valid_from": "2023.05.31",
+      "valid_to": "2048.05.24"
+    },
+    {
+      "name": "OISTE Server Root RSA G1",
+      "fingerprint_sha256": "9AE36232A5189FFDDB353DFD26520C015395D22777DAC59DB57B98C089A651E6",
+      "valid_from": "2023.05.31",
+      "valid_to": "2048.05.24"
+    },
+    {
+      "name": "OISTE WISeKey Global Root GB CA",
+      "fingerprint_sha256": "6B9C08E86EB0F767CFAD65CD98B62149E5494A67F5845E7BD1ED019F27B86BD6",
+      "valid_from": "2014.12.01",
+      "valid_to": "2039.12.01"
+    },
+    {
+      "name": "OISTE WISeKey Global Root GC CA",
+      "fingerprint_sha256": "8560F91C3624DABA9570B5FEA0DBE36FF11A8323BE9486854FB3F34A5571198D",
+      "valid_from": "2017.05.09",
+      "valid_to": "2042.05.09"
+    },
+    {
+      "name": "SECOM TLS ECC Root CA 2024",
+      "fingerprint_sha256": "6AB2AB75F51CB4F4F0156203FBF6F646232F514BE059F62833308B82B4D72DB1",
+      "valid_from": "2024.01.31",
+      "valid_to": "2049.01.14"
+    },
+    {
+      "name": "SECOM TLS RSA Root CA 2024",
+      "fingerprint_sha256": "1435F225C5D252D7A21948CC3CE62AECFA88001E3DD72D1CC3555100EB372F93",
+      "valid_from": "2024.01.31",
+      "valid_to": "2049.01.14"
+    },
+    {
+      "name": "Security Communication ECC RootCA1",
+      "fingerprint_sha256": "E74FBDA55BD564C473A36B441AA799C8A68E077440E8288B9FA1E50E4BBACA11",
+      "valid_from": "2016.06.16",
+      "valid_to": "2038.01.18"
+    },
+    {
+      "name": "Security Communication RootCA2",
+      "fingerprint_sha256": "513B2CECB810D4CDE5DD85391ADFC6C2DD60D87BB736D2B521484AA47A0EBEF6",
+      "valid_from": "2009.05.29",
+      "valid_to": "2029.05.29"
+    },
+    {
+      "name": "COMODO ECC Certification Authority",
+      "fingerprint_sha256": "1793927A0614549789ADCE2F8F34F7F0B66D0F3AE3A3B84D21EC15DBBA4FADC7",
+      "valid_from": "2008.03.06",
+      "valid_to": "2038.01.18"
+    },
+    {
+      "name": "COMODO RSA Certification Authority",
+      "fingerprint_sha256": "52F0E1C4E58EC629291B60317F074671B85D7EA80D5B07273463534B32B40234",
+      "valid_from": "2010.01.19",
+      "valid_to": "2038.01.18"
+    },
+    {
+      "name": "Sectigo Public Server Authentication Root E46",
+      "fingerprint_sha256": "C90F26F0FB1B4018B22227519B5CA2B53E2CA5B3BE5CF18EFE1BEF47380C5383",
+      "valid_from": "2021.03.22",
+      "valid_to": "2046.03.21"
+    },
+    {
+      "name": "Sectigo Public Server Authentication Root R46",
+      "fingerprint_sha256": "7BB647A62AEEAC88BF257AA522D01FFEA395E0AB45C73F93F65654EC38F25A06",
+      "valid_from": "2021.03.22",
+      "valid_to": "2046.03.21"
+    },
+    {
+      "name": "USERTrust ECC Certification Authority",
+      "fingerprint_sha256": "4FF460D54B9C86DABFBCFC5712E0400D2BED3FBC4D4FBDAA86E06ADCD2A9AD7A",
+      "valid_from": "2010.02.01",
+      "valid_to": "2038.01.18"
+    },
+    {
+      "name": "USERTrust RSA Certification Authority",
+      "fingerprint_sha256": "E793C9B02FD8AA13E21C31228ACCB08119643B749C898964B1746D46C3D4CBD2",
+      "valid_from": "2010.02.01",
+      "valid_to": "2038.01.18"
+    },
+    {
+      "name": "UCA Extended Validation Root",
+      "fingerprint_sha256": "D43AF9B35473755C9684FC06D7D8CB70EE5C28E773FB294EB41EE71722924D24",
+      "valid_from": "2015.03.13",
+      "valid_to": "2038.12.31"
+    },
+    {
+      "name": "UCA Global G2 Root",
+      "fingerprint_sha256": "9BEA11C976FE014764C1BE56A6F914B5A560317ABD9988393382E5161AA0493C",
+      "valid_from": "2016.03.11",
+      "valid_to": "2040.12.31"
+    },
+    {
+      "name": "SSL.com EV Root Certification Authority ECC",
+      "fingerprint_sha256": "22A2C1F7BDED704CC1E701B5F408C310880FE956B5DE2A4A44F99C873A25A7C8",
+      "valid_from": "2016.02.12",
+      "valid_to": "2041.02.12"
+    },
+    {
+      "name": "SSL.com EV Root Certification Authority RSA R2",
+      "fingerprint_sha256": "2E7BF16CC22485A7BBE2AA8696750761B0AE39BE3B2FE9D0CC6D4EF73491425C",
+      "valid_from": "2017.05.31",
+      "valid_to": "2042.05.30"
+    },
+    {
+      "name": "SSL.com Root Certification Authority ECC",
+      "fingerprint_sha256": "3417BB06CC6007DA1B961C920B8AB4CE3FAD820E4AA30B9ACBC4A74EBDCEBC65",
+      "valid_from": "2016.02.12",
+      "valid_to": "2041.02.12"
+    },
+    {
+      "name": "SSL.com Root Certification Authority RSA",
+      "fingerprint_sha256": "85666A562EE0BE5CE925C1D8890A6F76A87EC16D4D7D5F29EA7419CF20123B69",
+      "valid_from": "2016.02.12",
+      "valid_to": "2041.02.12"
+    },
+    {
+      "name": "SSL.com TLS ECC Root CA 2022",
+      "fingerprint_sha256": "C32FFD9F46F936D16C3673990959434B9AD60AAFBB9E7CF33654F144CC1BA143",
+      "valid_from": "2022.08.25",
+      "valid_to": "2046.08.19"
+    },
+    {
+      "name": "SSL.com TLS RSA Root CA 2022",
+      "fingerprint_sha256": "8FAF7D2E2CB4709BB8E0B33666BF75A5DD45B5DE480F8EA8D4BFE6BEBC17F2ED",
+      "valid_from": "2022.08.25",
+      "valid_to": "2046.08.19"
+    },
+    {
+      "name": "SwissSign RSA TLS Root CA 2022 - 1",
+      "fingerprint_sha256": "193144F431E0FDDB740717D4DE926A571133884B4360D30E272913CBE660CE41",
+      "valid_from": "2022.06.08",
+      "valid_to": "2047.06.08"
+    },
+    {
+      "name": "TWCA CYBER Root CA",
+      "fingerprint_sha256": "3F63BB2814BE174EC8B6439CF08D6D56F0B7C405883A5648A334424D6B3EC558",
+      "valid_from": "2022.11.22",
+      "valid_to": "2047.11.22"
+    },
+    {
+      "name": "TWCA Global Root CA",
+      "fingerprint_sha256": "59769007F7685D0FCD50872F9F95D5755A5B2B457D81F3692B610A98672F0E1B",
+      "valid_from": "2012.06.27",
+      "valid_to": "2030.12.31"
+    },
+    {
+      "name": "TWCA Root Certification Authority",
+      "fingerprint_sha256": "BFD88FE1101C41AE3E801BF8BE56350EE9BAD1A6B9BD515EDC5C6D5B8711AC44",
+      "valid_from": "2008.08.28",
+      "valid_to": "2030.12.31"
+    },
+    {
+      "name": "Telia EC TLS Root CA v3",
+      "fingerprint_sha256": "098E08A91DBBF77478B96CCEB89B1413A5DA37B7C862606A955DEB07179F4326",
+      "valid_from": "2023.11.15",
+      "valid_to": "2048.05.23"
+    },
+    {
+      "name": "Telia Root CA v2",
+      "fingerprint_sha256": "242B69742FCB1E5B2ABF98898B94572187544E5B4D9911786573621F6A74B82C",
+      "valid_from": "2018.11.29",
+      "valid_to": "2043.11.29"
+    },
+    {
+      "name": "Telia RSA TLS Root CA v3",
+      "fingerprint_sha256": "D13DB1294C45EBC6FC86C6BBF69FA29BDFE692DFF7C713C243C7A956C6A2284C",
+      "valid_from": "2023.11.15",
+      "valid_to": "2048.05.23"
+    },
+    {
+      "name": "TrustAsia Global Root CA G3",
+      "fingerprint_sha256": "E0D3226AEB1163C2E48FF9BE3B50B4C6431BE7BB1EACC5C36B5D5EC509039A08",
+      "valid_from": "2021.05.20",
+      "valid_to": "2046.05.19"
+    },
+    {
+      "name": "TrustAsia Global Root CA G4",
+      "fingerprint_sha256": "BE4B56CB5056C0136A526DF444508DAA36A0B54F42E4AC38F72AF470E479654C",
+      "valid_from": "2021.05.20",
+      "valid_to": "2046.05.19"
+    },
+    {
+      "name": "TrustAsia TLS ECC Root CA",
+      "fingerprint_sha256": "C0076B9EF0531FB1A656D67C4EBE97CD5DBAA41EF44598ACC2489878C92D8711",
+      "valid_from": "2024.05.15",
+      "valid_to": "2044.05.15"
+    },
+    {
+      "name": "TrustAsia TLS RSA Root CA",
+      "fingerprint_sha256": "06C08D7DAFD876971EB1124FE67F847EC0C7A158D3EA53CBE940E2EA9791F4C3",
+      "valid_from": "2024.05.15",
+      "valid_to": "2044.05.15"
+    }
+  ]
+}

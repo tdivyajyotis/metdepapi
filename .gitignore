@@ -17,6 +17,9 @@ htmlcov/
 
 # Local runtime data
 data/
+!firmware/nodemcu-sensor-node/data/
+!firmware/nodemcu-sensor-node/data/certs.ar
+!firmware/nodemcu-sensor-node/data/ca-bundle-manifest.json
 *.db
 *.sqlite
 *.sqlite3

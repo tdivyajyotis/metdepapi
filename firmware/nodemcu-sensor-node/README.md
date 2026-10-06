@@ -55,11 +55,13 @@ Do not use `0x39` for either TSL2584: it conflicts with the TCS3448.
 2. Copy `include/secrets.example.h` to `include/secrets.h`.
 3. Build and upload `../uno-adc` to the Uno, then wire the serial link as
    documented in its README.
-4. Fill in the WiFi and device-token values. GTS Root R4 for the current
-   Cloudflare chain is included in the tracked firmware.
+4. Fill in the WiFi and device-token values.
 5. Edit `include/config.h` for the endpoint, device ID, interval, and pins.
-6. Connect the NodeMCU and run `pio run -t upload`.
-7. Open the serial monitor with `pio device monitor`.
+6. Connect the NodeMCU and run `pio run -t upload`, followed by
+   `pio run -t uploadfs`. The second command installs the tracked Mozilla CA
+   store into LittleFS.
+7. Open the serial monitor with `pio device monitor`. Confirm that startup
+   reports a nonzero number of trust anchors loaded from LittleFS.
 
 At startup, the firmware prints every discovered I2C address and a sensor
 presence summary. Missing sensors are represented as `"ok": false`; they do
@@ -111,7 +113,27 @@ time to the DS3231, and labels the source `gps`. Loss of the fix becomes
 reboot an RTC-restored clock is conservatively labeled `rtc` until NTP or GPS
 refreshes it. `sensors.gps` reports the Uno-relayed fix and location.
 
-HTTPS is attempted only after the clock is plausible. The tracked GTS Root R4
-trust anchor validates the current Cloudflare WE1 certificate chain. Keep
-`ALLOW_INSECURE_TLS` set to `0`; define `TLS_ROOT_CA_PEM_OVERRIDE` in
-`secrets.h` only if the public hostname later changes to a different CA.
+HTTPS is attempted only after the clock is plausible. The firmware uses the
+Mozilla website-trust roots in `data/certs.ar` through BearSSL's flash-backed
+`CertStore`; only the root needed for a connection is loaded into RAM. If
+LittleFS is missing or corrupt, it fails over to the compiled GTS Root R4 that
+validates the Cloudflare WE1 chain in use when this release was built. Keep
+`ALLOW_INSECURE_TLS` set to `0`. `TLS_ROOT_CA_PEM_OVERRIDE` in `secrets.h`
+changes only that compiled fallback.
+
+The CA archive is checked in so ordinary builds do not depend on the network.
+Its source URL, generation time, hashes, and certificate inventory are recorded
+in `data/ca-bundle-manifest.json`. Refresh it periodically from Mozilla's CCADB
+report, review the manifest diff, rebuild, and upload the filesystem image:
+
+```powershell
+python tools/generate_ca_bundle.py
+pio run -t buildfs
+pio run -t uploadfs
+```
+
+The generator keeps only currently usable website-trust roots, verifies every
+reported SHA-256 fingerprint, writes a deterministic Unix archive, and verifies
+that archive before replacing the bundle. Updating the application alone does
+not update LittleFS, so deployments that change the CA bundle must include
+`uploadfs`.

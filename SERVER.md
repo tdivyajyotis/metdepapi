@@ -87,6 +87,19 @@ that supplies authentication.
 
 ## Cloudflare Tunnel
 
+The canonical public hostnames are:
+
+| Purpose | Public route |
+| --- | --- |
+| IMD data/API | `https://imd.turtleguard.in` |
+| Sensor dashboard/read API | `https://dashboard.turtleguard.in` |
+| Device ingestion | `https://ingest.turtleguard.in/v1/readings` |
+
+For the ingestion published-application route, keep the path expression
+`^/v1/readings$` so the unprotected device hostname cannot expose dashboard or
+read routes. Protect `dashboard.turtleguard.in` with Cloudflare Access; do not
+put interactive Access authentication in front of the ingestion route.
+
 Create a tunnel in Cloudflare Zero Trust and route the public hostname to
 `http://api:8000`. Put its token in `.env`, then start the optional profile:
 
@@ -102,4 +115,3 @@ per-device bearer token. Do not publish the PostgreSQL container.
 
 The database is stored in the `sensor-db` Docker volume. A tunnel is not a
 backup. Schedule `pg_dump` to storage outside that volume and test restoration.
-

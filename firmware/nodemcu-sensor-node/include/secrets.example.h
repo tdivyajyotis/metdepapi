@@ -6,9 +6,10 @@
 #define WIFI_PASSWORD "your-wifi-password"
 #define DEVICE_API_TOKEN "replace-with-a-long-random-device-token"
 
-// The tracked firmware includes GTS Root R4 for the current Cloudflare WE1
-// certificate chain. Define TLS_ROOT_CA_PEM_OVERRIDE here only if the public
-// hostname moves to a different CA. The value must be a complete PEM root.
+// Normal operation uses the Mozilla CA store uploaded to LittleFS. If that
+// store cannot be loaded, the firmware falls back to its compiled GTS Root R4.
+// Define TLS_ROOT_CA_PEM_OVERRIDE only to replace that fallback. The value must
+// be a complete PEM root certificate.
 // #define TLS_ROOT_CA_PEM_OVERRIDE R"EOF(
 // -----BEGIN CERTIFICATE-----
 // ...

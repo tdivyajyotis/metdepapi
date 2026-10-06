@@ -1,8 +1,10 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <CertStoreBearSSL.h>
 #include <DallasTemperature.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
+#include <LittleFS.h>
 #include <OneWire.h>
 #include <RTClib.h>
 #include <SoftwareSerial.h>
@@ -44,12 +46,14 @@ Adafruit_SHT4x sht45;
 Adafruit_TCS3448 tcs3448;
 Tsl2584 tsl1(config::TSL2584_1_ADDRESS);
 Tsl2584 tsl2(config::TSL2584_2_ADDRESS);
+BearSSL::CertStore certificateStore;
 
 bool hasSht45 = false;
 bool hasTcs3448 = false;
 bool hasTsl1 = false;
 bool hasTsl2 = false;
 bool hasRtc = false;
+bool certificateStoreReady = false;
 
 enum class TimeSource : uint8_t {
   Unsynchronized,
@@ -559,6 +563,10 @@ bool postPayload(const String &payload) {
       return false;
     }
     BearSSL::WiFiClientSecure client;
+    if (certificateStoreReady) {
+      client.setCertStore(&certificateStore);
+      return postWithClient(client, payload);
+    }
 #ifdef TLS_ROOT_CA_PEM_OVERRIDE
     const char *rootCa = TLS_ROOT_CA_PEM_OVERRIDE;
 #else
@@ -581,6 +589,24 @@ bool postPayload(const String &payload) {
 
   WiFiClient client;
   return postWithClient(client, payload);
+}
+
+void initializeTlsTrustStore() {
+  if (!LittleFS.begin()) {
+    Serial.println(F("TLS CA store: LittleFS mount failed; using compiled fallback"));
+    return;
+  }
+
+  const int certificateCount = certificateStore.initCertStore(
+      LittleFS, PSTR("/certs.idx"), PSTR("/certs.ar"));
+  if (certificateCount <= 0) {
+    Serial.println(F("TLS CA store: no certificates; using compiled fallback"));
+    return;
+  }
+
+  certificateStoreReady = true;
+  Serial.printf("TLS CA store: loaded %d trust anchors from LittleFS\n",
+                certificateCount);
 }
 
 void scanI2cBus() {
@@ -630,6 +656,7 @@ void setup() {
   Serial.println(F("NodeMCU sensor node starting"));
 
   bootId = ESP.getChipId() ^ micros() ^ ESP.getCycleCount();
+  initializeTlsTrustStore();
   unoSerial.begin(config::UNO_SERIAL_BAUD);
   Wire.begin(config::I2C_SDA_PIN, config::I2C_SCL_PIN);
   Wire.setClock(config::I2C_CLOCK_HZ);

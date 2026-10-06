@@ -44,9 +44,9 @@ constexpr uint32_t HTTP_TIMEOUT_MS = 12000;
 constexpr time_t MIN_VALID_UNIX_TIME = 1609459200;  // 2021-01-01 UTC
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.3.0";
+constexpr char FIRMWARE_VERSION[] = "0.4.0";
 
-constexpr char INGEST_URL[] = "https://ingest.atldavunit8.org/v1/readings";
+constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 
 // Calibrate each resistive probe/module pair using your own dry-reference and
 // wet-reference soil readings. The default values are placeholders and
