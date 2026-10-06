@@ -1,5 +1,7 @@
 #include <Arduino.h>
+#include <AltSoftSerial.h>
 #include <SoftwareSerial.h>
+#include <TinyGPSPlus.h>
 #include <string.h>
 
 #include "config.h"
@@ -7,6 +9,8 @@
 namespace {
 
 SoftwareSerial nodeMcuSerial(config::NODEMCU_RX_PIN, config::NODEMCU_TX_PIN);
+AltSoftSerial gpsSerial;
+TinyGPSPlus gps;
 uint32_t sequenceNumber = 0;
 char commandBuffer[16] = {};
 uint8_t commandLength = 0;
@@ -64,6 +68,48 @@ void sendReadings() {
   nodeMcuSerial.print(a0);
   nodeMcuSerial.print(F(",\"a1\":"));
   nodeMcuSerial.print(a1);
+  nodeMcuSerial.print(F(",\"gps\":{\"fix_valid\":"));
+  const bool fixValid = gps.location.isValid() &&
+                        gps.location.age() <= config::GPS_MAX_FIX_AGE_MS;
+  const bool timeValid = gps.date.isValid() && gps.time.isValid() &&
+                         gps.date.age() <= config::GPS_MAX_FIX_AGE_MS &&
+                         gps.time.age() <= config::GPS_MAX_FIX_AGE_MS;
+  nodeMcuSerial.print(fixValid ? F("true") : F("false"));
+  nodeMcuSerial.print(F(",\"time_valid\":"));
+  nodeMcuSerial.print(timeValid ? F("true") : F("false"));
+  nodeMcuSerial.print(F(",\"satellites\":"));
+  nodeMcuSerial.print(gps.satellites.isValid() ? gps.satellites.value() : 0);
+  nodeMcuSerial.print(F(",\"fix_age_ms\":"));
+  nodeMcuSerial.print(fixValid ? gps.location.age() : UINT32_MAX);
+  if (timeValid) {
+    nodeMcuSerial.print(F(",\"year\":"));
+    nodeMcuSerial.print(gps.date.year());
+    nodeMcuSerial.print(F(",\"month\":"));
+    nodeMcuSerial.print(gps.date.month());
+    nodeMcuSerial.print(F(",\"day\":"));
+    nodeMcuSerial.print(gps.date.day());
+    nodeMcuSerial.print(F(",\"hour\":"));
+    nodeMcuSerial.print(gps.time.hour());
+    nodeMcuSerial.print(F(",\"minute\":"));
+    nodeMcuSerial.print(gps.time.minute());
+    nodeMcuSerial.print(F(",\"second\":"));
+    nodeMcuSerial.print(gps.time.second());
+  }
+  if (fixValid) {
+    nodeMcuSerial.print(F(",\"latitude_deg\":"));
+    nodeMcuSerial.print(gps.location.lat(), 6);
+    nodeMcuSerial.print(F(",\"longitude_deg\":"));
+    nodeMcuSerial.print(gps.location.lng(), 6);
+    if (gps.altitude.isValid()) {
+      nodeMcuSerial.print(F(",\"altitude_m\":"));
+      nodeMcuSerial.print(gps.altitude.meters(), 2);
+    }
+    if (gps.hdop.isValid()) {
+      nodeMcuSerial.print(F(",\"hdop\":"));
+      nodeMcuSerial.print(gps.hdop.hdop(), 2);
+    }
+  }
+  nodeMcuSerial.print(F("}"));
   nodeMcuSerial.print(F("}\n"));
 
   Serial.print(F("Sample "));
@@ -99,11 +145,18 @@ void receiveCommands() {
   }
 }
 
+void receiveGps() {
+  while (gpsSerial.available() > 0) {
+    gps.encode(static_cast<char>(gpsSerial.read()));
+  }
+}
+
 }  // namespace
 
 void setup() {
   Serial.begin(115200);
   nodeMcuSerial.begin(config::NODEMCU_SERIAL_BAUD);
+  gpsSerial.begin(config::GPS_SERIAL_BAUD);
   analogReference(DEFAULT);
 
   if (config::SOIL_POWER_PIN != 0xFF) {
@@ -115,5 +168,6 @@ void setup() {
 }
 
 void loop() {
+  receiveGps();
   receiveCommands();
 }

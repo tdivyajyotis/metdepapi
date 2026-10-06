@@ -4,17 +4,25 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <OneWire.h>
+#include <RTClib.h>
 #include <SoftwareSerial.h>
 #include <WiFiClient.h>
 #include <WiFiClientSecureBearSSL.h>
 #include <Wire.h>
+#include <coredecls.h>
+#include <sys/time.h>
 #include <time.h>
+
+extern "C" {
+#include <lwip/apps/sntp.h>
+}
 
 #include <Adafruit_SHT4x.h>
 #include <Adafruit_TCS3448.h>
 
 #include "Tsl2584.h"
 #include "config.h"
+#include "gts_root_r4.h"
 
 #if __has_include("secrets.h")
 #include "secrets.h"
@@ -22,7 +30,6 @@
 #define WIFI_SSID ""
 #define WIFI_PASSWORD ""
 #define DEVICE_API_TOKEN ""
-#define TLS_ROOT_CA_PEM ""
 #define ALLOW_INSECURE_TLS 0
 #warning "Copy include/secrets.example.h to include/secrets.h before deployment"
 #endif
@@ -32,6 +39,7 @@ namespace {
 OneWire oneWire(config::ONE_WIRE_PIN);
 DallasTemperature ds18b20(&oneWire);
 SoftwareSerial unoSerial(config::UNO_RX_PIN, config::UNO_TX_PIN);
+RTC_DS3231 rtc;
 Adafruit_SHT4x sht45;
 Adafruit_TCS3448 tcs3448;
 Tsl2584 tsl1(config::TSL2584_1_ADDRESS);
@@ -41,11 +49,154 @@ bool hasSht45 = false;
 bool hasTcs3448 = false;
 bool hasTsl1 = false;
 bool hasTsl2 = false;
+bool hasRtc = false;
+
+enum class TimeSource : uint8_t {
+  Unsynchronized,
+  Rtc,
+  Ntp,
+  Gps,
+  GpsHoldover,
+};
+
+TimeSource timeSource = TimeSource::Unsynchronized;
+TimeSource rtcLastSetSource = TimeSource::Unsynchronized;
+volatile bool ntpSyncArrived = false;
+uint32_t lastGpsFixAt = 0;
+uint32_t lastGpsDisciplineAt = 0;
+
+struct UnoGpsReading {
+  bool present = false;
+  bool fixValid = false;
+  bool timeValid = false;
+  time_t epoch = 0;
+  double latitude = 0;
+  double longitude = 0;
+  double altitudeM = 0;
+  bool altitudeValid = false;
+  double hdop = 0;
+  bool hdopValid = false;
+  uint32_t fixAgeMs = UINT32_MAX;
+  uint32_t receivedAt = 0;
+  uint32_t satellites = 0;
+};
+
+UnoGpsReading unoGps;
 
 uint32_t lastSampleAt = 0;
 uint32_t lastWifiAttemptAt = 0;
 uint32_t sequenceNumber = 0;
 uint32_t bootId = 0;
+
+const char *timeSourceName(TimeSource source) {
+  switch (source) {
+    case TimeSource::Rtc:
+      return "rtc";
+    case TimeSource::Ntp:
+      return "ntp";
+    case TimeSource::Gps:
+      return "gps";
+    case TimeSource::GpsHoldover:
+      return "gps_holdover";
+    default:
+      return "unsynchronized";
+  }
+}
+
+bool systemTimeIsValid() {
+  return time(nullptr) >= config::MIN_VALID_UNIX_TIME;
+}
+
+void setSystemTime(time_t epoch) {
+  timeval value = {epoch, 0};
+  settimeofday(&value, nullptr);
+}
+
+void writeRtc(time_t epoch, TimeSource source) {
+  if (!hasRtc || epoch < config::MIN_VALID_UNIX_TIME) {
+    return;
+  }
+  rtc.adjust(DateTime(static_cast<uint32_t>(epoch)));
+  rtcLastSetSource = source;
+  Serial.printf("RTC updated from %s\n", timeSourceName(source));
+}
+
+void initializeTimekeeping() {
+  hasRtc = config::RTC_ENABLED && rtc.begin(&Wire);
+  if (hasRtc && !rtc.lostPower()) {
+    const time_t rtcEpoch = rtc.now().unixtime();
+    if (rtcEpoch >= config::MIN_VALID_UNIX_TIME) {
+      setSystemTime(rtcEpoch);
+      timeSource = TimeSource::Rtc;
+      Serial.println(F("System clock restored from RTC"));
+    }
+  }
+
+  settimeofday_cb([](bool fromSntp) {
+    if (fromSntp) {
+      ntpSyncArrived = true;
+    }
+  });
+  configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
+}
+
+bool gpsFixIsFresh() {
+  return unoGps.present && unoGps.fixValid &&
+         unoGps.fixAgeMs <= config::GPS_MAX_FIX_AGE_MS &&
+         millis() - unoGps.receivedAt <= config::GPS_RELAY_STALE_MS &&
+         unoGps.satellites >= config::GPS_MIN_SATELLITES;
+}
+
+bool gpsTimeIsFresh() {
+  return unoGps.present && unoGps.timeValid &&
+         unoGps.epoch >= config::MIN_VALID_UNIX_TIME &&
+         millis() - unoGps.receivedAt <= config::GPS_RELAY_STALE_MS;
+}
+
+time_t gpsEpoch() {
+  return unoGps.epoch;
+}
+
+void pollTimeSources() {
+  const uint32_t now = millis();
+  const bool validGpsFix = gpsFixIsFresh();
+  if (validGpsFix) {
+    lastGpsFixAt = now;
+  }
+
+  if (validGpsFix && gpsTimeIsFresh()) {
+    const bool firstGpsSync = timeSource != TimeSource::Gps;
+    const bool disciplineDue =
+        lastGpsDisciplineAt == 0 ||
+        now - lastGpsDisciplineAt >= config::GPS_DISCIPLINE_INTERVAL_MS;
+    if (firstGpsSync || disciplineDue) {
+      const time_t epoch = gpsEpoch();
+      if (epoch >= config::MIN_VALID_UNIX_TIME) {
+        sntp_stop();
+        setSystemTime(epoch);
+        writeRtc(epoch, TimeSource::Gps);
+        lastGpsDisciplineAt = now;
+        Serial.println(F("System clock disciplined from GPS"));
+      }
+    }
+    timeSource = TimeSource::Gps;
+  } else if (timeSource == TimeSource::Gps &&
+             now - lastGpsFixAt > config::GPS_MAX_FIX_AGE_MS) {
+    timeSource = TimeSource::GpsHoldover;
+  }
+
+  if (ntpSyncArrived) {
+    ntpSyncArrived = false;
+    if (timeSource != TimeSource::Gps && systemTimeIsValid()) {
+      timeSource = TimeSource::Ntp;
+      writeRtc(time(nullptr), TimeSource::Ntp);
+      Serial.println(F("Initial system clock synchronized from NTP"));
+    }
+    // This station intentionally uses NTP only for the initial sync. GPS takes
+    // precedence when it becomes valid; the RTC provides subsequent holdover.
+    sntp_stop();
+  }
+}
 
 String romToString(const DeviceAddress address) {
   char text[17] = {};
@@ -57,7 +208,7 @@ String romToString(const DeviceAddress address) {
 
 String iso8601Now() {
   const time_t now = time(nullptr);
-  if (now < 1609459200) {
+  if (now < config::MIN_VALID_UNIX_TIME) {
     return String();
   }
   struct tm utc {};
@@ -98,12 +249,13 @@ bool soilPercent(int16_t counts, uint8_t channel, float &percent) {
 }
 
 bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
+  unoSerial.listen();
   while (unoSerial.available() > 0) {
     unoSerial.read();
   }
   unoSerial.print(F("READ\n"));
 
-  char response[128] = {};
+  char response[512] = {};
   size_t length = 0;
   const uint32_t startedAt = millis();
   while (millis() - startedAt < config::UNO_RESPONSE_TIMEOUT_MS) {
@@ -111,7 +263,7 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
       const char value = static_cast<char>(unoSerial.read());
       if (value == '\n') {
         response[length] = '\0';
-        StaticJsonDocument<128> reply;
+        StaticJsonDocument<512> reply;
         const DeserializationError error = deserializeJson(reply, response);
         if (error || reply["v"].as<uint8_t>() != 1 ||
             !reply.containsKey("a0") || !reply.containsKey("a1")) {
@@ -129,6 +281,44 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
         counts[0] = a0;
         counts[1] = a1;
         unoSequence = reply["seq"] | 0UL;
+
+        JsonObject gpsReply = reply["gps"];
+        unoGps = UnoGpsReading();
+        if (!gpsReply.isNull()) {
+          unoGps.present = true;
+          unoGps.fixValid = gpsReply["fix_valid"] | false;
+          unoGps.timeValid = gpsReply["time_valid"] | false;
+          unoGps.satellites = gpsReply["satellites"] | 0UL;
+          unoGps.fixAgeMs = gpsReply["fix_age_ms"] | UINT32_MAX;
+          unoGps.receivedAt = millis();
+          if (unoGps.timeValid) {
+            const uint16_t year = gpsReply["year"] | 0;
+            const uint8_t month = gpsReply["month"] | 0;
+            const uint8_t day = gpsReply["day"] | 0;
+            const uint8_t hour = gpsReply["hour"] | 0;
+            const uint8_t minute = gpsReply["minute"] | 0;
+            const uint8_t second = gpsReply["second"] | 0;
+            if (year >= 2021 && month >= 1 && month <= 12 && day >= 1 &&
+                day <= 31 && hour <= 23 && minute <= 59 && second <= 60) {
+              unoGps.epoch =
+                  DateTime(year, month, day, hour, minute, second).unixtime();
+            } else {
+              unoGps.timeValid = false;
+            }
+          }
+          if (unoGps.fixValid) {
+            unoGps.latitude = gpsReply["latitude_deg"] | 0.0;
+            unoGps.longitude = gpsReply["longitude_deg"] | 0.0;
+          }
+          if (gpsReply.containsKey("altitude_m")) {
+            unoGps.altitudeValid = true;
+            unoGps.altitudeM = gpsReply["altitude_m"].as<double>();
+          }
+          if (gpsReply.containsKey("hdop")) {
+            unoGps.hdopValid = true;
+            unoGps.hdop = gpsReply["hdop"].as<double>();
+          }
+        }
         return true;
       }
       if (value != '\r' && length + 1 < sizeof(response)) {
@@ -187,11 +377,9 @@ void addSht45Reading(JsonObject sensors) {
   out["humidity_pct"] = humidity.relative_humidity;
 }
 
-void addSoilReadings(JsonObject sensors) {
+void addSoilReadings(JsonObject sensors, bool hasUnoReading,
+                     const uint16_t (&counts)[2], uint32_t unoSequence) {
   JsonArray probes = sensors.createNestedArray("soil_moisture");
-  uint16_t counts[2] = {};
-  uint32_t unoSequence = 0;
-  const bool hasUnoReading = readUnoAdc(counts, unoSequence);
 
   for (uint8_t channel = 0; channel < 2; ++channel) {
     JsonObject probe = probes.createNestedObject();
@@ -265,7 +453,38 @@ void addTcs3448Reading(JsonObject sensors) {
   out["visible"] = readings[TCS3448_CHANNEL_VIS_TL_0];
 }
 
+void addTimeAndGpsReading(JsonObject sensors) {
+  JsonObject timing = sensors.createNestedObject("timekeeping");
+  timing["ok"] = systemTimeIsValid();
+  timing["source"] = timeSourceName(timeSource);
+  timing["rtc_available"] = hasRtc;
+  timing["rtc_last_set_source"] = timeSourceName(rtcLastSetSource);
+
+  JsonObject out = sensors.createNestedObject("gps");
+  const bool validFix = gpsFixIsFresh();
+  out["fix_valid"] = validFix;
+  out["time_valid"] = gpsTimeIsFresh();
+  out["relay_present"] = unoGps.present;
+  out["satellites"] = unoGps.satellites;
+  if (unoGps.hdopValid) {
+    out["hdop"] = unoGps.hdop;
+  }
+  if (validFix) {
+    out["latitude_deg"] = unoGps.latitude;
+    out["longitude_deg"] = unoGps.longitude;
+    out["fix_age_ms"] = unoGps.fixAgeMs;
+    if (unoGps.altitudeValid) {
+      out["altitude_m"] = unoGps.altitudeM;
+    }
+  }
+}
+
 String makePayload() {
+  uint16_t unoCounts[2] = {};
+  uint32_t unoSequence = 0;
+  const bool hasUnoReading = readUnoAdc(unoCounts, unoSequence);
+  pollTimeSources();
+
   StaticJsonDocument<4096> doc;
   doc["schema_version"] = 1;
   doc["device_id"] = config::DEVICE_ID;
@@ -291,10 +510,11 @@ String makePayload() {
   JsonObject sensors = doc.createNestedObject("sensors");
   addDs18b20Readings(sensors);
   addSht45Reading(sensors);
-  addSoilReadings(sensors);
+  addSoilReadings(sensors, hasUnoReading, unoCounts, unoSequence);
   addTslReading(sensors, "tsl2584_1", tsl1, hasTsl1);
   addTslReading(sensors, "tsl2584_2", tsl2, hasTsl2);
   addTcs3448Reading(sensors);
+  addTimeAndGpsReading(sensors);
 
   String payload;
   serializeJson(doc, payload);
@@ -334,9 +554,17 @@ bool postPayload(const String &payload) {
 
   const String url(config::INGEST_URL);
   if (url.startsWith("https://")) {
+    if (!systemTimeIsValid()) {
+      Serial.println(F("Not posting HTTPS: waiting for NTP, GPS, or RTC time"));
+      return false;
+    }
     BearSSL::WiFiClientSecure client;
-    const char *rootCa = TLS_ROOT_CA_PEM;
-    if (strlen(rootCa) > 0 && strstr(rootCa, "paste-root-ca-here") == nullptr) {
+#ifdef TLS_ROOT_CA_PEM_OVERRIDE
+    const char *rootCa = TLS_ROOT_CA_PEM_OVERRIDE;
+#else
+    const char *rootCa = GTS_ROOT_R4_PEM;
+#endif
+    if (strlen(rootCa) > 0) {
       BearSSL::X509List trustAnchor(rootCa);
       client.setTrustAnchors(&trustAnchor);
       return postWithClient(client, payload);
@@ -346,7 +574,7 @@ bool postPayload(const String &payload) {
     client.setInsecure();
     return postWithClient(client, payload);
 #else
-    Serial.println(F("Not posting: configure TLS_ROOT_CA_PEM in secrets.h"));
+    Serial.println(F("Not posting: no TLS root CA is configured"));
     return false;
 #endif
   }
@@ -407,15 +635,16 @@ void setup() {
   Wire.setClock(config::I2C_CLOCK_HZ);
   scanI2cBus();
   initializeSensors();
+  initializeTimekeeping();
 
   WiFi.persistent(false);
   WiFi.setAutoReconnect(true);
   connectWifi();
-  configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
 }
 
 void loop() {
   connectWifi();
+  pollTimeSources();
 
   const uint32_t now = millis();
   if (lastSampleAt == 0 || now - lastSampleAt >= config::SAMPLE_INTERVAL_MS) {

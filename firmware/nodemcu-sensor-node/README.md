@@ -7,8 +7,10 @@ ESP8266/NodeMCU firmware for:
 - one TCS3448 14-channel spectral sensor;
 - two TSL2584TSV ambient-light sensors;
 - two 1.3 m resistive soil-moisture probe/LM393 modules sampled by an Arduino
-  Uno ADC coprocessor; and
-- authenticated JSON ingestion over HTTP or HTTPS.
+  Uno ADC coprocessor;
+- GPS time/location parsed and relayed by that Uno;
+- DS3231 RTC holdover and synchronization; and
+- authenticated JSON ingestion over verified HTTPS.
 
 The two TSL2584TSV sensors use separate hardware-selected I2C addresses so
 they can coexist with each other and with the fixed-address TCS3448.
@@ -26,6 +28,7 @@ they can coexist with each other and with the fixed-address TCS3448.
 | TCS3448 | `0x39` | Fixed address |
 | TSL2584 #1 | `0x29` | ADDR_SEL to GND |
 | TSL2584 #2 | `0x49` | ADDR_SEL to VDD |
+| DS3231 RTC | `0x68` | Shared I2C bus; the NodeMCU is its only controller |
 
 The soil modules have `VCC`, `GND`, `AO`, and `DO`. Connect `AO` to Uno A0/A1
 and leave `DO` disconnected; the digital comparator discards most of the useful
@@ -52,7 +55,8 @@ Do not use `0x39` for either TSL2584: it conflicts with the TCS3448.
 2. Copy `include/secrets.example.h` to `include/secrets.h`.
 3. Build and upload `../uno-adc` to the Uno, then wire the serial link as
    documented in its README.
-4. Fill in WiFi, device-token, and TLS root-CA values.
+4. Fill in the WiFi and device-token values. GTS Root R4 for the current
+   Cloudflare chain is included in the tracked firmware.
 5. Edit `include/config.h` for the endpoint, device ID, interval, and pins.
 6. Connect the NodeMCU and run `pio run -t upload`.
 7. Open the serial monitor with `pio device monitor`.
@@ -81,8 +85,8 @@ either polarity: wet may be above or below the dry count.
 
 Each request includes a unique boot/session event ID and sequence number,
 sensor health flags, raw optical/ADC values, WiFi RSSI, firmware version, and a
-UTC timestamp once NTP has synchronized. The server should enforce uniqueness
-on `event_id` so retries are idempotent.
+UTC timestamp once RTC, NTP, or GPS has provided valid time. The server should
+enforce uniqueness on `event_id` so retries are idempotent.
 
 TSL2584 values are deliberately sent as raw broadband, infrared, and derived
 visible counts. Converting them to calibrated lux depends on the optical stack
@@ -92,3 +96,22 @@ constant.
 The current firmware retries WiFi automatically but does not persist samples
 through a power failure. Flash-backed queuing is the next addition if the node
 must tolerate long outages without losing readings.
+
+## Clock-source priority
+
+At boot, a valid DS3231 restores the system clock immediately. SNTP then runs
+until its first successful synchronization, writes that NTP time to the
+DS3231, labels the active source `ntp`, and stops. When the Uno later relays a
+fresh GPS time and position fix, the NodeMCU switches to GPS, writes the GPS
+time to the DS3231, and labels the source `gps`. Loss of the fix becomes
+`gps_holdover`; the local clock continues from its most recent discipline.
+
+`sensors.timekeeping` reports `source`, `rtc_available`, and
+`rtc_last_set_source`. A DS3231 stores time but not provenance, so after a
+reboot an RTC-restored clock is conservatively labeled `rtc` until NTP or GPS
+refreshes it. `sensors.gps` reports the Uno-relayed fix and location.
+
+HTTPS is attempted only after the clock is plausible. The tracked GTS Root R4
+trust anchor validates the current Cloudflare WE1 certificate chain. Keep
+`ALLOW_INSECURE_TLS` set to `0`; define `TLS_ROOT_CA_PEM_OVERRIDE` in
+`secrets.h` only if the public hostname later changes to a different CA.

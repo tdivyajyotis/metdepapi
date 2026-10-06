@@ -3,7 +3,9 @@
 This firmware replaces the ADS1115 previously used by the NodeMCU sensor
 node. The Uno samples two analog soil-moisture inputs, applies a nine-sample
 median filter, and returns a compact JSON record when the NodeMCU sends
-`READ` followed by a newline.
+`READ` followed by a newline. It also continuously parses NMEA from the GPS
+and relays GPS date/time, fix, position, satellites, HDOP, and altitude in the
+same response. The NodeMCU never connects directly to the GPS.
 
 ## Wiring
 
@@ -14,6 +16,8 @@ median filter, and returns a compact JSON record when the NodeMCU sends
 | Ground | GND | GND | A common ground is required |
 | Soil sensor 1 | A0 | - | Analog output must remain between 0 V and the Uno ADC reference |
 | Soil sensor 2 | A1 | - | Analog output must remain between 0 V and the Uno ADC reference |
+| GPS TX | D8 / AltSoftSerial RX | - | NMEA at 9600 baud; GPS TX must be electrically safe for the Uno |
+| GPS RX | D9 / AltSoftSerial TX | - | Optional; leave disconnected when the station never configures the GPS |
 
 For a resistor divider on the Uno-to-NodeMCU line, connect Uno D11 through
 1 kOhm to NodeMCU D6 and connect 2 kOhm from NodeMCU D6 to ground. Do not
@@ -24,6 +28,10 @@ assumes that A0 and A1 never exceed that supply. The NodeMCU uses 5.0 V when
 reporting approximate `voltage_v`; measure the Uno's actual 5 V rail and
 update `UNO_ADC_REFERENCE_V` in the NodeMCU configuration when voltage
 accuracy matters. Soil calibration should use `raw_counts`, not voltage.
+
+AltSoftSerial is used for GPS so NMEA reception can continue while the
+SoftwareSerial link on D10/D11 handles NodeMCU commands. On an Arduino Uno,
+AltSoftSerial fixes RX to D8 and TX to D9.
 
 ## Build and upload
 
