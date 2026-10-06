@@ -81,7 +81,8 @@ class CollectorTests(unittest.TestCase):
 
     def request(self, store, path):
         # Fixed fixtures test response shape; separate tests verify source-age refusal.
-        request = handler(store, "public", max_source_age=10**12).__new__(handler(store, "public"))
+        request_handler = handler(store, "public", max_source_age=10**12)
+        request = request_handler.__new__(request_handler)
         request.path = path
         request.wfile = io.BytesIO()
         request.send_response = lambda code: setattr(request, "response_code", code)
