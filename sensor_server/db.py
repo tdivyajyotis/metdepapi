@@ -130,24 +130,25 @@ class Database:
                     raise ValueError("event_id is already owned by another device")
             else:
                 recorded_at = reading.observed_at or inserted["received_at"]
-                connection.executemany(
-                    """
-                    INSERT INTO sensor_measurements
-                        (reading_id, device_id, recorded_at, metric, value, unit)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    """,
-                    [
-                        (
-                            inserted["id"],
-                            reading.device_id,
-                            recorded_at,
-                            metric,
-                            value,
-                            unit,
-                        )
-                        for metric, value, unit in measurements
-                    ],
-                )
+                with connection.cursor() as cursor:
+                    cursor.executemany(
+                        """
+                        INSERT INTO sensor_measurements
+                            (reading_id, device_id, recorded_at, metric, value, unit)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        """,
+                        [
+                            (
+                                inserted["id"],
+                                reading.device_id,
+                                recorded_at,
+                                metric,
+                                value,
+                                unit,
+                            )
+                            for metric, value, unit in measurements
+                        ],
+                    )
                 connection.execute(
                     "UPDATE devices SET last_seen_at = now() WHERE device_id = %s",
                     (reading.device_id,),
