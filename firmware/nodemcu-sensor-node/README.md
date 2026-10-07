@@ -90,6 +90,11 @@ sensor health flags, raw optical/ADC values, WiFi RSSI, firmware version, and a
 UTC timestamp once RTC, NTP, or GPS has provided valid time. The server should
 enforce uniqueness on `event_id` so retries are idempotent.
 
+Sampling starts only after hardware discovery and initialization have finished,
+WiFi is connected, and HTTPS has a valid RTC/NTP/GPS clock for certificate
+verification. If WiFi disconnects, measurements pause until it reconnects so a
+reading is not intentionally taken only to be discarded before transmission.
+
 TSL2584 values are deliberately sent as raw broadband, infrared, and derived
 visible counts. Converting them to calibrated lux depends on the optical stack
 and should be done after calibration rather than applying a misleading generic

@@ -591,6 +591,14 @@ bool postPayload(const String &payload) {
   return postWithClient(client, payload);
 }
 
+bool readyToSampleAndSend() {
+  if (WiFi.status() != WL_CONNECTED) {
+    return false;
+  }
+  return strncmp(config::INGEST_URL, "https://", 8) != 0 ||
+         systemTimeIsValid();
+}
+
 void initializeTlsTrustStore() {
   if (!LittleFS.begin()) {
     Serial.println(F("TLS CA store: LittleFS mount failed; using compiled fallback"));
@@ -639,13 +647,17 @@ void initializeSensors() {
                  tcs3448.setATIME(29) && tcs3448.setASTEP(599) &&
                  tcs3448.setSMUXMode(TCS3448_SMUX_18CH);
   }
+}
 
+void printSensorStatus() {
+  const char *rtcStatus =
+      config::RTC_ENABLED ? (hasRtc ? "ok" : "missing") : "disabled";
   Serial.printf("Sensors: DS18B20=%u/4 SHT45=%s UnoADC=serial TSL1=%s "
-                "TSL2=%s TCS3448=%s\n",
+                "TSL2=%s TCS3448=%s DS3231=%s\n",
                 ds18b20.getDeviceCount() < 4 ? ds18b20.getDeviceCount() : 4,
                 hasSht45 ? "ok" : "missing", hasTsl1 ? "ok" : "missing",
                 hasTsl2 ? "ok" : "missing",
-                hasTcs3448 ? "ok" : "missing");
+                hasTcs3448 ? "ok" : "missing", rtcStatus);
 }
 
 }  // namespace
@@ -663,6 +675,7 @@ void setup() {
   scanI2cBus();
   initializeSensors();
   initializeTimekeeping();
+  printSensorStatus();
 
   WiFi.persistent(false);
   WiFi.setAutoReconnect(true);
@@ -672,6 +685,13 @@ void setup() {
 void loop() {
   connectWifi();
   pollTimeSources();
+
+  // Do not consume a sequence number or take sensor measurements until setup
+  // is complete and the network/TLS prerequisites allow an immediate send.
+  if (!readyToSampleAndSend()) {
+    delay(10);
+    return;
+  }
 
   const uint32_t now = millis();
   if (lastSampleAt == 0 || now - lastSampleAt >= config::SAMPLE_INTERVAL_MS) {
