@@ -7,6 +7,11 @@ median filter, and returns a compact JSON record when the NodeMCU sends
 and relays GPS date/time, fix, position, satellites, HDOP, and altitude in the
 same response. The NodeMCU never connects directly to the GPS.
 
+The response also contains a `telemetry` object with firmware and uptime,
+available SRAM, reset flags, command/overflow/sample/loop counters, TinyGPS
+parser counters, and soil-power-switch configuration. The NodeMCU forwards
+that snapshot to the server; there is no server-to-Uno command path.
+
 ## Wiring
 
 | Signal | Arduino Uno | NodeMCU ESP8266 | Notes |
@@ -18,6 +23,10 @@ same response. The NodeMCU never connects directly to the GPS.
 | Soil sensor 2 | A1 | - | Analog output must remain between 0 V and the Uno ADC reference |
 | GPS TX | D8 / AltSoftSerial RX | - | NMEA at 9600 baud; GPS TX must be electrically safe for the Uno |
 | GPS RX | D9 / AltSoftSerial TX | - | Optional; leave disconnected when the station never configures the GPS |
+
+The station mapping is deterministic: `A0` is soil sensor 1 at 15 cm and `A1`
+is soil sensor 2 at 45 cm. Depth metadata is attached by the NodeMCU from its
+`SOIL_DEPTH_CM` configuration.
 
 For a resistor divider on the Uno-to-NodeMCU line, connect Uno D11 through
 1 kOhm to NodeMCU D6 and connect 2 kOhm from NodeMCU D6 to ground. Do not

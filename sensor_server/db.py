@@ -269,7 +269,8 @@ class Database:
     def latest(self, device_id: str | None, limit: int) -> list[dict[str, Any]]:
         query = """
             SELECT event_id, device_id, sequence, observed_at, received_at,
-                   firmware, uptime_ms, wifi_rssi_dbm, payload->'sensors' AS sensors
+                   firmware, uptime_ms, wifi_rssi_dbm, payload->'sensors' AS sensors,
+                   payload->'telemetry' AS telemetry
             FROM sensor_readings
         """
         params: list[Any] = []

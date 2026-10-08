@@ -18,6 +18,7 @@ class ReadingIn(BaseModel):
     uptime_ms: int | None = Field(default=None, ge=0)
     wifi_rssi_dbm: int | None = Field(default=None, ge=-150, le=20)
     sensors: dict[str, Any] = Field(default_factory=dict)
+    telemetry: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("observed_at")
     @classmethod
@@ -33,4 +34,3 @@ class IngestResponse(BaseModel):
     event_id: str
     received_at: datetime
     measurement_count: int
-

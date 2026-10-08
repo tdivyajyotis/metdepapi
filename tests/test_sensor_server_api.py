@@ -35,6 +35,17 @@ class ApiTests(unittest.TestCase):
             "sequence": 1,
             "observed_at": "2026-10-06T00:00:00Z",
             "firmware": "test",
+            "telemetry": {
+                "version": 1,
+                "events": [
+                    {
+                        "id": 1,
+                        "source": "boot",
+                        "level": "info",
+                        "message": "started",
+                    }
+                ],
+            },
             "sensors": {
                 "arduino_adc": {
                     "ok": True,
@@ -109,4 +120,3 @@ class ApiTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

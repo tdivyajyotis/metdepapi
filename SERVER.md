@@ -74,7 +74,7 @@ response with `duplicate: true` rather than creating a second reading.
 
 - `POST /v1/readings` — device-authenticated ingestion.
 - `GET /v1/devices` — configured devices and last-seen timestamps.
-- `GET /v1/readings` — recent full sensor snapshots.
+- `GET /v1/readings` — recent full sensor and one-way telemetry snapshots.
 - `GET /v1/metrics?device_id=station-001` — discovered metric paths.
 - `GET /v1/series?device_id=station-001&metric=...` — chart-ready series.
 
@@ -85,6 +85,12 @@ migration renames the corresponding keys in historical JSON payloads and the
 flattened time-series metrics. Ingestion also maps the former `tsl2584_1` and
 `tsl2584_2` keys, allowing the server to be deployed before the NodeMCU is
 flashed.
+
+The dashboard includes a read-only telemetry console that refreshes every 30
+seconds. Recent readings expose NodeMCU, WiFi, TLS, I2C, sensor-presence,
+NodeMCU-to-Uno link, Uno, HTTP, timekeeping, and bounded event-log data. There
+is deliberately no API or UI route that sends commands to field hardware.
+
 - `GET /healthz` — database health.
 - `GET /docs` — interactive OpenAPI documentation.
 

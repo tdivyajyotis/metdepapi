@@ -20,6 +20,9 @@
     table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
     th, td { padding: .65rem; text-align: left; border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
     code { overflow-wrap: anywhere; }
+    .telemetry-heading { margin: 2rem 0 .6rem; }
+    .telemetry-note { opacity: .7; margin: 0 0 .7rem; }
+    #telemetry-console { box-sizing: border-box; width: 100%; max-height: 34rem; overflow: auto; margin: 0; padding: 1rem; border-radius: .6rem; background: #10151c; color: #d7e0ea; border: 1px solid #34404f; font: 13px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
@@ -33,6 +36,9 @@
   </div>
   <div id="latest" class="grid"></div>
   <svg id="chart" viewBox="0 0 1000 280" role="img" aria-label="Selected sensor time series"></svg>
+  <h2 class="telemetry-heading">One-way telemetry console</h2>
+  <p class="telemetry-note">Read-only NodeMCU and Uno diagnostics. Refreshes every 30 seconds; no web command path exists.</p>
+  <pre id="telemetry-console" aria-live="polite">Waiting for telemetry…</pre>
   <table>
     <thead><tr><th>Observed</th><th>Device</th><th>Sequence</th><th>Firmware</th><th>RSSI</th></tr></thead>
     <tbody id="readings"></tbody>
@@ -42,7 +48,9 @@
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const metricLabel = metric => String(metric)
       .replace(/^tsl2584_sea(?=\.|$)/, 'TSL2584 Sea-facing')
-      .replace(/^tsl2584_land(?=\.|$)/, 'TSL2584 Land-facing');
+      .replace(/^tsl2584_land(?=\.|$)/, 'TSL2584 Land-facing')
+      .replace(/^ds18b20\.(\d+)(?=\.|$)/, (_, index) => `DS18B20 sensor ${Number(index) + 1}`)
+      .replace(/^soil_moisture\.(\d+)(?=\.|$)/, (_, index) => `Soil sensor ${Number(index) + 1}`);
     async function json(url) { const response = await fetch(url); if (!response.ok) throw new Error(`${response.status} ${response.statusText}`); return response.json(); }
     function numericLeaves(value, prefix = '', out = []) {
       if (Array.isArray(value)) value.forEach((v, i) => numericLeaves(v, `${prefix}.${i}`, out));
@@ -58,10 +66,10 @@
       const points = values.map((v,i) => `${40 + i * 920 / Math.max(1, values.length-1)},${240 - (v-min)*200/(max-min)}`).join(' ');
       svg.innerHTML = `<text x="40" y="25" fill="currentColor">${escapeHtml(max.toFixed(2))}</text><text x="40" y="265" fill="currentColor">${escapeHtml(min.toFixed(2))}</text><polyline points="${points}" fill="none" stroke="currentColor" stroke-width="3"/>`;
     }
-    async function loadMetrics() {
+    async function loadMetrics(previousMetric = '') {
       const id = $('device').value;
       const data = await json(`/v1/metrics?device_id=${encodeURIComponent(id)}`);
-      $('metric').innerHTML = data.items.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(metricLabel(x))}</option>`).join('');
+      $('metric').innerHTML = data.items.map(x => `<option value="${escapeHtml(x)}"${x === previousMetric ? ' selected' : ''}>${escapeHtml(metricLabel(x))}</option>`).join('');
       await loadSeries();
     }
     async function loadSeries() {
@@ -69,20 +77,59 @@
       if (!device || !metric) return draw([]);
       draw((await json(`/v1/series?device_id=${encodeURIComponent(device)}&metric=${encodeURIComponent(metric)}&limit=500`)).items);
     }
+    function renderTelemetry(items) {
+      const eventLines = [], seen = new Set();
+      [...items].reverse().forEach(reading => {
+        const telemetry = reading.telemetry || {};
+        const boot = telemetry.nodemcu?.boot_id ?? 'unknown';
+        (telemetry.events || []).forEach(event => {
+          const key = `${reading.device_id}:${boot}:${event.id}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          const anchor = new Date(reading.observed_at || reading.received_at).getTime();
+          const capturedUptime = Number(telemetry.captured_uptime_ms);
+          const eventUptime = Number(event.uptime_ms);
+          const eventTime = Number.isFinite(capturedUptime) && Number.isFinite(eventUptime)
+            ? new Date(anchor - Math.max(0, capturedUptime - eventUptime)).toLocaleString()
+            : new Date(anchor).toLocaleString();
+          const uptime = event.uptime_ms == null ? '?' : event.uptime_ms;
+          eventLines.push(`[${eventTime}] [${event.source || 'node'}] [${String(event.level || 'info').toUpperCase()}] ${event.message || ''} (uptime ${uptime} ms)`);
+        });
+      });
+      const latest = items[0]?.telemetry;
+      if (!latest) {
+        $('telemetry-console').textContent = 'No telemetry has been received yet. Older firmware readings may contain sensors only.';
+        return;
+      }
+      const snapshots = {
+        nodemcu: latest.nodemcu || null,
+        wifi: latest.wifi || null,
+        tls: latest.tls || null,
+        i2c: latest.i2c || null,
+        sensor_presence: latest.sensor_presence || null,
+        uno_link: latest.uno_link || null,
+        uno: latest.uno || null,
+        http: latest.http || null,
+        timekeeping: latest.timekeeping || null,
+      };
+      $('telemetry-console').textContent = `${eventLines.length ? eventLines.join('\n') : 'No telemetry events in recent readings.'}\n\nLATEST SNAPSHOT\n${JSON.stringify(snapshots, null, 2)}`;
+    }
     async function load() {
       try {
         const devices = (await json('/v1/devices')).items;
-        const previous = $('device').value;
-        $('device').innerHTML = devices.map(x => `<option${x.device_id === previous ? ' selected' : ''}>${escapeHtml(x.device_id)}</option>`).join('');
+        const previousDevice = $('device').value;
+        const previousMetric = $('metric').value;
+        $('device').innerHTML = devices.map(x => `<option${x.device_id === previousDevice ? ' selected' : ''}>${escapeHtml(x.device_id)}</option>`).join('');
         const data = await json(`/v1/readings?limit=25${$('device').value ? `&device_id=${encodeURIComponent($('device').value)}` : ''}`);
         const newest = data.items[0];
-        $('latest').innerHTML = newest ? numericLeaves(newest.sensors).slice(0, 40).map(([name,value]) => `<div class="card"><small>${escapeHtml(metricLabel(name))}</small><div class="value">${escapeHtml(value)}</div></div>`).join('') : '';
+        $('latest').innerHTML = newest ? numericLeaves(newest.sensors).slice(0, 80).map(([name,value]) => `<div class="card"><small>${escapeHtml(metricLabel(name))}</small><div class="value">${escapeHtml(value)}</div></div>`).join('') : '';
         $('readings').innerHTML = data.items.map(x => `<tr><td>${escapeHtml(new Date(x.observed_at || x.received_at).toLocaleString())}</td><td>${escapeHtml(x.device_id)}</td><td>${escapeHtml(x.sequence)}</td><td>${escapeHtml(x.firmware)}</td><td>${escapeHtml(x.wifi_rssi_dbm)}</td></tr>`).join('');
-        await loadMetrics();
+        renderTelemetry(data.items);
+        await loadMetrics(previousMetric);
         $('status').className = 'status'; $('status').textContent = `${data.items.length} recent readings`;
       } catch (error) { $('status').className = 'error'; $('status').textContent = error.message; }
     }
-    $('device').addEventListener('change', load); $('metric').addEventListener('change', loadSeries); $('refresh').addEventListener('click', load); load();
+    $('device').addEventListener('change', load); $('metric').addEventListener('change', loadSeries); $('refresh').addEventListener('click', load); load(); setInterval(load, 30000);
   </script>
 </body>
 </html>

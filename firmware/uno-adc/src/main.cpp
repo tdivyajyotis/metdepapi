@@ -2,9 +2,15 @@
 #include <AltSoftSerial.h>
 #include <SoftwareSerial.h>
 #include <TinyGPSPlus.h>
+#include <avr/io.h>
 #include <string.h>
 
 #include "config.h"
+
+extern "C" {
+extern char __heap_start;
+extern void *__brkval;
+}
 
 namespace {
 
@@ -12,8 +18,23 @@ SoftwareSerial nodeMcuSerial(config::NODEMCU_RX_PIN, config::NODEMCU_TX_PIN);
 AltSoftSerial gpsSerial;
 TinyGPSPlus gps;
 uint32_t sequenceNumber = 0;
+uint32_t commandsReceived = 0;
+uint32_t unknownCommands = 0;
+uint32_t commandOverflows = 0;
+uint32_t adcSamplesCompleted = 0;
+uint32_t loopCount = 0;
+uint32_t lastSampleAt = 0;
+uint8_t resetFlags = 0;
 char commandBuffer[16] = {};
 uint8_t commandLength = 0;
+
+int freeSramBytes() {
+  char stackTop = 0;
+  const char *heapTop = __brkval == nullptr
+                            ? &__heap_start
+                            : static_cast<const char *>(__brkval);
+  return &stackTop - heapTop;
+}
 
 void setSoilPower(bool enabled) {
   if (config::SOIL_POWER_PIN == 0xFF) {
@@ -61,6 +82,8 @@ void sendReadings() {
   const uint16_t a1 = readMedian(config::SOIL_ANALOG_PINS[1]);
   setSoilPower(false);
   ++sequenceNumber;
+  ++adcSamplesCompleted;
+  lastSampleAt = millis();
 
   nodeMcuSerial.print(F("{\"v\":1,\"seq\":"));
   nodeMcuSerial.print(sequenceNumber);
@@ -109,6 +132,34 @@ void sendReadings() {
       nodeMcuSerial.print(gps.hdop.hdop(), 2);
     }
   }
+  nodeMcuSerial.print(F("},\"telemetry\":{\"firmware\":\""));
+  nodeMcuSerial.print(config::FIRMWARE_VERSION);
+  nodeMcuSerial.print(F("\",\"uptime_ms\":"));
+  nodeMcuSerial.print(millis());
+  nodeMcuSerial.print(F(",\"free_sram_bytes\":"));
+  nodeMcuSerial.print(freeSramBytes());
+  nodeMcuSerial.print(F(",\"reset_flags\":"));
+  nodeMcuSerial.print(resetFlags);
+  nodeMcuSerial.print(F(",\"commands_received\":"));
+  nodeMcuSerial.print(commandsReceived);
+  nodeMcuSerial.print(F(",\"unknown_commands\":"));
+  nodeMcuSerial.print(unknownCommands);
+  nodeMcuSerial.print(F(",\"command_overflows\":"));
+  nodeMcuSerial.print(commandOverflows);
+  nodeMcuSerial.print(F(",\"adc_samples_completed\":"));
+  nodeMcuSerial.print(adcSamplesCompleted);
+  nodeMcuSerial.print(F(",\"last_sample_ms\":"));
+  nodeMcuSerial.print(lastSampleAt);
+  nodeMcuSerial.print(F(",\"loop_count\":"));
+  nodeMcuSerial.print(loopCount);
+  nodeMcuSerial.print(F(",\"gps_chars_processed\":"));
+  nodeMcuSerial.print(gps.charsProcessed());
+  nodeMcuSerial.print(F(",\"gps_sentences_ok\":"));
+  nodeMcuSerial.print(gps.passedChecksum());
+  nodeMcuSerial.print(F(",\"gps_checksum_failures\":"));
+  nodeMcuSerial.print(gps.failedChecksum());
+  nodeMcuSerial.print(F(",\"soil_power_switched\":"));
+  nodeMcuSerial.print(config::SOIL_POWER_PIN != 0xFF ? F("true") : F("false"));
   nodeMcuSerial.print(F("}"));
   nodeMcuSerial.print(F("}\n"));
 
@@ -121,9 +172,13 @@ void sendReadings() {
 }
 
 void handleCommand(const char *command) {
+  if (command[0] != '\0') {
+    ++commandsReceived;
+  }
   if (strcmp(command, "READ") == 0) {
     sendReadings();
   } else if (command[0] != '\0') {
+    ++unknownCommands;
     nodeMcuSerial.print(F("{\"v\":1,\"error\":\"unknown_command\"}\n"));
   }
 }
@@ -140,6 +195,7 @@ void receiveCommands() {
         commandBuffer[commandLength++] = value;
       } else {
         commandLength = 0;
+        ++commandOverflows;
       }
     }
   }
@@ -154,6 +210,8 @@ void receiveGps() {
 }  // namespace
 
 void setup() {
+  resetFlags = MCUSR;
+  MCUSR = 0;
   Serial.begin(115200);
   nodeMcuSerial.begin(config::NODEMCU_SERIAL_BAUD);
   gpsSerial.begin(config::GPS_SERIAL_BAUD);
@@ -164,10 +222,14 @@ void setup() {
     setSoilPower(false);
   }
 
-  Serial.println(F("Arduino Uno ADC coprocessor ready"));
+  Serial.print(F("Arduino Uno ADC coprocessor "));
+  Serial.print(config::FIRMWARE_VERSION);
+  Serial.print(F(" ready; reset_flags=0x"));
+  Serial.println(resetFlags, HEX);
 }
 
 void loop() {
+  ++loopCount;
   receiveGps();
   receiveCommands();
 }

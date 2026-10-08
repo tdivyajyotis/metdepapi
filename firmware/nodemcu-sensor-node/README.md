@@ -30,11 +30,29 @@ they can coexist with each other and with the fixed-address TCS3448.
 | TSL2584 land-facing | `0x49` | ADDR_SEL to VDD; payload key `tsl2584_land` |
 | DS3231 RTC | `0x68` | Shared I2C bus; the NodeMCU is its only controller |
 
+The four temperature probes are assigned by their complete 64-bit ROM, never
+by discovery order. They remain in these slots even when one is disconnected:
+
+| Sensor | ROM | Last byte | Depth below sand surface |
+| --- | --- | --- | --- |
+| 1 | `288C186F000000C1` | `C1` | 5 cm |
+| 2 | `288A10CC0000006C` | `6C` | 15 cm |
+| 3 | `2841326E000000DE` | `DE` | 30 cm |
+| 4 | `286B216700000006` | `06` | 45 cm |
+
+The payload includes `sensor_id`, full `rom`, `rom_suffix`, and `depth_cm` for
+every slot. A missing probe is still emitted in its assigned slot with
+`present: false` and `ok: false`.
+
 The soil modules have `VCC`, `GND`, `AO`, and `DO`. Connect `AO` to Uno A0/A1
 and leave `DO` disconnected; the digital comparator discards most of the useful
 moisture information. Ensure the analog outputs remain within the Uno's selected
 ADC reference voltage. Add local decoupling
 near the LM393 boards because the 1.3 m probe cables can pick up noise.
+
+Soil channels are also fixed: Uno `A0` is soil sensor 1 at 15 cm, and `A1` is
+soil sensor 2 at 45 cm. These defaults live in `SOIL_DEPTH_CM` in NodeMCU
+`include/config.h`; each reading carries `sensor_id`, `uno_pin`, and `depth_cm`.
 
 Use a breakout with regulation and level shifting for the TCS3448. The bare
 TCS3448 is a 1.8 V part and must not be connected directly to the NodeMCU's
@@ -89,6 +107,14 @@ Each request includes a unique boot/session event ID and sequence number,
 sensor health flags, raw optical/ADC values, WiFi RSSI, firmware version, and a
 UTC timestamp once RTC, NTP, or GPS has provided valid time. The server should
 enforce uniqueness on `event_id` so retries are idempotent.
+
+Each request also carries a bounded, read-only `telemetry` snapshot: NodeMCU
+reset/memory state, WiFi, TLS trust-store state, I2C scan results, sensor
+presence, Uno-link health, the Uno's own counters and memory state, HTTP upload
+counters, clock state, and the twelve most recent structured diagnostic events.
+The server dashboard renders this as a serial-like console and refreshes every
+30 seconds. It intentionally provides no command route back to either MCU, and
+credentials are never included in telemetry.
 
 Sampling starts only after hardware discovery and initialization have finished,
 WiFi is connected, and HTTPS has a valid RTC/NTP/GPS clock for certificate

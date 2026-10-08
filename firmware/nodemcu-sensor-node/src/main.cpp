@@ -12,6 +12,8 @@
 #include <WiFiClientSecureBearSSL.h>
 #include <Wire.h>
 #include <coredecls.h>
+#include <stdarg.h>
+#include <string.h>
 #include <sys/time.h>
 #include <time.h>
 
@@ -54,6 +56,54 @@ bool hasTslSea = false;
 bool hasTslLand = false;
 bool hasRtc = false;
 bool certificateStoreReady = false;
+int certificateStoreCount = 0;
+
+struct TelemetryEvent {
+  uint32_t id = 0;
+  uint32_t uptimeMs = 0;
+  char source[12] = {};
+  char level[8] = {};
+  char message[config::TELEMETRY_MESSAGE_LENGTH] = {};
+};
+
+struct UnoTelemetry {
+  bool available = false;
+  char firmware[16] = {};
+  uint32_t uptimeMs = 0;
+  int16_t freeSramBytes = 0;
+  uint8_t resetFlags = 0;
+  uint32_t commandsReceived = 0;
+  uint32_t unknownCommands = 0;
+  uint32_t commandOverflows = 0;
+  uint32_t adcSamplesCompleted = 0;
+  uint32_t lastSampleMs = 0;
+  uint32_t loopCount = 0;
+  uint32_t gpsCharsProcessed = 0;
+  uint32_t gpsSentencesOk = 0;
+  uint32_t gpsChecksumFailures = 0;
+  bool soilPowerSwitched = false;
+};
+
+TelemetryEvent telemetryEvents[config::TELEMETRY_MAX_EVENTS];
+uint8_t telemetryEventCount = 0;
+uint32_t nextTelemetryEventId = 1;
+uint32_t droppedTelemetryEvents = 0;
+UnoTelemetry unoTelemetry;
+uint8_t i2cAddresses[16] = {};
+uint8_t i2cAddressCount = 0;
+uint32_t wifiConnectAttempts = 0;
+uint32_t wifiConnectEvents = 0;
+wl_status_t previousWifiStatus = WL_IDLE_STATUS;
+uint32_t unoRequests = 0;
+uint32_t unoSuccesses = 0;
+uint32_t unoTimeouts = 0;
+uint32_t unoInvalidResponses = 0;
+uint32_t unoLastLatencyMs = 0;
+size_t unoLastResponseBytes = 0;
+uint32_t postAttempts = 0;
+uint32_t postSuccesses = 0;
+uint32_t postFailures = 0;
+int postLastStatus = 0;
 
 enum class TimeSource : uint8_t {
   Unsynchronized,
@@ -92,6 +142,30 @@ uint32_t lastWifiAttemptAt = 0;
 uint32_t sequenceNumber = 0;
 uint32_t bootId = 0;
 
+void addTelemetryEvent(const char *source, const char *level,
+                       const char *format, ...) {
+  char message[config::TELEMETRY_MESSAGE_LENGTH] = {};
+  va_list arguments;
+  va_start(arguments, format);
+  vsnprintf(message, sizeof(message), format, arguments);
+  va_end(arguments);
+
+  if (telemetryEventCount == config::TELEMETRY_MAX_EVENTS) {
+    memmove(&telemetryEvents[0], &telemetryEvents[1],
+            sizeof(TelemetryEvent) * (config::TELEMETRY_MAX_EVENTS - 1));
+    --telemetryEventCount;
+    ++droppedTelemetryEvents;
+  }
+
+  TelemetryEvent &event = telemetryEvents[telemetryEventCount++];
+  event.id = nextTelemetryEventId++;
+  event.uptimeMs = millis();
+  snprintf(event.source, sizeof(event.source), "%s", source);
+  snprintf(event.level, sizeof(event.level), "%s", level);
+  snprintf(event.message, sizeof(event.message), "%s", message);
+  Serial.printf("[%s] %s: %s\n", source, level, message);
+}
+
 const char *timeSourceName(TimeSource source) {
   switch (source) {
     case TimeSource::Rtc:
@@ -122,7 +196,8 @@ void writeRtc(time_t epoch, TimeSource source) {
   }
   rtc.adjust(DateTime(static_cast<uint32_t>(epoch)));
   rtcLastSetSource = source;
-  Serial.printf("RTC updated from %s\n", timeSourceName(source));
+  addTelemetryEvent("time", "info", "RTC updated from %s",
+                    timeSourceName(source));
 }
 
 void initializeTimekeeping() {
@@ -132,7 +207,7 @@ void initializeTimekeeping() {
     if (rtcEpoch >= config::MIN_VALID_UNIX_TIME) {
       setSystemTime(rtcEpoch);
       timeSource = TimeSource::Rtc;
-      Serial.println(F("System clock restored from RTC"));
+      addTelemetryEvent("time", "info", "System clock restored from RTC");
     }
   }
 
@@ -180,7 +255,7 @@ void pollTimeSources() {
         setSystemTime(epoch);
         writeRtc(epoch, TimeSource::Gps);
         lastGpsDisciplineAt = now;
-        Serial.println(F("System clock disciplined from GPS"));
+        addTelemetryEvent("time", "info", "System clock disciplined from GPS");
       }
     }
     timeSource = TimeSource::Gps;
@@ -194,7 +269,8 @@ void pollTimeSources() {
     if (timeSource != TimeSource::Gps && systemTimeIsValid()) {
       timeSource = TimeSource::Ntp;
       writeRtc(time(nullptr), TimeSource::Ntp);
-      Serial.println(F("Initial system clock synchronized from NTP"));
+      addTelemetryEvent("time", "info",
+                        "Initial system clock synchronized from NTP");
     }
     // This station intentionally uses NTP only for the initial sync. GPS takes
     // precedence when it becomes valid; the RTC provides subsequent holdover.
@@ -234,10 +310,27 @@ void connectWifi() {
   }
 
   lastWifiAttemptAt = now;
+  ++wifiConnectAttempts;
   WiFi.mode(WIFI_STA);
   WiFi.hostname(config::DEVICE_ID);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.printf("Connecting to WiFi '%s'...\n", WIFI_SSID);
+  addTelemetryEvent("wifi", "info", "Connecting to WiFi '%s'", WIFI_SSID);
+}
+
+void monitorWifiStatus() {
+  const wl_status_t status = WiFi.status();
+  if (status == previousWifiStatus) {
+    return;
+  }
+  previousWifiStatus = status;
+  if (status == WL_CONNECTED) {
+    ++wifiConnectEvents;
+    addTelemetryEvent("wifi", "info", "Connected; IP=%s RSSI=%d dBm",
+                      WiFi.localIP().toString().c_str(), WiFi.RSSI());
+  } else {
+    addTelemetryEvent("wifi", "warn", "WiFi status changed to %d",
+                      static_cast<int>(status));
+  }
 }
 
 bool soilPercent(int16_t counts, uint8_t channel, float &percent) {
@@ -252,26 +345,56 @@ bool soilPercent(int16_t counts, uint8_t channel, float &percent) {
   return true;
 }
 
+void updateUnoTelemetry(JsonObject reply) {
+  if (reply.isNull()) {
+    unoTelemetry.available = false;
+    return;
+  }
+  unoTelemetry.available = true;
+  snprintf(unoTelemetry.firmware, sizeof(unoTelemetry.firmware), "%s",
+           reply["firmware"] | "unknown");
+  unoTelemetry.uptimeMs = reply["uptime_ms"] | 0UL;
+  unoTelemetry.freeSramBytes = reply["free_sram_bytes"] | 0;
+  unoTelemetry.resetFlags = reply["reset_flags"] | 0;
+  unoTelemetry.commandsReceived = reply["commands_received"] | 0UL;
+  unoTelemetry.unknownCommands = reply["unknown_commands"] | 0UL;
+  unoTelemetry.commandOverflows = reply["command_overflows"] | 0UL;
+  unoTelemetry.adcSamplesCompleted = reply["adc_samples_completed"] | 0UL;
+  unoTelemetry.lastSampleMs = reply["last_sample_ms"] | 0UL;
+  unoTelemetry.loopCount = reply["loop_count"] | 0UL;
+  unoTelemetry.gpsCharsProcessed = reply["gps_chars_processed"] | 0UL;
+  unoTelemetry.gpsSentencesOk = reply["gps_sentences_ok"] | 0UL;
+  unoTelemetry.gpsChecksumFailures = reply["gps_checksum_failures"] | 0UL;
+  unoTelemetry.soilPowerSwitched = reply["soil_power_switched"] | false;
+}
+
 bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
+  ++unoRequests;
   unoSerial.listen();
   while (unoSerial.available() > 0) {
     unoSerial.read();
   }
   unoSerial.print(F("READ\n"));
 
-  char response[512] = {};
+  char response[1024] = {};
   size_t length = 0;
+  bool overflowed = false;
   const uint32_t startedAt = millis();
   while (millis() - startedAt < config::UNO_RESPONSE_TIMEOUT_MS) {
     while (unoSerial.available() > 0) {
       const char value = static_cast<char>(unoSerial.read());
       if (value == '\n') {
         response[length] = '\0';
-        StaticJsonDocument<512> reply;
+        unoLastLatencyMs = millis() - startedAt;
+        unoLastResponseBytes = length;
+        StaticJsonDocument<1024> reply;
         const DeserializationError error = deserializeJson(reply, response);
-        if (error || reply["v"].as<uint8_t>() != 1 ||
+        if (overflowed || error || reply["v"].as<uint8_t>() != 1 ||
             !reply.containsKey("a0") || !reply.containsKey("a1")) {
-          Serial.printf("Invalid Uno response: %s\n", response);
+          ++unoInvalidResponses;
+          unoTelemetry.available = false;
+          addTelemetryEvent("uno", "error", "Invalid response (%u bytes): %.44s",
+                            static_cast<unsigned>(length), response);
           return false;
         }
 
@@ -279,7 +402,8 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
         const uint16_t a1 = reply["a1"].as<uint16_t>();
         if (a0 > config::UNO_ADC_MAX_COUNTS ||
             a1 > config::UNO_ADC_MAX_COUNTS) {
-          Serial.println(F("Uno ADC response is out of range"));
+          ++unoInvalidResponses;
+          addTelemetryEvent("uno", "error", "ADC response out of range");
           return false;
         }
         counts[0] = a0;
@@ -323,36 +447,52 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
             unoGps.hdop = gpsReply["hdop"].as<double>();
           }
         }
+        updateUnoTelemetry(reply["telemetry"].as<JsonObject>());
+        ++unoSuccesses;
         return true;
       }
       if (value != '\r' && length + 1 < sizeof(response)) {
         response[length++] = value;
+      } else if (value != '\r') {
+        overflowed = true;
       }
     }
     delay(1);
     yield();
   }
 
-  Serial.println(F("Timed out waiting for Uno ADC response"));
+  ++unoTimeouts;
+  unoLastLatencyMs = millis() - startedAt;
+  unoLastResponseBytes = length;
+  unoTelemetry.available = false;
+  addTelemetryEvent("uno", "warn", "Timed out waiting for response (%u bytes)",
+                    static_cast<unsigned>(length));
   return false;
 }
 
 void addDs18b20Readings(JsonObject sensors) {
   JsonArray probes = sensors.createNestedArray("ds18b20");
-  const uint8_t discovered = ds18b20.getDeviceCount();
-  const uint8_t count = discovered < 4 ? discovered : 4;
-
   ds18b20.requestTemperatures();
-  for (uint8_t i = 0; i < count; ++i) {
-    DeviceAddress address;
+  for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
+    DeviceAddress address = {};
+    memcpy(address, config::DS18B20_ROMS[i], sizeof(DeviceAddress));
     JsonObject probe = probes.createNestedObject();
-    if (!ds18b20.getAddress(address, i)) {
+    char suffix[3] = {};
+    snprintf(suffix, sizeof(suffix), "%02X", address[7]);
+    probe["sensor_id"] = i + 1;
+    probe["depth_cm"] = config::DS18B20_DEPTH_CM[i];
+    probe["rom"] = romToString(address);
+    probe["rom_suffix"] = suffix;
+
+    const bool present = OneWire::crc8(address, 7) == address[7] &&
+                         ds18b20.isConnected(address);
+    probe["present"] = present;
+    if (!present) {
       probe["ok"] = false;
       continue;
     }
 
     const float temperature = ds18b20.getTempC(address);
-    probe["rom"] = romToString(address);
     if (temperature == DEVICE_DISCONNECTED_C || temperature < -55.0f ||
         temperature > 125.0f) {
       probe["ok"] = false;
@@ -388,6 +528,9 @@ void addSoilReadings(JsonObject sensors, bool hasUnoReading,
   for (uint8_t channel = 0; channel < 2; ++channel) {
     JsonObject probe = probes.createNestedObject();
     probe["channel"] = channel;
+    probe["sensor_id"] = channel + 1;
+    probe["uno_pin"] = channel == 0 ? "A0" : "A1";
+    probe["depth_cm"] = config::SOIL_DEPTH_CM[channel];
     probe["sensor_type"] = "resistive_lm393_1p3m";
     probe["adc"] = "arduino_uno_10bit";
     if (!hasUnoReading) {
@@ -483,13 +626,127 @@ void addTimeAndGpsReading(JsonObject sensors) {
   }
 }
 
+uint8_t configuredDs18b20PresentCount() {
+  uint8_t count = 0;
+  for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
+    DeviceAddress address = {};
+    memcpy(address, config::DS18B20_ROMS[i], sizeof(DeviceAddress));
+    if (OneWire::crc8(address, 7) == address[7] &&
+        ds18b20.isConnected(address)) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+void addTelemetrySnapshot(JsonObject telemetry) {
+  telemetry["version"] = 1;
+  telemetry["captured_uptime_ms"] = millis();
+  telemetry["dropped_events"] = droppedTelemetryEvents;
+
+  JsonObject node = telemetry.createNestedObject("nodemcu");
+  node["firmware"] = config::FIRMWARE_VERSION;
+  node["boot_id"] = bootId;
+  node["chip_id"] = ESP.getChipId();
+  node["reset_reason"] = ESP.getResetReason();
+  node["free_heap_bytes"] = ESP.getFreeHeap();
+  node["max_free_heap_block_bytes"] = ESP.getMaxFreeBlockSize();
+  node["heap_fragmentation_pct"] = ESP.getHeapFragmentation();
+  node["flash_real_size_bytes"] = ESP.getFlashChipRealSize();
+  node["cpu_mhz"] = ESP.getCpuFreqMHz();
+
+  JsonObject wifi = telemetry.createNestedObject("wifi");
+  const bool wifiConnected = WiFi.status() == WL_CONNECTED;
+  wifi["connected"] = wifiConnected;
+  wifi["status"] = static_cast<int>(WiFi.status());
+  wifi["connect_attempts"] = wifiConnectAttempts;
+  wifi["connect_events"] = wifiConnectEvents;
+  if (wifiConnected) {
+    wifi["ip"] = WiFi.localIP().toString();
+    wifi["gateway"] = WiFi.gatewayIP().toString();
+    wifi["rssi_dbm"] = WiFi.RSSI();
+    wifi["channel"] = WiFi.channel();
+  }
+
+  JsonObject tls = telemetry.createNestedObject("tls");
+  tls["cert_store_ready"] = certificateStoreReady;
+  tls["trust_anchor_count"] = certificateStoreCount;
+  tls["verification_required"] = ALLOW_INSECURE_TLS == 0;
+
+  JsonObject bus = telemetry.createNestedObject("i2c");
+  JsonArray addresses = bus.createNestedArray("addresses");
+  for (uint8_t i = 0; i < i2cAddressCount; ++i) {
+    addresses.add(i2cAddresses[i]);
+  }
+  bus["device_count"] = i2cAddressCount;
+
+  JsonObject presence = telemetry.createNestedObject("sensor_presence");
+  presence["ds18b20_discovered"] = ds18b20.getDeviceCount();
+  presence["ds18b20_configured"] = config::DS18B20_COUNT;
+  presence["ds18b20_mapped_present"] = configuredDs18b20PresentCount();
+  presence["sht45"] = hasSht45;
+  presence["tsl2584_sea"] = hasTslSea;
+  presence["tsl2584_land"] = hasTslLand;
+  presence["tcs3448"] = hasTcs3448;
+  presence["ds3231"] = hasRtc;
+
+  JsonObject unoLink = telemetry.createNestedObject("uno_link");
+  unoLink["requests"] = unoRequests;
+  unoLink["successes"] = unoSuccesses;
+  unoLink["timeouts"] = unoTimeouts;
+  unoLink["invalid_responses"] = unoInvalidResponses;
+  unoLink["last_latency_ms"] = unoLastLatencyMs;
+  unoLink["last_response_bytes"] = unoLastResponseBytes;
+  unoLink["telemetry_available"] = unoTelemetry.available;
+
+  if (unoTelemetry.available) {
+    JsonObject uno = telemetry.createNestedObject("uno");
+    uno["firmware"] = unoTelemetry.firmware;
+    uno["uptime_ms"] = unoTelemetry.uptimeMs;
+    uno["free_sram_bytes"] = unoTelemetry.freeSramBytes;
+    uno["reset_flags"] = unoTelemetry.resetFlags;
+    uno["commands_received"] = unoTelemetry.commandsReceived;
+    uno["unknown_commands"] = unoTelemetry.unknownCommands;
+    uno["command_overflows"] = unoTelemetry.commandOverflows;
+    uno["adc_samples_completed"] = unoTelemetry.adcSamplesCompleted;
+    uno["last_sample_ms"] = unoTelemetry.lastSampleMs;
+    uno["loop_count"] = unoTelemetry.loopCount;
+    uno["gps_chars_processed"] = unoTelemetry.gpsCharsProcessed;
+    uno["gps_sentences_ok"] = unoTelemetry.gpsSentencesOk;
+    uno["gps_checksum_failures"] = unoTelemetry.gpsChecksumFailures;
+    uno["soil_power_switched"] = unoTelemetry.soilPowerSwitched;
+  }
+
+  JsonObject http = telemetry.createNestedObject("http");
+  http["attempts"] = postAttempts;
+  http["successes"] = postSuccesses;
+  http["failures"] = postFailures;
+  http["last_status"] = postLastStatus;
+
+  JsonObject clock = telemetry.createNestedObject("timekeeping");
+  clock["system_time_valid"] = systemTimeIsValid();
+  clock["source"] = timeSourceName(timeSource);
+  clock["rtc_last_set_source"] = timeSourceName(rtcLastSetSource);
+
+  JsonArray events = telemetry.createNestedArray("events");
+  for (uint8_t i = 0; i < telemetryEventCount; ++i) {
+    const TelemetryEvent &event = telemetryEvents[i];
+    JsonObject item = events.createNestedObject();
+    item["id"] = event.id;
+    item["uptime_ms"] = event.uptimeMs;
+    item["source"] = event.source;
+    item["level"] = event.level;
+    item["message"] = event.message;
+  }
+}
+
 String makePayload() {
   uint16_t unoCounts[2] = {};
   uint32_t unoSequence = 0;
   const bool hasUnoReading = readUnoAdc(unoCounts, unoSequence);
   pollTimeSources();
 
-  StaticJsonDocument<4096> doc;
+  DynamicJsonDocument doc(8192);
   doc["schema_version"] = 1;
   doc["device_id"] = config::DEVICE_ID;
   doc["firmware"] = config::FIRMWARE_VERSION;
@@ -519,6 +776,12 @@ String makePayload() {
   addTslReading(sensors, "tsl2584_land", tslLand, hasTslLand);
   addTcs3448Reading(sensors);
   addTimeAndGpsReading(sensors);
+  addTelemetrySnapshot(doc.createNestedObject("telemetry"));
+
+  if (doc.overflowed()) {
+    addTelemetryEvent("json", "error", "Telemetry payload exceeded JSON capacity");
+    return String();
+  }
 
   String payload;
   serializeJson(doc, payload);
@@ -530,7 +793,10 @@ bool postWithClient(TClient &client, const String &payload) {
   HTTPClient http;
   http.setTimeout(config::HTTP_TIMEOUT_MS);
   if (!http.begin(client, config::INGEST_URL)) {
-    Serial.println(F("HTTP begin failed"));
+    ++postAttempts;
+    ++postFailures;
+    postLastStatus = -1;
+    addTelemetryEvent("http", "error", "HTTP begin failed");
     return false;
   }
 
@@ -538,11 +804,19 @@ bool postWithClient(TClient &client, const String &payload) {
   http.addHeader(F("Authorization"), String(F("Bearer ")) + DEVICE_API_TOKEN);
   http.addHeader(F("X-Device-ID"), config::DEVICE_ID);
 
+  ++postAttempts;
   const int status = http.POST(reinterpret_cast<const uint8_t *>(payload.c_str()),
                                payload.length());
+  postLastStatus = status;
   const bool accepted = status >= 200 && status < 300;
-  Serial.printf("POST returned %d (%s)\n", status,
-                accepted ? "accepted" : "not accepted");
+  if (accepted) {
+    ++postSuccesses;
+    addTelemetryEvent("http", "info", "POST returned %d (accepted)", status);
+  } else {
+    ++postFailures;
+    addTelemetryEvent("http", "error", "POST returned %d (not accepted)",
+                      status);
+  }
   if (!accepted && status > 0) {
     Serial.println(http.getString());
   }
@@ -601,31 +875,39 @@ bool readyToSampleAndSend() {
 
 void initializeTlsTrustStore() {
   if (!LittleFS.begin()) {
-    Serial.println(F("TLS CA store: LittleFS mount failed; using compiled fallback"));
+    addTelemetryEvent("tls", "warn",
+                      "LittleFS mount failed; using compiled fallback");
     return;
   }
 
-  const int certificateCount = certificateStore.initCertStore(
+  certificateStoreCount = certificateStore.initCertStore(
       LittleFS, PSTR("/certs.idx"), PSTR("/certs.ar"));
-  if (certificateCount <= 0) {
-    Serial.println(F("TLS CA store: no certificates; using compiled fallback"));
+  if (certificateStoreCount <= 0) {
+    addTelemetryEvent("tls", "warn",
+                      "No CA-store certificates; using compiled fallback");
     return;
   }
 
   certificateStoreReady = true;
-  Serial.printf("TLS CA store: loaded %d trust anchors from LittleFS\n",
-                certificateCount);
+  addTelemetryEvent("tls", "info", "Loaded %d trust anchors from LittleFS",
+                    certificateStoreCount);
 }
 
 void scanI2cBus() {
   Serial.println(F("I2C scan:"));
+  i2cAddressCount = 0;
   for (uint8_t address = 1; address < 127; ++address) {
     Wire.beginTransmission(address);
     if (Wire.endTransmission() == 0) {
       Serial.printf("  found 0x%02X\n", address);
+      if (i2cAddressCount < sizeof(i2cAddresses)) {
+        i2cAddresses[i2cAddressCount++] = address;
+      }
     }
     yield();
   }
+  addTelemetryEvent("i2c", "info", "Scan found %u device(s)",
+                    i2cAddressCount);
 }
 
 void initializeSensors() {
@@ -652,13 +934,21 @@ void initializeSensors() {
 void printSensorStatus() {
   const char *rtcStatus =
       config::RTC_ENABLED ? (hasRtc ? "ok" : "missing") : "disabled";
-  Serial.printf("Sensors: DS18B20=%u/4 SHT45=%s UnoADC=serial TSL-Sea=%s "
-                "TSL-Land=%s TCS3448=%s DS3231=%s\n",
-                ds18b20.getDeviceCount() < 4 ? ds18b20.getDeviceCount() : 4,
-                hasSht45 ? "ok" : "missing",
-                hasTslSea ? "ok" : "missing",
-                hasTslLand ? "ok" : "missing",
-                hasTcs3448 ? "ok" : "missing", rtcStatus);
+  addTelemetryEvent(
+      "sensors", "info",
+      "DS18B20=%u/%u SHT45=%s Uno=serial TSL-Sea=%s TSL-Land=%s TCS=%s RTC=%s",
+      configuredDs18b20PresentCount(), config::DS18B20_COUNT,
+      hasSht45 ? "ok" : "missing", hasTslSea ? "ok" : "missing",
+      hasTslLand ? "ok" : "missing", hasTcs3448 ? "ok" : "missing",
+      rtcStatus);
+  for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
+    DeviceAddress address = {};
+    memcpy(address, config::DS18B20_ROMS[i], sizeof(DeviceAddress));
+    addTelemetryEvent("ds18b20", ds18b20.isConnected(address) ? "info" : "warn",
+                      "Sensor %u ROM=%s depth=%ucm %s", i + 1,
+                      romToString(address).c_str(), config::DS18B20_DEPTH_CM[i],
+                      ds18b20.isConnected(address) ? "present" : "missing");
+  }
 }
 
 }  // namespace
@@ -669,6 +959,8 @@ void setup() {
   Serial.println(F("NodeMCU sensor node starting"));
 
   bootId = ESP.getChipId() ^ micros() ^ ESP.getCycleCount();
+  addTelemetryEvent("boot", "info", "NodeMCU %s starting; reset=%s",
+                    config::FIRMWARE_VERSION, ESP.getResetReason().c_str());
   initializeTlsTrustStore();
   unoSerial.begin(config::UNO_SERIAL_BAUD);
   Wire.begin(config::I2C_SDA_PIN, config::I2C_SCL_PIN);
@@ -685,6 +977,7 @@ void setup() {
 
 void loop() {
   connectWifi();
+  monitorWifiStatus();
   pollTimeSources();
 
   // Do not consume a sequence number or take sensor measurements until setup
@@ -700,6 +993,10 @@ void loop() {
     ++sequenceNumber;
 
     const String payload = makePayload();
+    if (payload.length() == 0) {
+      delay(10);
+      return;
+    }
     Serial.println(payload);
     postPayload(payload);
   }

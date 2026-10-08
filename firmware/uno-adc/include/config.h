@@ -4,6 +4,8 @@
 
 namespace config {
 
+constexpr char FIRMWARE_VERSION[] = "0.2.0";
+
 constexpr uint8_t NODEMCU_RX_PIN = 10;
 constexpr uint8_t NODEMCU_TX_PIN = 11;
 constexpr uint32_t NODEMCU_SERIAL_BAUD = 9600;

@@ -9,15 +9,27 @@ constexpr uint8_t I2C_SCL_PIN = D1;
 constexpr uint8_t I2C_SDA_PIN = D2;
 constexpr uint8_t ONE_WIRE_PIN = D5;
 
+// Fixed physical DS18B20 slots. Match the complete ROM, not only its final
+// CRC byte, so discovery order or a missing probe can never renumber sensors.
+constexpr uint8_t DS18B20_COUNT = 4;
+constexpr uint8_t DS18B20_ROMS[DS18B20_COUNT][8] = {
+    {0x28, 0x8C, 0x18, 0x6F, 0x00, 0x00, 0x00, 0xC1},  // Sensor 1
+    {0x28, 0x8A, 0x10, 0xCC, 0x00, 0x00, 0x00, 0x6C},  // Sensor 2
+    {0x28, 0x41, 0x32, 0x6E, 0x00, 0x00, 0x00, 0xDE},  // Sensor 3
+    {0x28, 0x6B, 0x21, 0x67, 0x00, 0x00, 0x00, 0x06},  // Sensor 4
+};
+constexpr uint8_t DS18B20_DEPTH_CM[DS18B20_COUNT] = {5, 15, 30, 45};
+
 // Software UART to the Arduino Uno ADC coprocessor. D6 receives the Uno's
 // 5 V TX signal through a level shifter or resistor divider; D7 transmits a
 // 3.3 V signal that the Uno accepts as HIGH.
 constexpr uint8_t UNO_RX_PIN = D6;
 constexpr uint8_t UNO_TX_PIN = D7;
 constexpr uint32_t UNO_SERIAL_BAUD = 9600;
-constexpr uint16_t UNO_RESPONSE_TIMEOUT_MS = 1500;
+constexpr uint16_t UNO_RESPONSE_TIMEOUT_MS = 2500;
 constexpr float UNO_ADC_REFERENCE_V = 5.0f;
 constexpr uint16_t UNO_ADC_MAX_COUNTS = 1023;
+constexpr uint8_t SOIL_DEPTH_CM[2] = {15, 45};  // Uno A0, A1 respectively.
 
 constexpr uint32_t SAMPLE_INTERVAL_MS = 60000;
 
@@ -42,9 +54,11 @@ constexpr uint32_t I2C_CLOCK_HZ = 100000;
 constexpr uint32_t WIFI_RETRY_INTERVAL_MS = 10000;
 constexpr uint32_t HTTP_TIMEOUT_MS = 12000;
 constexpr time_t MIN_VALID_UNIX_TIME = 1609459200;  // 2021-01-01 UTC
+constexpr uint8_t TELEMETRY_MAX_EVENTS = 12;
+constexpr size_t TELEMETRY_MESSAGE_LENGTH = 88;
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.4.2";
+constexpr char FIRMWARE_VERSION[] = "0.5.0";
 
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 

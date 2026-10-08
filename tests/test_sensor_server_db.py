@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import unittest
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -39,9 +40,11 @@ class FakeConnection:
     def __init__(self):
         self.cursor_instance = FakeCursor()
         self.execute_count = 0
+        self.calls = []
 
     def execute(self, query, params=None):
         self.execute_count += 1
+        self.calls.append((query, params))
         if "RETURNING id, received_at" in query:
             return FakeResult(
                 {"id": 7, "received_at": datetime(2026, 10, 7, tzinfo=UTC)}
@@ -68,6 +71,7 @@ class DatabaseTests(unittest.TestCase):
             event_id="event-1",
             sequence=1,
             observed_at=datetime(2026, 10, 7, tzinfo=UTC),
+            telemetry={"version": 1, "uno_link": {"successes": 1}},
             sensors={
                 "arduino_adc": {"raw_counts": 512, "ok": True},
                 "tsl2584_1": {"visible_counts": 123},
@@ -84,6 +88,11 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(
             rows[1][3:], ("tsl2584_sea.visible_counts", 123.0, "count")
         )
+        insert_params = next(
+            params for query, params in connection.calls if "INSERT INTO sensor_readings" in query
+        )
+        stored_payload = json.loads(insert_params[8])
+        self.assertEqual(stored_payload["telemetry"]["uno_link"]["successes"], 1)
 
 
 if __name__ == "__main__":
