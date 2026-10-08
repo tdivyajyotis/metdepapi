@@ -70,28 +70,38 @@ TSL_NAME_MIGRATION_SQL = (
     SET payload = jsonb_set(
         payload,
         '{sensors}',
-        (payload->'sensors' - 'tsl2584_1' - 'tsl2584_2')
+        (
+            (payload -> 'sensors'::text)
+            - 'tsl2584_1'::text
+            - 'tsl2584_2'::text
+        )
         || CASE
-            WHEN payload->'sensors' ? 'tsl2584_1'
-                 AND NOT (payload->'sensors' ? 'tsl2584_sea')
+            WHEN (payload -> 'sensors'::text) ? 'tsl2584_1'::text
+                 AND NOT (
+                     (payload -> 'sensors'::text) ? 'tsl2584_sea'::text
+                 )
             THEN jsonb_build_object(
-                'tsl2584_sea', payload->'sensors'->'tsl2584_1'
+                'tsl2584_sea'::text,
+                (payload -> 'sensors'::text) -> 'tsl2584_1'::text
             )
             ELSE '{}'::jsonb
         END
         || CASE
-            WHEN payload->'sensors' ? 'tsl2584_2'
-                 AND NOT (payload->'sensors' ? 'tsl2584_land')
+            WHEN (payload -> 'sensors'::text) ? 'tsl2584_2'::text
+                 AND NOT (
+                     (payload -> 'sensors'::text) ? 'tsl2584_land'::text
+                 )
             THEN jsonb_build_object(
-                'tsl2584_land', payload->'sensors'->'tsl2584_2'
+                'tsl2584_land'::text,
+                (payload -> 'sensors'::text) -> 'tsl2584_2'::text
             )
             ELSE '{}'::jsonb
         END
     )
-    WHERE jsonb_typeof(payload->'sensors') = 'object'
+    WHERE jsonb_typeof(payload -> 'sensors'::text) = 'object'
       AND (
-          payload->'sensors' ? 'tsl2584_1'
-          OR payload->'sensors' ? 'tsl2584_2'
+          (payload -> 'sensors'::text) ? 'tsl2584_1'::text
+          OR (payload -> 'sensors'::text) ? 'tsl2584_2'::text
       )
     """,
     """
