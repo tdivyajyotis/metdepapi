@@ -26,8 +26,8 @@ they can coexist with each other and with the fixed-address TCS3448.
 | Arduino Uno serial TX | D6 / GPIO12 | From Uno D11 through 5 V-to-3.3 V level conversion |
 | SHT45 | `0x44` | Default address |
 | TCS3448 | `0x39` | Fixed address |
-| TSL2584 #1 | `0x29` | ADDR_SEL to GND |
-| TSL2584 #2 | `0x49` | ADDR_SEL to VDD |
+| TSL2584 sea-facing | `0x29` | ADDR_SEL to GND; payload key `tsl2584_sea` |
+| TSL2584 land-facing | `0x49` | ADDR_SEL to VDD; payload key `tsl2584_land` |
 | DS3231 RTC | `0x68` | Shared I2C bus; the NodeMCU is its only controller |
 
 The soil modules have `VCC`, `GND`, `AO`, and `DO`. Connect `AO` to Uno A0/A1
@@ -98,7 +98,8 @@ reading is not intentionally taken only to be discarded before transmission.
 TSL2584 values are deliberately sent as raw broadband, infrared, and derived
 visible counts. Converting them to calibrated lux depends on the optical stack
 and should be done after calibration rather than applying a misleading generic
-constant.
+constant. The `0x29` device is emitted as `tsl2584_sea`; the `0x49` device is
+emitted as `tsl2584_land`.
 
 The current firmware retries WiFi automatically but does not persist samples
 through a power failure. Flash-backed queuing is the next addition if the node

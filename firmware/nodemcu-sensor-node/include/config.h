@@ -35,8 +35,8 @@ constexpr uint8_t SHT45_ADDRESS = 0x44;
 
 // TSL2584TSV ADDR_SEL: GND -> 0x29, VDD -> 0x49.
 // Do not use its floating 0x39 address: TCS3448 also uses 0x39.
-constexpr uint8_t TSL2584_1_ADDRESS = 0x29;
-constexpr uint8_t TSL2584_2_ADDRESS = 0x49;
+constexpr uint8_t TSL2584_SEA_ADDRESS = 0x29;
+constexpr uint8_t TSL2584_LAND_ADDRESS = 0x49;
 
 constexpr uint32_t I2C_CLOCK_HZ = 100000;
 constexpr uint32_t WIFI_RETRY_INTERVAL_MS = 10000;
@@ -44,7 +44,7 @@ constexpr uint32_t HTTP_TIMEOUT_MS = 12000;
 constexpr time_t MIN_VALID_UNIX_TIME = 1609459200;  // 2021-01-01 UTC
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.4.1";
+constexpr char FIRMWARE_VERSION[] = "0.4.2";
 
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 

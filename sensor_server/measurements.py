@@ -5,6 +5,23 @@ from collections.abc import Iterator
 from typing import Any
 
 
+SENSOR_NAME_ALIASES = {
+    "tsl2584_1": "tsl2584_sea",
+    "tsl2584_2": "tsl2584_land",
+}
+
+
+def canonicalize_sensor_names(sensors: dict[str, Any]) -> dict[str, Any]:
+    """Return sensor data with legacy TSL names mapped to physical directions."""
+    canonical = dict(sensors)
+    missing = object()
+    for legacy_name, canonical_name in SENSOR_NAME_ALIASES.items():
+        legacy_value = canonical.pop(legacy_name, missing)
+        if legacy_value is not missing and canonical_name not in canonical:
+            canonical[canonical_name] = legacy_value
+    return canonical
+
+
 def infer_unit(metric: str) -> str | None:
     """Infer common units from the firmware's explicit metric suffixes."""
     suffixes = {
@@ -45,4 +62,3 @@ def flatten_numeric(
     number = float(value)
     if prefix and math.isfinite(number):
         yield prefix, number, infer_unit(prefix)
-

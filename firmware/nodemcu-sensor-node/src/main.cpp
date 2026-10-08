@@ -44,14 +44,14 @@ SoftwareSerial unoSerial(config::UNO_RX_PIN, config::UNO_TX_PIN);
 RTC_DS3231 rtc;
 Adafruit_SHT4x sht45;
 Adafruit_TCS3448 tcs3448;
-Tsl2584 tsl1(config::TSL2584_1_ADDRESS);
-Tsl2584 tsl2(config::TSL2584_2_ADDRESS);
+Tsl2584 tslSea(config::TSL2584_SEA_ADDRESS);
+Tsl2584 tslLand(config::TSL2584_LAND_ADDRESS);
 BearSSL::CertStore certificateStore;
 
 bool hasSht45 = false;
 bool hasTcs3448 = false;
-bool hasTsl1 = false;
-bool hasTsl2 = false;
+bool hasTslSea = false;
+bool hasTslLand = false;
 bool hasRtc = false;
 bool certificateStoreReady = false;
 
@@ -515,8 +515,8 @@ String makePayload() {
   addDs18b20Readings(sensors);
   addSht45Reading(sensors);
   addSoilReadings(sensors, hasUnoReading, unoCounts, unoSequence);
-  addTslReading(sensors, "tsl2584_1", tsl1, hasTsl1);
-  addTslReading(sensors, "tsl2584_2", tsl2, hasTsl2);
+  addTslReading(sensors, "tsl2584_sea", tslSea, hasTslSea);
+  addTslReading(sensors, "tsl2584_land", tslLand, hasTslLand);
   addTcs3448Reading(sensors);
   addTimeAndGpsReading(sensors);
 
@@ -639,8 +639,8 @@ void initializeSensors() {
     sht45.setHeater(SHT4X_NO_HEATER);
   }
 
-  hasTsl1 = tsl1.begin(Wire);
-  hasTsl2 = tsl2.begin(Wire);
+  hasTslSea = tslSea.begin(Wire);
+  hasTslLand = tslLand.begin(Wire);
   hasTcs3448 = tcs3448.begin();
   if (hasTcs3448) {
     hasTcs3448 = tcs3448.setGain(TCS3448_GAIN_64X) &&
@@ -652,11 +652,12 @@ void initializeSensors() {
 void printSensorStatus() {
   const char *rtcStatus =
       config::RTC_ENABLED ? (hasRtc ? "ok" : "missing") : "disabled";
-  Serial.printf("Sensors: DS18B20=%u/4 SHT45=%s UnoADC=serial TSL1=%s "
-                "TSL2=%s TCS3448=%s DS3231=%s\n",
+  Serial.printf("Sensors: DS18B20=%u/4 SHT45=%s UnoADC=serial TSL-Sea=%s "
+                "TSL-Land=%s TCS3448=%s DS3231=%s\n",
                 ds18b20.getDeviceCount() < 4 ? ds18b20.getDeviceCount() : 4,
-                hasSht45 ? "ok" : "missing", hasTsl1 ? "ok" : "missing",
-                hasTsl2 ? "ok" : "missing",
+                hasSht45 ? "ok" : "missing",
+                hasTslSea ? "ok" : "missing",
+                hasTslLand ? "ok" : "missing",
                 hasTcs3448 ? "ok" : "missing", rtcStatus);
 }
 

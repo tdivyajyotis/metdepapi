@@ -77,6 +77,14 @@ response with `duplicate: true` rather than creating a second reading.
 - `GET /v1/readings` — recent full sensor snapshots.
 - `GET /v1/metrics?device_id=station-001` — discovered metric paths.
 - `GET /v1/series?device_id=station-001&metric=...` — chart-ready series.
+
+The directional light sensors use stable physical names throughout the API and
+dashboard: I2C address `0x29` is `tsl2584_sea`, and `0x49` is
+`tsl2584_land`. On the first API startup after this change, the database
+migration renames the corresponding keys in historical JSON payloads and the
+flattened time-series metrics. Ingestion also maps the former `tsl2584_1` and
+`tsl2584_2` keys, allowing the server to be deployed before the NodeMCU is
+flashed.
 - `GET /healthz` — database health.
 - `GET /docs` — interactive OpenAPI documentation.
 

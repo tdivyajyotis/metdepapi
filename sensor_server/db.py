@@ -8,7 +8,7 @@ from typing import Any
 import psycopg
 from psycopg.rows import dict_row
 
-from .measurements import flatten_numeric
+from .measurements import canonicalize_sensor_names, flatten_numeric
 from .security import token_digest
 from .schemas import ReadingIn
 
@@ -53,7 +53,86 @@ CREATE TABLE IF NOT EXISTS sensor_measurements (
 
 CREATE INDEX IF NOT EXISTS sensor_measurements_series_idx
     ON sensor_measurements (device_id, metric, recorded_at DESC);
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version text PRIMARY KEY,
+    applied_at timestamptz NOT NULL DEFAULT now()
+);
 """
+
+
+# This migration is deliberately idempotent because initialize() runs whenever
+# the API container starts. It updates both representations of historical data:
+# the original JSON payload and the flattened time-series rows.
+TSL_NAME_MIGRATION_SQL = (
+    """
+    UPDATE sensor_readings
+    SET payload = jsonb_set(
+        payload,
+        '{sensors}',
+        (payload->'sensors' - 'tsl2584_1' - 'tsl2584_2')
+        || CASE
+            WHEN payload->'sensors' ? 'tsl2584_1'
+                 AND NOT (payload->'sensors' ? 'tsl2584_sea')
+            THEN jsonb_build_object(
+                'tsl2584_sea', payload->'sensors'->'tsl2584_1'
+            )
+            ELSE '{}'::jsonb
+        END
+        || CASE
+            WHEN payload->'sensors' ? 'tsl2584_2'
+                 AND NOT (payload->'sensors' ? 'tsl2584_land')
+            THEN jsonb_build_object(
+                'tsl2584_land', payload->'sensors'->'tsl2584_2'
+            )
+            ELSE '{}'::jsonb
+        END
+    )
+    WHERE jsonb_typeof(payload->'sensors') = 'object'
+      AND (
+          payload->'sensors' ? 'tsl2584_1'
+          OR payload->'sensors' ? 'tsl2584_2'
+      )
+    """,
+    """
+    DELETE FROM sensor_measurements AS legacy
+    WHERE (legacy.metric = 'tsl2584_1'
+           OR starts_with(legacy.metric, 'tsl2584_1.'))
+      AND EXISTS (
+          SELECT 1
+          FROM sensor_measurements AS canonical
+          WHERE canonical.reading_id = legacy.reading_id
+            AND canonical.metric = 'tsl2584_sea'
+                || substring(legacy.metric FROM length('tsl2584_1') + 1)
+      )
+    """,
+    """
+    UPDATE sensor_measurements
+    SET metric = 'tsl2584_sea'
+        || substring(metric FROM length('tsl2584_1') + 1)
+    WHERE metric = 'tsl2584_1' OR starts_with(metric, 'tsl2584_1.')
+    """,
+    """
+    DELETE FROM sensor_measurements AS legacy
+    WHERE (legacy.metric = 'tsl2584_2'
+           OR starts_with(legacy.metric, 'tsl2584_2.'))
+      AND EXISTS (
+          SELECT 1
+          FROM sensor_measurements AS canonical
+          WHERE canonical.reading_id = legacy.reading_id
+            AND canonical.metric = 'tsl2584_land'
+                || substring(legacy.metric FROM length('tsl2584_2') + 1)
+      )
+    """,
+    """
+    UPDATE sensor_measurements
+    SET metric = 'tsl2584_land'
+        || substring(metric FROM length('tsl2584_2') + 1)
+    WHERE metric = 'tsl2584_2' OR starts_with(metric, 'tsl2584_2.')
+    """,
+)
+
+TSL_NAME_MIGRATION_VERSION = "2026-10-08-tsl-direction-names"
 
 
 class Database:
@@ -70,6 +149,20 @@ class Database:
             for statement in SCHEMA_SQL.split(";"):
                 if statement.strip():
                     connection.execute(statement)
+            migration_applied = connection.execute(
+                "SELECT 1 FROM schema_migrations WHERE version = %s",
+                (TSL_NAME_MIGRATION_VERSION,),
+            ).fetchone()
+            if migration_applied is None:
+                for statement in TSL_NAME_MIGRATION_SQL:
+                    connection.execute(statement)
+                connection.execute(
+                    """
+                    INSERT INTO schema_migrations (version) VALUES (%s)
+                    ON CONFLICT (version) DO NOTHING
+                    """,
+                    (TSL_NAME_MIGRATION_VERSION,),
+                )
             for device_id, token in device_tokens.items():
                 connection.execute(
                     """
@@ -94,7 +187,9 @@ class Database:
 
     def insert_reading(self, reading: ReadingIn) -> dict[str, Any]:
         payload = reading.model_dump(mode="json")
-        measurements = list(flatten_numeric(reading.sensors))
+        canonical_sensors = canonicalize_sensor_names(reading.sensors)
+        payload["sensors"] = canonical_sensors
+        measurements = list(flatten_numeric(canonical_sensors))
         with self.connect() as connection:
             inserted = connection.execute(
                 """

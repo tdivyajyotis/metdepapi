@@ -68,16 +68,22 @@ class DatabaseTests(unittest.TestCase):
             event_id="event-1",
             sequence=1,
             observed_at=datetime(2026, 10, 7, tzinfo=UTC),
-            sensors={"arduino_adc": {"raw_counts": 512, "ok": True}},
+            sensors={
+                "arduino_adc": {"raw_counts": 512, "ok": True},
+                "tsl2584_1": {"visible_counts": 123},
+            },
         )
 
         result = database.insert_reading(reading)
 
         self.assertFalse(result["duplicate"])
-        self.assertEqual(result["measurement_count"], 1)
+        self.assertEqual(result["measurement_count"], 2)
         self.assertEqual(len(connection.cursor_instance.calls), 1)
         rows = connection.cursor_instance.calls[0][1]
         self.assertEqual(rows[0][3:], ("arduino_adc.raw_counts", 512.0, "count"))
+        self.assertEqual(
+            rows[1][3:], ("tsl2584_sea.visible_counts", 123.0, "count")
+        )
 
 
 if __name__ == "__main__":

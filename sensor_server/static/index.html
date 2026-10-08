@@ -40,6 +40,9 @@
   <script>
     const $ = id => document.getElementById(id);
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const metricLabel = metric => String(metric)
+      .replace(/^tsl2584_sea(?=\.|$)/, 'TSL2584 Sea-facing')
+      .replace(/^tsl2584_land(?=\.|$)/, 'TSL2584 Land-facing');
     async function json(url) { const response = await fetch(url); if (!response.ok) throw new Error(`${response.status} ${response.statusText}`); return response.json(); }
     function numericLeaves(value, prefix = '', out = []) {
       if (Array.isArray(value)) value.forEach((v, i) => numericLeaves(v, `${prefix}.${i}`, out));
@@ -58,7 +61,7 @@
     async function loadMetrics() {
       const id = $('device').value;
       const data = await json(`/v1/metrics?device_id=${encodeURIComponent(id)}`);
-      $('metric').innerHTML = data.items.map(x => `<option>${escapeHtml(x)}</option>`).join('');
+      $('metric').innerHTML = data.items.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(metricLabel(x))}</option>`).join('');
       await loadSeries();
     }
     async function loadSeries() {
@@ -73,7 +76,7 @@
         $('device').innerHTML = devices.map(x => `<option${x.device_id === previous ? ' selected' : ''}>${escapeHtml(x.device_id)}</option>`).join('');
         const data = await json(`/v1/readings?limit=25${$('device').value ? `&device_id=${encodeURIComponent($('device').value)}` : ''}`);
         const newest = data.items[0];
-        $('latest').innerHTML = newest ? numericLeaves(newest.sensors).slice(0, 18).map(([name,value]) => `<div class="card"><small>${escapeHtml(name)}</small><div class="value">${escapeHtml(value)}</div></div>`).join('') : '';
+        $('latest').innerHTML = newest ? numericLeaves(newest.sensors).slice(0, 40).map(([name,value]) => `<div class="card"><small>${escapeHtml(metricLabel(name))}</small><div class="value">${escapeHtml(value)}</div></div>`).join('') : '';
         $('readings').innerHTML = data.items.map(x => `<tr><td>${escapeHtml(new Date(x.observed_at || x.received_at).toLocaleString())}</td><td>${escapeHtml(x.device_id)}</td><td>${escapeHtml(x.sequence)}</td><td>${escapeHtml(x.firmware)}</td><td>${escapeHtml(x.wifi_rssi_dbm)}</td></tr>`).join('');
         await loadMetrics();
         $('status').className = 'status'; $('status').textContent = `${data.items.length} recent readings`;
@@ -83,4 +86,3 @@
   </script>
 </body>
 </html>
-

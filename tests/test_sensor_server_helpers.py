@@ -1,11 +1,39 @@
 import unittest
 
 from sensor_server.config import Settings
-from sensor_server.measurements import flatten_numeric, infer_unit
+from sensor_server.measurements import (
+    canonicalize_sensor_names,
+    flatten_numeric,
+    infer_unit,
+)
 from sensor_server.security import token_digest, tokens_match
 
 
 class MeasurementTests(unittest.TestCase):
+    def test_legacy_tsl_names_are_canonicalized(self):
+        sensors = {
+            "tsl2584_1": {"visible_counts": 100},
+            "tsl2584_2": {"visible_counts": 200},
+            "sht45": {"temperature_c": 25.0},
+        }
+
+        canonical = canonicalize_sensor_names(sensors)
+
+        self.assertNotIn("tsl2584_1", canonical)
+        self.assertNotIn("tsl2584_2", canonical)
+        self.assertEqual(canonical["tsl2584_sea"]["visible_counts"], 100)
+        self.assertEqual(canonical["tsl2584_land"]["visible_counts"], 200)
+
+    def test_canonical_tsl_name_wins_over_legacy_name(self):
+        sensors = {
+            "tsl2584_1": {"visible_counts": 100},
+            "tsl2584_sea": {"visible_counts": 300},
+        }
+
+        canonical = canonicalize_sensor_names(sensors)
+
+        self.assertEqual(canonical["tsl2584_sea"]["visible_counts"], 300)
+
     def test_nested_sensor_values_are_flattened(self):
         sensors = {
             "arduino_adc": {
