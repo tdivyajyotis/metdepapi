@@ -191,6 +191,12 @@ void receiveCommands() {
       handleCommand(commandBuffer);
       commandLength = 0;
     } else if (value != '\r') {
+      // A SoftwareSerial receiver can see a partial byte while either MCU is
+      // starting. READ has only one 'R', so it is a safe framing marker that
+      // discards any partial command already in progress.
+      if (value == 'R') {
+        commandLength = 0;
+      }
       if (commandLength < static_cast<uint8_t>(sizeof(commandBuffer) - 1)) {
         commandBuffer[commandLength++] = value;
       } else {

@@ -105,8 +105,10 @@ either polarity: wet may be above or below the dry count.
 
 Each request includes a unique boot/session event ID and sequence number,
 sensor health flags, raw optical/ADC values, WiFi RSSI, firmware version, and a
-UTC timestamp once RTC, NTP, or GPS has provided valid time. The server should
-enforce uniqueness on `event_id` so retries are idempotent.
+timezone-aware IST (`+05:30`) timestamp once RTC, NTP, or GPS has provided
+valid time. Unix epochs remain UTC-based, so storage, ordering, and certificate
+validation use the correct instant. The server should enforce uniqueness on
+`event_id` so retries are idempotent.
 
 Each request also carries a bounded, read-only `telemetry` snapshot: NodeMCU
 reset/memory state, WiFi, TLS trust-store state, I2C scan results, sensor
@@ -140,10 +142,13 @@ fresh GPS time and position fix, the NodeMCU switches to GPS, writes the GPS
 time to the DS3231, and labels the source `gps`. Loss of the fix becomes
 `gps_holdover`; the local clock continues from its most recent discipline.
 
-`sensors.timekeeping` reports `source`, `rtc_available`, and
-`rtc_last_set_source`. A DS3231 stores time but not provenance, so after a
-reboot an RTC-restored clock is conservatively labeled `rtc` until NTP or GPS
-refreshes it. `sensors.gps` reports the Uno-relayed fix and location.
+`sensors.timekeeping` reports `source`, `rtc_available`, UTC and IST strings,
+Unix epochs, and `rtc_last_set_source`. Telemetry also reports whether NTP was
+applied and whether the latest GPS fix and time are fresh. Source-transition
+events distinguish a normal RTC-to-NTP-to-GPS handoff from a wall-clock jump.
+A DS3231 stores time but not provenance, so after a reboot an RTC-restored clock
+is conservatively labeled `rtc` until NTP or GPS refreshes it. `sensors.gps`
+reports the Uno-relayed fix, location, UTC time, and IST time.
 
 HTTPS is attempted only after the clock is plausible. The firmware uses the
 Mozilla website-trust roots in `data/certs.ar` through BearSSL's flash-backed

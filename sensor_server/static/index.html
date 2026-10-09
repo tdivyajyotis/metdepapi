@@ -46,6 +46,10 @@
   <script>
     const $ = id => document.getElementById(id);
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const formatIst = value => `${new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata', year: 'numeric', month: 'numeric', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
+    }).format(new Date(value))} IST`;
     const metricLabel = metric => String(metric)
       .replace(/^tsl2584_sea(?=\.|$)/, 'TSL2584 Sea-facing')
       .replace(/^tsl2584_land(?=\.|$)/, 'TSL2584 Land-facing')
@@ -90,8 +94,8 @@
           const capturedUptime = Number(telemetry.captured_uptime_ms);
           const eventUptime = Number(event.uptime_ms);
           const eventTime = Number.isFinite(capturedUptime) && Number.isFinite(eventUptime)
-            ? new Date(anchor - Math.max(0, capturedUptime - eventUptime)).toLocaleString()
-            : new Date(anchor).toLocaleString();
+            ? formatIst(anchor - Math.max(0, capturedUptime - eventUptime))
+            : formatIst(anchor);
           const uptime = event.uptime_ms == null ? '?' : event.uptime_ms;
           eventLines.push(`[${eventTime}] [${event.source || 'node'}] [${String(event.level || 'info').toUpperCase()}] ${event.message || ''} (uptime ${uptime} ms)`);
         });
@@ -123,7 +127,7 @@
         const data = await json(`/v1/readings?limit=25${$('device').value ? `&device_id=${encodeURIComponent($('device').value)}` : ''}`);
         const newest = data.items[0];
         $('latest').innerHTML = newest ? numericLeaves(newest.sensors).slice(0, 80).map(([name,value]) => `<div class="card"><small>${escapeHtml(metricLabel(name))}</small><div class="value">${escapeHtml(value)}</div></div>`).join('') : '';
-        $('readings').innerHTML = data.items.map(x => `<tr><td>${escapeHtml(new Date(x.observed_at || x.received_at).toLocaleString())}</td><td>${escapeHtml(x.device_id)}</td><td>${escapeHtml(x.sequence)}</td><td>${escapeHtml(x.firmware)}</td><td>${escapeHtml(x.wifi_rssi_dbm)}</td></tr>`).join('');
+        $('readings').innerHTML = data.items.map(x => `<tr><td>${escapeHtml(formatIst(x.observed_at || x.received_at))}</td><td>${escapeHtml(x.device_id)}</td><td>${escapeHtml(x.sequence)}</td><td>${escapeHtml(x.firmware)}</td><td>${escapeHtml(x.wifi_rssi_dbm)}</td></tr>`).join('');
         renderTelemetry(data.items);
         await loadMetrics(previousMetric);
         $('status').className = 'status'; $('status').textContent = `${data.items.length} recent readings`;

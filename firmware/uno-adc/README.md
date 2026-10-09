@@ -7,6 +7,10 @@ median filter, and returns a compact JSON record when the NodeMCU sends
 and relays GPS date/time, fix, position, satellites, HDOP, and altitude in the
 same response. The NodeMCU never connects directly to the GPS.
 
+Both ends resynchronize the newline-framed command at startup. A partial byte
+seen while either MCU is booting is discarded, and the NodeMCU keeps listening
+past a stale error line for the valid `READ` response.
+
 The response also contains a `telemetry` object with firmware and uptime,
 available SRAM, reset flags, command/overflow/sample/loop counters, TinyGPS
 parser counters, and soil-power-switch configuration. The NodeMCU forwards

@@ -89,10 +89,17 @@ uint8_t telemetryEventCount = 0;
 uint32_t nextTelemetryEventId = 1;
 uint32_t droppedTelemetryEvents = 0;
 UnoTelemetry unoTelemetry;
+char unoResponseBuffer[1024] = {};
+char unoLastError[72] = {};
+StaticJsonDocument<1024> unoReplyDocument;
 uint8_t i2cAddresses[16] = {};
 uint8_t i2cAddressCount = 0;
 uint32_t wifiConnectAttempts = 0;
 uint32_t wifiConnectEvents = 0;
+bool wifiAttemptActive = false;
+bool missingWifiConfigReported = false;
+uint32_t wifiAttemptStartedAt = 0;
+uint32_t lastWifiProgressAt = 0;
 wl_status_t previousWifiStatus = WL_IDLE_STATUS;
 uint32_t unoRequests = 0;
 uint32_t unoSuccesses = 0;
@@ -116,6 +123,8 @@ enum class TimeSource : uint8_t {
 TimeSource timeSource = TimeSource::Unsynchronized;
 TimeSource rtcLastSetSource = TimeSource::Unsynchronized;
 volatile bool ntpSyncArrived = false;
+bool ntpSyncReceived = false;
+bool ntpClockApplied = false;
 uint32_t lastGpsFixAt = 0;
 uint32_t lastGpsDisciplineAt = 0;
 
@@ -181,6 +190,17 @@ const char *timeSourceName(TimeSource source) {
   }
 }
 
+void changeTimeSource(TimeSource nextSource, const char *reason) {
+  if (timeSource == nextSource) {
+    return;
+  }
+  const TimeSource previousSource = timeSource;
+  timeSource = nextSource;
+  addTelemetryEvent("time", "info", "Source %s -> %s (%s)",
+                    timeSourceName(previousSource), timeSourceName(nextSource),
+                    reason);
+}
+
 bool systemTimeIsValid() {
   return time(nullptr) >= config::MIN_VALID_UNIX_TIME;
 }
@@ -206,7 +226,7 @@ void initializeTimekeeping() {
     const time_t rtcEpoch = rtc.now().unixtime();
     if (rtcEpoch >= config::MIN_VALID_UNIX_TIME) {
       setSystemTime(rtcEpoch);
-      timeSource = TimeSource::Rtc;
+      changeTimeSource(TimeSource::Rtc, "valid RTC at boot");
       addTelemetryEvent("time", "info", "System clock restored from RTC");
     }
   }
@@ -258,17 +278,19 @@ void pollTimeSources() {
         addTelemetryEvent("time", "info", "System clock disciplined from GPS");
       }
     }
-    timeSource = TimeSource::Gps;
+    changeTimeSource(TimeSource::Gps, "fresh GPS fix and time");
   } else if (timeSource == TimeSource::Gps &&
              now - lastGpsFixAt > config::GPS_MAX_FIX_AGE_MS) {
-    timeSource = TimeSource::GpsHoldover;
+    changeTimeSource(TimeSource::GpsHoldover, "GPS fix became stale");
   }
 
   if (ntpSyncArrived) {
     ntpSyncArrived = false;
+    ntpSyncReceived = true;
     if (timeSource != TimeSource::Gps && systemTimeIsValid()) {
-      timeSource = TimeSource::Ntp;
+      changeTimeSource(TimeSource::Ntp, "initial NTP synchronization");
       writeRtc(time(nullptr), TimeSource::Ntp);
+      ntpClockApplied = true;
       addTelemetryEvent("time", "info",
                         "Initial system clock synchronized from NTP");
     }
@@ -286,50 +308,120 @@ String romToString(const DeviceAddress address) {
   return String(text);
 }
 
-String iso8601Now() {
-  const time_t now = time(nullptr);
-  if (now < config::MIN_VALID_UNIX_TIME) {
+String formatIso8601(time_t epoch, int32_t offsetSeconds,
+                     const char *suffix) {
+  if (epoch < config::MIN_VALID_UNIX_TIME) {
     return String();
   }
+  const time_t adjusted = epoch + offsetSeconds;
   struct tm utc {};
-  gmtime_r(&now, &utc);
-  char timestamp[25] = {};
-  strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%SZ", &utc);
+  gmtime_r(&adjusted, &utc);
+  char timestamp[32] = {};
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &utc);
+  strncat(timestamp, suffix, sizeof(timestamp) - strlen(timestamp) - 1);
   return String(timestamp);
 }
 
+String iso8601Utc(time_t epoch) {
+  return formatIso8601(epoch, 0, "Z");
+}
+
+String iso8601Ist(time_t epoch) {
+  return formatIso8601(epoch, config::IST_OFFSET_SECONDS, "+05:30");
+}
+
+const char *wifiStatusName(wl_status_t status) {
+  switch (status) {
+    case WL_IDLE_STATUS:
+      return "idle";
+    case WL_NO_SSID_AVAIL:
+      return "ssid_not_found";
+    case WL_SCAN_COMPLETED:
+      return "scan_completed";
+    case WL_CONNECTED:
+      return "connected";
+    case WL_CONNECT_FAILED:
+      return "connect_failed";
+    case WL_CONNECTION_LOST:
+      return "connection_lost";
+    case WL_WRONG_PASSWORD:
+      return "wrong_password";
+    case WL_DISCONNECTED:
+      return "disconnected";
+    default:
+      return "unknown";
+  }
+}
+
 void connectWifi() {
-  if (WiFi.status() == WL_CONNECTED || strlen(WIFI_SSID) == 0) {
+  const wl_status_t status = WiFi.status();
+  if (status == WL_CONNECTED) {
+    wifiAttemptActive = false;
+    return;
+  }
+
+  if (strlen(WIFI_SSID) == 0) {
+    if (!missingWifiConfigReported) {
+      missingWifiConfigReported = true;
+      addTelemetryEvent("wifi", "error", "WIFI_SSID is empty");
+    }
     return;
   }
 
   const uint32_t now = millis();
+  if (wifiAttemptActive) {
+    if (now - wifiAttemptStartedAt < config::WIFI_CONNECT_TIMEOUT_MS) {
+      return;
+    }
+
+    wifiAttemptActive = false;
+    lastWifiAttemptAt = now;
+    addTelemetryEvent("wifi", "warn", "Attempt timed out after %lu ms; status=%s",
+                      static_cast<unsigned long>(now - wifiAttemptStartedAt),
+                      wifiStatusName(status));
+    WiFi.disconnect(false);
+    return;
+  }
+
   if (lastWifiAttemptAt != 0 &&
       now - lastWifiAttemptAt < config::WIFI_RETRY_INTERVAL_MS) {
     return;
   }
 
   lastWifiAttemptAt = now;
+  wifiAttemptStartedAt = now;
+  lastWifiProgressAt = now;
+  wifiAttemptActive = true;
   ++wifiConnectAttempts;
   WiFi.mode(WIFI_STA);
   WiFi.hostname(config::DEVICE_ID);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  addTelemetryEvent("wifi", "info", "Connecting to WiFi '%s'", WIFI_SSID);
+  addTelemetryEvent("wifi", "info", "Starting attempt %lu to SSID '%s'",
+                    static_cast<unsigned long>(wifiConnectAttempts), WIFI_SSID);
 }
 
 void monitorWifiStatus() {
   const wl_status_t status = WiFi.status();
-  if (status == previousWifiStatus) {
-    return;
+  if (status != previousWifiStatus) {
+    previousWifiStatus = status;
+    if (status == WL_CONNECTED) {
+      ++wifiConnectEvents;
+      addTelemetryEvent("wifi", "info", "Connected; IP=%s RSSI=%d dBm",
+                        WiFi.localIP().toString().c_str(), WiFi.RSSI());
+    } else {
+      addTelemetryEvent("wifi", "warn", "Status=%s (%d)",
+                        wifiStatusName(status), static_cast<int>(status));
+    }
   }
-  previousWifiStatus = status;
-  if (status == WL_CONNECTED) {
-    ++wifiConnectEvents;
-    addTelemetryEvent("wifi", "info", "Connected; IP=%s RSSI=%d dBm",
-                      WiFi.localIP().toString().c_str(), WiFi.RSSI());
-  } else {
-    addTelemetryEvent("wifi", "warn", "WiFi status changed to %d",
-                      static_cast<int>(status));
+
+  const uint32_t now = millis();
+  if (wifiAttemptActive && status != WL_CONNECTED &&
+      now - lastWifiProgressAt >= config::WIFI_STATUS_LOG_INTERVAL_MS) {
+    lastWifiProgressAt = now;
+    Serial.printf("WiFi waiting: status=%s (%d), attempt=%lu, elapsed=%lu ms\n",
+                  wifiStatusName(status), static_cast<int>(status),
+                  static_cast<unsigned long>(wifiConnectAttempts),
+                  static_cast<unsigned long>(now - wifiAttemptStartedAt));
   }
 }
 
@@ -370,32 +462,47 @@ void updateUnoTelemetry(JsonObject reply) {
 
 bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
   ++unoRequests;
+  unoLastError[0] = '\0';
   unoSerial.listen();
   while (unoSerial.available() > 0) {
     unoSerial.read();
   }
-  unoSerial.print(F("READ\n"));
+  // End any partial command the Uno may have received while either MCU was
+  // booting, then send a complete framed request.
+  unoSerial.print(F("\nREAD\n"));
 
-  char response[1024] = {};
   size_t length = 0;
   bool overflowed = false;
+  unoResponseBuffer[0] = '\0';
   const uint32_t startedAt = millis();
   while (millis() - startedAt < config::UNO_RESPONSE_TIMEOUT_MS) {
     while (unoSerial.available() > 0) {
       const char value = static_cast<char>(unoSerial.read());
       if (value == '\n') {
-        response[length] = '\0';
+        if (length == 0 && !overflowed) {
+          continue;
+        }
+        unoResponseBuffer[length] = '\0';
         unoLastLatencyMs = millis() - startedAt;
         unoLastResponseBytes = length;
-        StaticJsonDocument<1024> reply;
-        const DeserializationError error = deserializeJson(reply, response);
+        unoReplyDocument.clear();
+        const DeserializationError error =
+            deserializeJson(unoReplyDocument, unoResponseBuffer);
+        auto &reply = unoReplyDocument;
         if (overflowed || error || reply["v"].as<uint8_t>() != 1 ||
             !reply.containsKey("a0") || !reply.containsKey("a1")) {
           ++unoInvalidResponses;
           unoTelemetry.available = false;
-          addTelemetryEvent("uno", "error", "Invalid response (%u bytes): %.44s",
-                            static_cast<unsigned>(length), response);
-          return false;
+          snprintf(unoLastError, sizeof(unoLastError),
+                   "Invalid response (%u bytes): %.28s",
+                   static_cast<unsigned>(length), unoResponseBuffer);
+          // A startup-framing error can precede the valid READ response. Keep
+          // listening until the request timeout instead of dropping the whole
+          // sample because of that one stale line.
+          length = 0;
+          overflowed = false;
+          unoResponseBuffer[0] = '\0';
+          continue;
         }
 
         const uint16_t a0 = reply["a0"].as<uint16_t>();
@@ -403,7 +510,8 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
         if (a0 > config::UNO_ADC_MAX_COUNTS ||
             a1 > config::UNO_ADC_MAX_COUNTS) {
           ++unoInvalidResponses;
-          addTelemetryEvent("uno", "error", "ADC response out of range");
+          snprintf(unoLastError, sizeof(unoLastError),
+                   "ADC response out of range");
           return false;
         }
         counts[0] = a0;
@@ -451,22 +559,22 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
         ++unoSuccesses;
         return true;
       }
-      if (value != '\r' && length + 1 < sizeof(response)) {
-        response[length++] = value;
+      if (value != '\r' && length + 1 < sizeof(unoResponseBuffer)) {
+        unoResponseBuffer[length++] = value;
       } else if (value != '\r') {
         overflowed = true;
       }
     }
     delay(1);
-    yield();
   }
 
   ++unoTimeouts;
   unoLastLatencyMs = millis() - startedAt;
   unoLastResponseBytes = length;
   unoTelemetry.available = false;
-  addTelemetryEvent("uno", "warn", "Timed out waiting for response (%u bytes)",
-                    static_cast<unsigned>(length));
+  snprintf(unoLastError, sizeof(unoLastError),
+           "Timed out waiting for response (%u bytes)",
+           static_cast<unsigned>(length));
   return false;
 }
 
@@ -602,17 +710,36 @@ void addTcs3448Reading(JsonObject sensors) {
 
 void addTimeAndGpsReading(JsonObject sensors) {
   JsonObject timing = sensors.createNestedObject("timekeeping");
-  timing["ok"] = systemTimeIsValid();
+  const time_t systemEpoch = time(nullptr);
+  const bool validSystemTime = systemEpoch >= config::MIN_VALID_UNIX_TIME;
+  timing["ok"] = validSystemTime;
   timing["source"] = timeSourceName(timeSource);
   timing["rtc_available"] = hasRtc;
   timing["rtc_last_set_source"] = timeSourceName(rtcLastSetSource);
+  timing["timezone"] = "Asia/Kolkata";
+  timing["utc_offset"] = "+05:30";
+  if (validSystemTime) {
+    timing["system_epoch"] = static_cast<uint32_t>(systemEpoch);
+    timing["utc"] = iso8601Utc(systemEpoch);
+    timing["ist"] = iso8601Ist(systemEpoch);
+  }
+  if (hasRtc) {
+    const time_t rtcEpoch = rtc.now().unixtime();
+    timing["rtc_epoch"] = static_cast<uint32_t>(rtcEpoch);
+    timing["rtc_ist"] = iso8601Ist(rtcEpoch);
+  }
 
   JsonObject out = sensors.createNestedObject("gps");
   const bool validFix = gpsFixIsFresh();
+  const bool validGpsTime = gpsTimeIsFresh();
   out["fix_valid"] = validFix;
-  out["time_valid"] = gpsTimeIsFresh();
+  out["time_valid"] = validGpsTime;
   out["relay_present"] = unoGps.present;
   out["satellites"] = unoGps.satellites;
+  if (validGpsTime) {
+    out["time_utc"] = iso8601Utc(unoGps.epoch);
+    out["time_ist"] = iso8601Ist(unoGps.epoch);
+  }
   if (unoGps.hdopValid) {
     out["hdop"] = unoGps.hdop;
   }
@@ -659,8 +786,13 @@ void addTelemetrySnapshot(JsonObject telemetry) {
   const bool wifiConnected = WiFi.status() == WL_CONNECTED;
   wifi["connected"] = wifiConnected;
   wifi["status"] = static_cast<int>(WiFi.status());
+  wifi["status_name"] = wifiStatusName(WiFi.status());
   wifi["connect_attempts"] = wifiConnectAttempts;
   wifi["connect_events"] = wifiConnectEvents;
+  wifi["attempt_active"] = wifiAttemptActive;
+  if (wifiAttemptActive) {
+    wifi["attempt_elapsed_ms"] = millis() - wifiAttemptStartedAt;
+  }
   if (wifiConnected) {
     wifi["ip"] = WiFi.localIP().toString();
     wifi["gateway"] = WiFi.gatewayIP().toString();
@@ -724,9 +856,31 @@ void addTelemetrySnapshot(JsonObject telemetry) {
   http["last_status"] = postLastStatus;
 
   JsonObject clock = telemetry.createNestedObject("timekeeping");
-  clock["system_time_valid"] = systemTimeIsValid();
+  const time_t systemEpoch = time(nullptr);
+  const bool validSystemTime = systemEpoch >= config::MIN_VALID_UNIX_TIME;
+  clock["system_time_valid"] = validSystemTime;
   clock["source"] = timeSourceName(timeSource);
   clock["rtc_last_set_source"] = timeSourceName(rtcLastSetSource);
+  clock["timezone"] = "Asia/Kolkata";
+  clock["utc_offset"] = "+05:30";
+  clock["ntp_sync_received"] = ntpSyncReceived;
+  clock["ntp_clock_applied"] = ntpClockApplied;
+  clock["gps_fix_fresh"] = gpsFixIsFresh();
+  clock["gps_time_fresh"] = gpsTimeIsFresh();
+  if (validSystemTime) {
+    clock["system_epoch"] = static_cast<uint32_t>(systemEpoch);
+    clock["system_utc"] = iso8601Utc(systemEpoch);
+    clock["system_ist"] = iso8601Ist(systemEpoch);
+  }
+  if (hasRtc) {
+    const time_t rtcEpoch = rtc.now().unixtime();
+    clock["rtc_epoch"] = static_cast<uint32_t>(rtcEpoch);
+    clock["rtc_ist"] = iso8601Ist(rtcEpoch);
+  }
+  if (gpsTimeIsFresh()) {
+    clock["gps_epoch"] = static_cast<uint32_t>(unoGps.epoch);
+    clock["gps_ist"] = iso8601Ist(unoGps.epoch);
+  }
 
   JsonArray events = telemetry.createNestedArray("events");
   for (uint8_t i = 0; i < telemetryEventCount; ++i) {
@@ -744,6 +898,11 @@ String makePayload() {
   uint16_t unoCounts[2] = {};
   uint32_t unoSequence = 0;
   const bool hasUnoReading = readUnoAdc(unoCounts, unoSequence);
+  if (!hasUnoReading) {
+    addTelemetryEvent("uno", "warn", "%s",
+                      unoLastError[0] == '\0' ? "Uno reading unavailable"
+                                              : unoLastError);
+  }
   pollTimeSources();
 
   DynamicJsonDocument doc(8192);
@@ -758,7 +917,9 @@ String makePayload() {
            static_cast<unsigned long>(sequenceNumber));
   doc["event_id"] = eventId;
 
-  const String observedAt = iso8601Now();
+  // Store an offset-aware IST timestamp. PostgreSQL timestamptz normalizes it
+  // to the same UTC instant, while humans and raw payload logs see local time.
+  const String observedAt = iso8601Ist(time(nullptr));
   if (observedAt.length() > 0) {
     doc["observed_at"] = observedAt;
   } else {
@@ -784,6 +945,12 @@ String makePayload() {
   }
 
   String payload;
+  const size_t payloadLength = measureJson(doc);
+  if (!payload.reserve(payloadLength + 1)) {
+    addTelemetryEvent("json", "error", "Could not reserve %u-byte payload",
+                      static_cast<unsigned>(payloadLength));
+    return String();
+  }
   serializeJson(doc, payload);
   return payload;
 }
@@ -837,6 +1004,14 @@ bool postPayload(const String &payload) {
       return false;
     }
     BearSSL::WiFiClientSecure client;
+    client.setBufferSizes(config::TLS_RECEIVE_BUFFER_BYTES,
+                          config::TLS_TRANSMIT_BUFFER_BYTES);
+    Serial.printf(
+        "TLS start: payload=%u free_heap=%u max_block=%u buffers=%u/%u\n",
+        static_cast<unsigned>(payload.length()), ESP.getFreeHeap(),
+        ESP.getMaxFreeBlockSize(),
+        static_cast<unsigned>(config::TLS_RECEIVE_BUFFER_BYTES),
+        static_cast<unsigned>(config::TLS_TRANSMIT_BUFFER_BYTES));
     if (certificateStoreReady) {
       client.setCertStore(&certificateStore);
       return postWithClient(client, payload);

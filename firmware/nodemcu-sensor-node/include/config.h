@@ -52,13 +52,18 @@ constexpr uint8_t TSL2584_LAND_ADDRESS = 0x49;
 
 constexpr uint32_t I2C_CLOCK_HZ = 100000;
 constexpr uint32_t WIFI_RETRY_INTERVAL_MS = 10000;
+constexpr uint32_t WIFI_CONNECT_TIMEOUT_MS = 30000;
+constexpr uint32_t WIFI_STATUS_LOG_INTERVAL_MS = 5000;
 constexpr uint32_t HTTP_TIMEOUT_MS = 12000;
+constexpr uint16_t TLS_RECEIVE_BUFFER_BYTES = 4096;
+constexpr uint16_t TLS_TRANSMIT_BUFFER_BYTES = 512;
 constexpr time_t MIN_VALID_UNIX_TIME = 1609459200;  // 2021-01-01 UTC
+constexpr int32_t IST_OFFSET_SECONDS = 5 * 60 * 60 + 30 * 60;
 constexpr uint8_t TELEMETRY_MAX_EVENTS = 12;
 constexpr size_t TELEMETRY_MESSAGE_LENGTH = 88;
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.5.0";
+constexpr char FIRMWARE_VERSION[] = "0.5.4";
 
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 
