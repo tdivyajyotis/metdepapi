@@ -137,10 +137,12 @@ must tolerate long outages without losing readings.
 
 At boot, a valid DS3231 restores the system clock immediately. SNTP then runs
 until its first successful synchronization, writes that NTP time to the
-DS3231, labels the active source `ntp`, and stops. When the Uno later relays a
-fresh GPS time and position fix, the NodeMCU switches to GPS, writes the GPS
-time to the DS3231, and labels the source `gps`. Loss of the fix becomes
-`gps_holdover`; the local clock continues from its most recent discipline.
+DS3231, labels the active source `ntp`, and stops. When the Uno later relays
+fresh GPS time, the NodeMCU switches to GPS, writes the GPS time to the DS3231,
+and labels the source `gps`. A position fix is not required for clock
+discipline: checksum-valid NMEA time remains usable while coordinates stay
+invalid and are omitted. Loss of fresh GPS time becomes `gps_holdover`; the
+local clock continues from its most recent discipline.
 
 `sensors.timekeeping` reports `source`, `rtc_available`, UTC and IST strings,
 Unix epochs, and `rtc_last_set_source`. Telemetry also reports whether NTP was

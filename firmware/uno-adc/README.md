@@ -7,6 +7,13 @@ median filter, and returns a compact JSON record when the NodeMCU sends
 and relays GPS date/time, fix, position, satellites, HDOP, and altitude in the
 same response. The NodeMCU never connects directly to the GPS.
 
+GPS time and navigation fix are deliberately independent. TinyGPS++ accepts
+date/time from checksum-valid RMC and time from checksum-valid GGA even when
+RMC status is `V` or GGA fix quality is `0`. In that state the Uno relays
+`time_valid: true` and `fix_valid: false`; coordinates are omitted. Raw NMEA
+may still contain latitude/longitude fields in a no-fix sentence, but those
+fields are not treated as a valid position.
+
 Both ends resynchronize the newline-framed command at startup. A partial byte
 seen while either MCU is booting is discarded, and the NodeMCU keeps listening
 past a stale error line for the valid `READ` response.

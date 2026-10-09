@@ -34,8 +34,10 @@ constexpr uint8_t SOIL_DEPTH_CM[2] = {15, 45};  // Uno A0, A1 respectively.
 constexpr uint32_t SAMPLE_INTERVAL_MS = 60000;
 
 // GPS NMEA is parsed by the Arduino Uno and relayed in the ADC response.
+// Position validity is intentionally not required for GPS clock discipline.
 constexpr uint32_t GPS_MAX_FIX_AGE_MS = 3000;
 constexpr uint32_t GPS_RELAY_STALE_MS = SAMPLE_INTERVAL_MS + 5000;
+constexpr uint32_t GPS_TIME_HOLDOVER_DELAY_MS = 3000;
 constexpr uint8_t GPS_MIN_SATELLITES = 3;
 constexpr uint32_t GPS_DISCIPLINE_INTERVAL_MS = 6UL * 60UL * 60UL * 1000UL;
 
@@ -63,7 +65,7 @@ constexpr uint8_t TELEMETRY_MAX_EVENTS = 12;
 constexpr size_t TELEMETRY_MESSAGE_LENGTH = 88;
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.5.4";
+constexpr char FIRMWARE_VERSION[] = "0.5.5";
 
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 

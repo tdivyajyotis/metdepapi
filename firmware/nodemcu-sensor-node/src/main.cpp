@@ -80,6 +80,7 @@ struct UnoTelemetry {
   uint32_t loopCount = 0;
   uint32_t gpsCharsProcessed = 0;
   uint32_t gpsSentencesOk = 0;
+  uint32_t gpsSentencesWithFix = 0;
   uint32_t gpsChecksumFailures = 0;
   bool soilPowerSwitched = false;
 };
@@ -125,7 +126,7 @@ TimeSource rtcLastSetSource = TimeSource::Unsynchronized;
 volatile bool ntpSyncArrived = false;
 bool ntpSyncReceived = false;
 bool ntpClockApplied = false;
-uint32_t lastGpsFixAt = 0;
+uint32_t lastGpsTimeAt = 0;
 uint32_t lastGpsDisciplineAt = 0;
 
 struct UnoGpsReading {
@@ -258,12 +259,15 @@ time_t gpsEpoch() {
 
 void pollTimeSources() {
   const uint32_t now = millis();
-  const bool validGpsFix = gpsFixIsFresh();
-  if (validGpsFix) {
-    lastGpsFixAt = now;
+  const bool validGpsTime = gpsTimeIsFresh();
+  if (validGpsTime) {
+    lastGpsTimeAt = now;
   }
 
-  if (validGpsFix && gpsTimeIsFresh()) {
+  // NMEA time validity is independent of navigation-fix validity. A receiver
+  // may emit checksum-valid UTC in RMC status V or GGA fix quality 0. Use that
+  // time for the system clock and RTC while continuing to suppress position.
+  if (validGpsTime) {
     const bool firstGpsSync = timeSource != TimeSource::Gps;
     const bool disciplineDue =
         lastGpsDisciplineAt == 0 ||
@@ -278,16 +282,18 @@ void pollTimeSources() {
         addTelemetryEvent("time", "info", "System clock disciplined from GPS");
       }
     }
-    changeTimeSource(TimeSource::Gps, "fresh GPS fix and time");
+    changeTimeSource(TimeSource::Gps,
+                     "fresh GPS time; position fix not required");
   } else if (timeSource == TimeSource::Gps &&
-             now - lastGpsFixAt > config::GPS_MAX_FIX_AGE_MS) {
-    changeTimeSource(TimeSource::GpsHoldover, "GPS fix became stale");
+             now - lastGpsTimeAt > config::GPS_TIME_HOLDOVER_DELAY_MS) {
+    changeTimeSource(TimeSource::GpsHoldover, "GPS time became stale");
   }
 
   if (ntpSyncArrived) {
     ntpSyncArrived = false;
     ntpSyncReceived = true;
-    if (timeSource != TimeSource::Gps && systemTimeIsValid()) {
+    if (timeSource != TimeSource::Gps &&
+        timeSource != TimeSource::GpsHoldover && systemTimeIsValid()) {
       changeTimeSource(TimeSource::Ntp, "initial NTP synchronization");
       writeRtc(time(nullptr), TimeSource::Ntp);
       ntpClockApplied = true;
@@ -456,6 +462,8 @@ void updateUnoTelemetry(JsonObject reply) {
   unoTelemetry.loopCount = reply["loop_count"] | 0UL;
   unoTelemetry.gpsCharsProcessed = reply["gps_chars_processed"] | 0UL;
   unoTelemetry.gpsSentencesOk = reply["gps_sentences_ok"] | 0UL;
+  unoTelemetry.gpsSentencesWithFix =
+      reply["gps_sentences_with_fix"] | 0UL;
   unoTelemetry.gpsChecksumFailures = reply["gps_checksum_failures"] | 0UL;
   unoTelemetry.soilPowerSwitched = reply["soil_power_switched"] | false;
 }
@@ -734,6 +742,7 @@ void addTimeAndGpsReading(JsonObject sensors) {
   const bool validGpsTime = gpsTimeIsFresh();
   out["fix_valid"] = validFix;
   out["time_valid"] = validGpsTime;
+  out["time_requires_fix"] = false;
   out["relay_present"] = unoGps.present;
   out["satellites"] = unoGps.satellites;
   if (validGpsTime) {
@@ -845,6 +854,7 @@ void addTelemetrySnapshot(JsonObject telemetry) {
     uno["loop_count"] = unoTelemetry.loopCount;
     uno["gps_chars_processed"] = unoTelemetry.gpsCharsProcessed;
     uno["gps_sentences_ok"] = unoTelemetry.gpsSentencesOk;
+    uno["gps_sentences_with_fix"] = unoTelemetry.gpsSentencesWithFix;
     uno["gps_checksum_failures"] = unoTelemetry.gpsChecksumFailures;
     uno["soil_power_switched"] = unoTelemetry.soilPowerSwitched;
   }
@@ -867,6 +877,8 @@ void addTelemetrySnapshot(JsonObject telemetry) {
   clock["ntp_clock_applied"] = ntpClockApplied;
   clock["gps_fix_fresh"] = gpsFixIsFresh();
   clock["gps_time_fresh"] = gpsTimeIsFresh();
+  clock["gps_time_used_without_fix"] =
+      gpsTimeIsFresh() && !gpsFixIsFresh();
   if (validSystemTime) {
     clock["system_epoch"] = static_cast<uint32_t>(systemEpoch);
     clock["system_utc"] = iso8601Utc(systemEpoch);

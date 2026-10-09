@@ -4,7 +4,7 @@
 
 namespace config {
 
-constexpr char FIRMWARE_VERSION[] = "0.2.1";
+constexpr char FIRMWARE_VERSION[] = "0.2.2";
 
 constexpr uint8_t NODEMCU_RX_PIN = 10;
 constexpr uint8_t NODEMCU_TX_PIN = 11;
@@ -16,7 +16,12 @@ constexpr uint32_t NODEMCU_SERIAL_BAUD = 9600;
 constexpr uint8_t GPS_RX_PIN = 8;
 constexpr uint8_t GPS_TX_PIN = 9;
 constexpr uint32_t GPS_SERIAL_BAUD = 9600;
-constexpr uint32_t GPS_MAX_FIX_AGE_MS = 3000;
+// NMEA navigation validity and UTC validity are independent. RMC with status
+// V and GGA with fix quality 0 may still carry valid UTC fields, so do not
+// require a position fix before relaying fresh GPS date/time.
+constexpr uint32_t GPS_MAX_POSITION_AGE_MS = 3000;
+constexpr uint32_t GPS_MAX_TIME_AGE_MS = 3000;
+constexpr uint32_t GPS_MAX_DATE_AGE_MS = 3000;
 
 constexpr uint8_t SOIL_ANALOG_PINS[2] = {A0, A1};
 constexpr uint8_t SOIL_POWER_PIN = 0xFF;

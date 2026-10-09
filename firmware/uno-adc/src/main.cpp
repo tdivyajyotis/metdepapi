@@ -92,11 +92,17 @@ void sendReadings() {
   nodeMcuSerial.print(F(",\"a1\":"));
   nodeMcuSerial.print(a1);
   nodeMcuSerial.print(F(",\"gps\":{\"fix_valid\":"));
-  const bool fixValid = gps.location.isValid() &&
-                        gps.location.age() <= config::GPS_MAX_FIX_AGE_MS;
-  const bool timeValid = gps.date.isValid() && gps.time.isValid() &&
-                         gps.date.age() <= config::GPS_MAX_FIX_AGE_MS &&
-                         gps.time.age() <= config::GPS_MAX_FIX_AGE_MS;
+  // TinyGPS++ deliberately commits checksum-valid RMC/GGA time even when the
+  // sentence declares no navigation fix. It commits location only for RMC A
+  // or GGA fix quality > 0. Keep those two validity domains independent: GPS
+  // UTC is useful for clock discipline even when coordinates are not usable.
+  const bool fixValid =
+      gps.location.isValid() &&
+      gps.location.age() <= config::GPS_MAX_POSITION_AGE_MS;
+  const bool timeValid =
+      gps.date.isValid() && gps.time.isValid() &&
+      gps.date.age() <= config::GPS_MAX_DATE_AGE_MS &&
+      gps.time.age() <= config::GPS_MAX_TIME_AGE_MS;
   nodeMcuSerial.print(fixValid ? F("true") : F("false"));
   nodeMcuSerial.print(F(",\"time_valid\":"));
   nodeMcuSerial.print(timeValid ? F("true") : F("false"));
@@ -156,6 +162,8 @@ void sendReadings() {
   nodeMcuSerial.print(gps.charsProcessed());
   nodeMcuSerial.print(F(",\"gps_sentences_ok\":"));
   nodeMcuSerial.print(gps.passedChecksum());
+  nodeMcuSerial.print(F(",\"gps_sentences_with_fix\":"));
+  nodeMcuSerial.print(gps.sentencesWithFix());
   nodeMcuSerial.print(F(",\"gps_checksum_failures\":"));
   nodeMcuSerial.print(gps.failedChecksum());
   nodeMcuSerial.print(F(",\"soil_power_switched\":"));
