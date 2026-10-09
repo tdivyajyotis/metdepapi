@@ -86,10 +86,37 @@ flattened time-series metrics. Ingestion also maps the former `tsl2584_1` and
 `tsl2584_2` keys, allowing the server to be deployed before the NodeMCU is
 flashed.
 
-The dashboard includes a read-only telemetry console that refreshes every 30
-seconds. Recent readings expose NodeMCU, WiFi, TLS, I2C, sensor-presence,
-NodeMCU-to-Uno link, Uno, HTTP, timekeeping, and bounded event-log data. There
-is deliberately no API or UI route that sends commands to field hardware.
+The dashboard refreshes every 30 seconds and uses server receipt time to decide
+which reading is latest, so a damaged field clock cannot pin an old boot above
+current data. It provides station-health summaries, grouped/filterable compact
+graphs for every numeric sensor channel, a recent-arrivals table, and a
+collapsible one-way telemetry console. There is deliberately no API or UI route
+that sends commands to field hardware.
+
+Device observation timestamps more than five minutes from the API server clock
+remain preserved inside the original JSON payload, but the indexed observation
+time falls back to server `received_at`. This keeps new time series ordered even
+if an RTC is temporarily corrupt.
+
+## Purging test readings
+
+Database maintenance is available only inside the API container; it is not
+exposed as a public HTTP endpoint. The command is a read-only dry run unless
+`--confirm` is supplied. For the October 9 commissioning data, retain the clean
+single-supply boot and inspect the exact matched count first:
+
+```powershell
+docker compose -f compose.server.yaml exec api python -m sensor_server.maintenance purge-readings --device-id station-001 --before "2026-10-09T05:42:30+05:30"
+```
+
+If the displayed cutoff and count are correct, perform the cascading deletion:
+
+```powershell
+docker compose -f compose.server.yaml exec api python -m sensor_server.maintenance purge-readings --device-id station-001 --before "2026-10-09T05:42:30+05:30" --confirm
+```
+
+Deleting a reading also deletes its flattened measurements through the database
+foreign key. Readings received at or after the cutoff are retained.
 
 - `GET /healthz` — database health.
 - `GET /docs` — interactive OpenAPI documentation.

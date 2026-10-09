@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import psycopg
@@ -143,6 +143,21 @@ TSL_NAME_MIGRATION_SQL = (
 )
 
 TSL_NAME_MIGRATION_VERSION = "2026-10-08-tsl-direction-names"
+MAX_DEVICE_CLOCK_SKEW = timedelta(minutes=5)
+
+
+def trusted_observed_at(value: datetime | None, reference: datetime) -> datetime | None:
+    """Use device time only while it remains close to the server clock.
+
+    The complete original payload is retained in JSONB for diagnosis. Returning
+    None here makes the indexed/queryable timestamp fall back to received_at,
+    preventing a bad RTC from pinning an old reading at the top of the dashboard
+    or distorting time-series order.
+    """
+    if value is None:
+        return None
+    normalized = value.astimezone(UTC)
+    return normalized if abs(normalized - reference) <= MAX_DEVICE_CLOCK_SKEW else None
 
 
 class Database:
@@ -200,6 +215,8 @@ class Database:
         canonical_sensors = canonicalize_sensor_names(reading.sensors)
         payload["sensors"] = canonical_sensors
         measurements = list(flatten_numeric(canonical_sensors))
+        server_now = datetime.now(UTC)
+        stored_observed_at = trusted_observed_at(reading.observed_at, server_now)
         with self.connect() as connection:
             inserted = connection.execute(
                 """
@@ -215,7 +232,7 @@ class Database:
                     reading.device_id,
                     reading.sequence,
                     reading.schema_version,
-                    reading.observed_at,
+                    stored_observed_at,
                     reading.firmware,
                     reading.uptime_ms,
                     reading.wifi_rssi_dbm,
@@ -234,7 +251,7 @@ class Database:
                 if inserted is None:
                     raise ValueError("event_id is already owned by another device")
             else:
-                recorded_at = reading.observed_at or inserted["received_at"]
+                recorded_at = stored_observed_at or inserted["received_at"]
                 with connection.cursor() as cursor:
                     cursor.executemany(
                         """
@@ -277,7 +294,9 @@ class Database:
         if device_id:
             query += " WHERE device_id = %s"
             params.append(device_id)
-        query += " ORDER BY COALESCE(observed_at, received_at) DESC LIMIT %s"
+        # "Latest" means latest arrival. A field clock may be wrong even when
+        # the reading is otherwise useful; received_at is server-controlled.
+        query += " ORDER BY received_at DESC, id DESC LIMIT %s"
         params.append(limit)
         with self.connect() as connection:
             return list(connection.execute(query, params).fetchall())
@@ -326,6 +345,41 @@ class Database:
                     """
                 ).fetchall()
             )
+
+    def purge_readings_before(
+        self, device_id: str, before: datetime, *, confirm: bool = False
+    ) -> dict[str, Any]:
+        before = before.astimezone(UTC)
+        with self.connect() as connection:
+            summary = connection.execute(
+                """
+                SELECT count(*) AS reading_count,
+                       min(received_at) AS oldest_received_at,
+                       max(received_at) AS newest_received_at
+                FROM sensor_readings
+                WHERE device_id = %s AND received_at < %s
+                """,
+                (device_id, before),
+            ).fetchone()
+            deleted = 0
+            if confirm and summary and summary["reading_count"]:
+                result = connection.execute(
+                    """
+                    DELETE FROM sensor_readings
+                    WHERE device_id = %s AND received_at < %s
+                    """,
+                    (device_id, before),
+                )
+                deleted = result.rowcount
+            return {
+                "device_id": device_id,
+                "before": before,
+                "matched": summary["reading_count"] if summary else 0,
+                "deleted": deleted,
+                "oldest_received_at": summary["oldest_received_at"] if summary else None,
+                "newest_received_at": summary["newest_received_at"] if summary else None,
+                "confirmed": confirm,
+            }
 
     def healthy(self) -> bool:
         with self.connect() as connection:

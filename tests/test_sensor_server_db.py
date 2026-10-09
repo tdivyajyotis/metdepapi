@@ -2,7 +2,7 @@ import importlib.util
 import json
 import unittest
 from contextlib import contextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 
 SERVER_DEPS_AVAILABLE = bool(
@@ -10,16 +10,21 @@ SERVER_DEPS_AVAILABLE = bool(
 )
 
 if SERVER_DEPS_AVAILABLE:
-    from sensor_server.db import Database
+    from sensor_server.db import Database, trusted_observed_at
     from sensor_server.schemas import ReadingIn
 
 
 class FakeResult:
-    def __init__(self, row=None):
+    def __init__(self, row=None, rows=None, rowcount=0):
         self.row = row
+        self.rows = rows or []
+        self.rowcount = rowcount
 
     def fetchone(self):
         return self.row
+
+    def fetchall(self):
+        return self.rows
 
 
 class FakeCursor:
@@ -49,6 +54,16 @@ class FakeConnection:
             return FakeResult(
                 {"id": 7, "received_at": datetime(2026, 10, 7, tzinfo=UTC)}
             )
+        if "count(*) AS reading_count" in query:
+            return FakeResult(
+                {
+                    "reading_count": 2,
+                    "oldest_received_at": datetime(2026, 10, 6, tzinfo=UTC),
+                    "newest_received_at": datetime(2026, 10, 7, tzinfo=UTC),
+                }
+            )
+        if "DELETE FROM sensor_readings" in query:
+            return FakeResult(rowcount=2)
         return FakeResult()
 
     def cursor(self):
@@ -57,6 +72,16 @@ class FakeConnection:
 
 @unittest.skipUnless(SERVER_DEPS_AVAILABLE, "install the 'server' extra")
 class DatabaseTests(unittest.TestCase):
+    def test_device_time_is_trusted_only_near_server_time(self):
+        reference = datetime(2026, 10, 9, 0, 15, tzinfo=UTC)
+        self.assertEqual(
+            trusted_observed_at(reference - timedelta(minutes=4), reference),
+            reference - timedelta(minutes=4),
+        )
+        self.assertIsNone(
+            trusted_observed_at(reference + timedelta(minutes=6), reference)
+        )
+
     def test_insert_uses_cursor_for_measurement_batch(self):
         connection = FakeConnection()
         database = Database("unused")
@@ -93,6 +118,43 @@ class DatabaseTests(unittest.TestCase):
         )
         stored_payload = json.loads(insert_params[8])
         self.assertEqual(stored_payload["telemetry"]["uno_link"]["successes"], 1)
+
+    def test_latest_orders_by_server_receipt_time(self):
+        connection = FakeConnection()
+        database = Database("unused")
+
+        @contextmanager
+        def fake_connect():
+            yield connection
+
+        database.connect = fake_connect
+        database.latest("station-001", 25)
+
+        query, params = connection.calls[-1]
+        self.assertIn("ORDER BY received_at DESC, id DESC", query)
+        self.assertEqual(params, ["station-001", 25])
+
+    def test_purge_is_dry_run_until_confirmed(self):
+        connection = FakeConnection()
+        database = Database("unused")
+
+        @contextmanager
+        def fake_connect():
+            yield connection
+
+        database.connect = fake_connect
+        cutoff = datetime(2026, 10, 9, 0, 12, tzinfo=UTC)
+        dry_run = database.purge_readings_before("station-001", cutoff)
+        self.assertEqual(dry_run["matched"], 2)
+        self.assertEqual(dry_run["deleted"], 0)
+        self.assertFalse(any("DELETE FROM sensor_readings" in query for query, _ in connection.calls))
+
+        connection.calls.clear()
+        confirmed = database.purge_readings_before(
+            "station-001", cutoff, confirm=True
+        )
+        self.assertEqual(confirmed["deleted"], 2)
+        self.assertTrue(any("DELETE FROM sensor_readings" in query for query, _ in connection.calls))
 
 
 if __name__ == "__main__":
