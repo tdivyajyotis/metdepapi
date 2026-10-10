@@ -134,9 +134,10 @@ and should be done after calibration rather than applying a misleading generic
 constant. The `0x29` device is emitted as `tsl2584_sea`; the `0x49` device is
 emitted as `tsl2584_land`.
 
-LittleFS contains a 512 KiB ring of 2,048 fixed 256-byte, versioned and
-checksummed records. That provides about 34 hours at the one-minute interval,
-including more than the required 24-hour outage. The queue is scanned after a
+LittleFS contains a 384 KiB ring of 1,536 fixed 256-byte, versioned and
+checksummed records. That provides 25.6 hours at the one-minute interval,
+including more than the required 24-hour outage while leaving enough free
+space for LittleFS copy-on-write updates beside the TLS trust store. The queue is scanned after a
 restart, partially written records are ignored, and an acknowledged record is
 invalidated only after the API returns success. When full, the oldest record is
 discarded and the drop counter is exposed in telemetry.

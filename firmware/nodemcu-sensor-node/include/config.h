@@ -70,7 +70,7 @@ constexpr uint8_t TELEMETRY_MAX_EVENTS = 12;
 constexpr size_t TELEMETRY_MESSAGE_LENGTH = 88;
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.6.0";
+constexpr char FIRMWARE_VERSION[] = "0.6.1";
 
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 constexpr char BATCH_INGEST_URL[] =

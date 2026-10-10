@@ -8,7 +8,11 @@ namespace offline {
 constexpr uint32_t RECORD_MAGIC = 0x54475131UL;  // "TGQ1"
 constexpr uint16_t RECORD_FORMAT_VERSION = 1;
 constexpr uint16_t RECORD_BYTES = 256;
-constexpr uint16_t RECORD_CAPACITY = 2048;
+// Keep the ring smaller than the free LittleFS space left after the TLS trust
+// store. LittleFS uses copy-on-write, so updating the start of an oversized
+// preallocated file can otherwise appear to succeed but fail during sync.
+// 1,536 one-minute records retain 25.6 hours of offline measurements.
+constexpr uint16_t RECORD_CAPACITY = 1536;
 constexpr size_t QUEUE_FILE_BYTES =
     static_cast<size_t>(RECORD_BYTES) * RECORD_CAPACITY;
 constexpr char QUEUE_PATH[] = "/offline-readings.q";
