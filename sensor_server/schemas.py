@@ -34,3 +34,17 @@ class IngestResponse(BaseModel):
     event_id: str
     received_at: datetime
     measurement_count: int
+
+
+class ReadingBatchIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    readings: list[ReadingIn] = Field(min_length=1, max_length=8)
+
+
+class BatchIngestResponse(BaseModel):
+    accepted: bool
+    reading_count: int
+    inserted_count: int
+    duplicate_count: int
+    results: list[IngestResponse]

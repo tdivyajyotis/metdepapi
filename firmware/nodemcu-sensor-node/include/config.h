@@ -34,6 +34,9 @@ constexpr uint16_t UNO_ADC_MAX_COUNTS = 1023;
 constexpr uint8_t SOIL_DEPTH_CM[2] = {15, 45};  // Uno A0, A1 respectively.
 
 constexpr uint32_t SAMPLE_INTERVAL_MS = 60000;
+constexpr uint8_t OFFLINE_REPLAY_BATCH_SIZE = 2;
+constexpr uint32_t OFFLINE_REPLAY_RETRY_MS = 2000;
+constexpr uint32_t OFFLINE_REPLAY_SAMPLE_GUARD_MS = 15000;
 
 // GPS NMEA is parsed by the Arduino Uno and relayed in the ADC response.
 // Position validity is intentionally not required for GPS clock discipline.
@@ -67,9 +70,11 @@ constexpr uint8_t TELEMETRY_MAX_EVENTS = 12;
 constexpr size_t TELEMETRY_MESSAGE_LENGTH = 88;
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.5.7";
+constexpr char FIRMWARE_VERSION[] = "0.6.0";
 
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
+constexpr char BATCH_INGEST_URL[] =
+    "https://ingest.turtleguard.in/v1/readings/batch";
 
 // Calibrate each resistive probe/module pair using your own dry-reference and
 // wet-reference soil readings. The default values are placeholders and

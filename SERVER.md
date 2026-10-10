@@ -73,6 +73,9 @@ response with `duplicate: true` rather than creating a second reading.
 ## API routes
 
 - `POST /v1/readings` — device-authenticated ingestion.
+- `POST /v1/readings/batch` — device-authenticated replay of 1–8 readings from
+  one device; each item uses the unchanged reading schema and event-ID
+  idempotency.
 - `GET /v1/devices` — configured devices and last-seen timestamps.
 - `GET /v1/readings` — recent full sensor and one-way telemetry snapshots.
 - `GET /v1/metrics?device_id=station-001` — discovered metric paths.
@@ -87,16 +90,22 @@ flattened time-series metrics. Ingestion also maps the former `tsl2584_1` and
 flashed.
 
 The dashboard refreshes every 30 seconds and uses server receipt time to decide
-which reading is latest, so a damaged field clock cannot pin an old boot above
-current data. It provides station-health summaries, grouped/filterable compact
-graphs for every numeric sensor channel, a recent-arrivals table, and a
-collapsible one-way telemetry console. There is deliberately no API or UI route
-that sends commands to field hardware.
+which arrival is latest. Replayed readings are visibly labelled, charted at
+their original observation time, and use that observation time for health
+staleness. Queue depth/capacity, replay delay, replay/drop counts and corrupt
+record status are shown when supplied by firmware. It also provides
+station-health summaries, grouped/filterable compact graphs for every numeric
+sensor channel, a recent-arrivals table, and a collapsible one-way telemetry
+console. There is deliberately no API or UI route that sends commands to field
+hardware.
 
-Device observation timestamps more than five minutes from the API server clock
-remain preserved inside the original JSON payload, but the indexed observation
-time falls back to server `received_at`. This keeps new time series ordered even
-if an RTC is temporarily corrupt.
+Live device observation timestamps more than five minutes from the API server
+clock remain preserved inside the original JSON payload, but the indexed
+observation time falls back to server `received_at`. A reading explicitly marked
+`telemetry.delivery.stored_offline: true` may retain a past indexed observation
+time up to 36 hours old, matching the flash queue envelope. Future or older
+timestamps still fall back to receipt time, protecting series from a corrupt
+RTC.
 
 ## Purging test readings
 
@@ -134,12 +143,13 @@ The canonical public hostnames are:
 | --- | --- |
 | IMD data/API | `https://imd.turtleguard.in` |
 | Sensor dashboard/read API | `https://dashboard.turtleguard.in` |
-| Device ingestion | `https://ingest.turtleguard.in/v1/readings` |
+| Device ingestion | `https://ingest.turtleguard.in/v1/readings` and `/v1/readings/batch` |
 
-For the ingestion published-application route, keep the path expression
-`^/v1/readings$` so the unprotected device hostname cannot expose dashboard or
-read routes. Protect `dashboard.turtleguard.in` with Cloudflare Access; do not
-put interactive Access authentication in front of the ingestion route.
+For the ingestion published-application route, use the path expression
+`^/v1/readings(/batch)?$` so the unprotected device hostname exposes only the
+individual and bounded batch ingestion routes. Protect
+`dashboard.turtleguard.in` with Cloudflare Access; do not put interactive Access
+authentication in front of the ingestion routes.
 
 Create a tunnel in Cloudflare Zero Trust and route the public hostname to
 `http://api:8000`. Put its token in `.env`, then start the optional profile:

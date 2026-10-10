@@ -82,6 +82,24 @@ class DatabaseTests(unittest.TestCase):
             trusted_observed_at(reference + timedelta(minutes=6), reference)
         )
 
+    def test_offline_replay_trusts_bounded_past_device_time(self):
+        reference = datetime(2026, 10, 9, 0, 15, tzinfo=UTC)
+        replayed = reference - timedelta(hours=24)
+        self.assertEqual(
+            trusted_observed_at(replayed, reference, stored_offline=True),
+            replayed,
+        )
+        self.assertIsNone(
+            trusted_observed_at(
+                reference - timedelta(hours=37), reference, stored_offline=True
+            )
+        )
+        self.assertIsNone(
+            trusted_observed_at(
+                reference + timedelta(minutes=6), reference, stored_offline=True
+            )
+        )
+
     def test_insert_uses_cursor_for_measurement_batch(self):
         connection = FakeConnection()
         database = Database("unused")

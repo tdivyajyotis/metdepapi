@@ -144,9 +144,15 @@ TSL_NAME_MIGRATION_SQL = (
 
 TSL_NAME_MIGRATION_VERSION = "2026-10-08-tsl-direction-names"
 MAX_DEVICE_CLOCK_SKEW = timedelta(minutes=5)
+MAX_OFFLINE_REPLAY_AGE = timedelta(hours=36)
 
 
-def trusted_observed_at(value: datetime | None, reference: datetime) -> datetime | None:
+def trusted_observed_at(
+    value: datetime | None,
+    reference: datetime,
+    *,
+    stored_offline: bool = False,
+) -> datetime | None:
     """Use device time only while it remains close to the server clock.
 
     The complete original payload is retained in JSONB for diagnosis. Returning
@@ -157,6 +163,10 @@ def trusted_observed_at(value: datetime | None, reference: datetime) -> datetime
     if value is None:
         return None
     normalized = value.astimezone(UTC)
+    if stored_offline:
+        age = reference - normalized
+        if -MAX_DEVICE_CLOCK_SKEW <= age <= MAX_OFFLINE_REPLAY_AGE:
+            return normalized
     return normalized if abs(normalized - reference) <= MAX_DEVICE_CLOCK_SKEW else None
 
 
@@ -216,7 +226,15 @@ class Database:
         payload["sensors"] = canonical_sensors
         measurements = list(flatten_numeric(canonical_sensors))
         server_now = datetime.now(UTC)
-        stored_observed_at = trusted_observed_at(reading.observed_at, server_now)
+        delivery = reading.telemetry.get("delivery", {})
+        stored_offline = (
+            isinstance(delivery, dict) and delivery.get("stored_offline") is True
+        )
+        stored_observed_at = trusted_observed_at(
+            reading.observed_at,
+            server_now,
+            stored_offline=stored_offline,
+        )
         with self.connect() as connection:
             inserted = connection.execute(
                 """

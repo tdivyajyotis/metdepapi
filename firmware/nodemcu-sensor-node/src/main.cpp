@@ -25,6 +25,7 @@ extern "C" {
 #include <Adafruit_TCS3448.h>
 
 #include "Tsl2584.h"
+#include "OfflineQueue.h"
 #include "config.h"
 #include "gts_root_r4.h"
 
@@ -49,6 +50,7 @@ Adafruit_TCS3448 tcs3448;
 Tsl2584 tslSea(config::TSL2584_SEA_ADDRESS);
 Tsl2584 tslLand(config::TSL2584_LAND_ADDRESS);
 BearSSL::CertStore certificateStore;
+offline::Queue offlineQueue;
 
 bool hasSht45 = false;
 bool hasTcs3448 = false;
@@ -149,6 +151,7 @@ UnoGpsReading unoGps;
 
 uint32_t lastSampleAt = 0;
 uint32_t lastWifiAttemptAt = 0;
+uint32_t lastReplayAttemptAt = 0;
 uint32_t sequenceNumber = 0;
 uint32_t bootId = 0;
 
@@ -618,9 +621,98 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
   return false;
 }
 
-void addDs18b20Readings(JsonObject sensors) {
-  JsonArray probes = sensors.createNestedArray("ds18b20");
+bool recordFlag(const offline::ReadingRecord &record, offline::ReadingFlag flag) {
+  return (record.flags & static_cast<uint32_t>(flag)) != 0;
+}
+
+int16_t centiSigned(float value) {
+  return static_cast<int16_t>(constrain(lroundf(value * 100.0f), -32768L,
+                                        32767L));
+}
+
+uint16_t centiUnsigned(float value) {
+  return static_cast<uint16_t>(constrain(lroundf(value * 100.0f), 0L,
+                                         65535L));
+}
+
+void captureDs18b20(offline::ReadingRecord &record) {
   ds18b20.requestTemperatures();
+  for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
+    DeviceAddress address = {};
+    memcpy(address, config::DS18B20_ROMS[i], sizeof(DeviceAddress));
+    const bool present = OneWire::crc8(address, 7) == address[7] &&
+                         ds18b20.isConnected(address);
+    if (present) {
+      record.flags |= static_cast<uint32_t>(offline::DS1_PRESENT) << i;
+    }
+    if (!present) {
+      continue;
+    }
+    const float temperature = ds18b20.getTempC(address);
+    if (temperature != DEVICE_DISCONNECTED_C && temperature >= -55.0f &&
+        temperature <= 125.0f) {
+      record.flags |= static_cast<uint32_t>(offline::DS1_OK) << i;
+      record.dsTemperatureCenti[i] = centiSigned(temperature);
+    }
+  }
+}
+
+void captureSht45(offline::ReadingRecord &record) {
+  if (!hasSht45) {
+    return;
+  }
+  sensors_event_t humidity;
+  sensors_event_t temperature;
+  if (!sht45.getEvent(&humidity, &temperature)) {
+    return;
+  }
+  record.flags |= offline::SHT45_OK;
+  record.shtTemperatureCenti = centiSigned(temperature.temperature);
+  record.shtHumidityCenti = centiUnsigned(humidity.relative_humidity);
+}
+
+void captureTsl(offline::ReadingRecord &record, Tsl2584 &sensor,
+                bool available, bool sea) {
+  Tsl2584Reading reading;
+  if (!available || !sensor.read(reading)) {
+    return;
+  }
+  record.flags |= sea ? offline::TSL_SEA_OK : offline::TSL_LAND_OK;
+  if (reading.saturated) {
+    record.flags |= sea ? offline::TSL_SEA_SATURATED
+                        : offline::TSL_LAND_SATURATED;
+  }
+  uint16_t *values = sea ? record.tslSea : record.tslLand;
+  values[0] = reading.broadbandCounts;
+  values[1] = reading.infraredCounts;
+  values[2] = reading.visibleCounts;
+}
+
+void captureTcs3448(offline::ReadingRecord &record) {
+  if (!hasTcs3448) {
+    return;
+  }
+  uint16_t readings[TCS3448_CHANNEL_COUNT] = {};
+  if (!tcs3448.readAllChannels(readings)) {
+    return;
+  }
+  record.flags |= offline::TCS3448_OK;
+  const uint8_t channels[13] = {
+      TCS3448_CHANNEL_F1,       TCS3448_CHANNEL_F2,
+      TCS3448_CHANNEL_FZ,       TCS3448_CHANNEL_F3,
+      TCS3448_CHANNEL_F4,       TCS3448_CHANNEL_F5,
+      TCS3448_CHANNEL_FY,       TCS3448_CHANNEL_FXL,
+      TCS3448_CHANNEL_F6,       TCS3448_CHANNEL_F7,
+      TCS3448_CHANNEL_F8,       TCS3448_CHANNEL_NIR,
+      TCS3448_CHANNEL_VIS_TL_0};
+  for (uint8_t i = 0; i < 13; ++i) {
+    record.tcs3448[i] = readings[channels[i]];
+  }
+}
+
+void addDs18b20Json(JsonObject sensors,
+                    const offline::ReadingRecord &record) {
+  JsonArray probes = sensors.createNestedArray("ds18b20");
   for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
     DeviceAddress address = {};
     memcpy(address, config::DS18B20_ROMS[i], sizeof(DeviceAddress));
@@ -631,48 +723,30 @@ void addDs18b20Readings(JsonObject sensors) {
     probe["depth_cm"] = config::DS18B20_DEPTH_CM[i];
     probe["rom"] = romToString(address);
     probe["rom_suffix"] = suffix;
-
-    const bool present = OneWire::crc8(address, 7) == address[7] &&
-                         ds18b20.isConnected(address);
-    probe["present"] = present;
-    if (!present) {
-      probe["ok"] = false;
-      continue;
-    }
-
-    const float temperature = ds18b20.getTempC(address);
-    if (temperature == DEVICE_DISCONNECTED_C || temperature < -55.0f ||
-        temperature > 125.0f) {
-      probe["ok"] = false;
-    } else {
-      probe["ok"] = true;
-      probe["temperature_c"] = temperature;
+    probe["present"] = recordFlag(
+        record, static_cast<offline::ReadingFlag>(offline::DS1_PRESENT << i));
+    const bool ok = recordFlag(
+        record, static_cast<offline::ReadingFlag>(offline::DS1_OK << i));
+    probe["ok"] = ok;
+    if (ok) {
+      probe["temperature_c"] = record.dsTemperatureCenti[i] / 100.0f;
     }
   }
 }
 
-void addSht45Reading(JsonObject sensors) {
+void addSht45Json(JsonObject sensors, const offline::ReadingRecord &record) {
   JsonObject out = sensors.createNestedObject("sht45");
-  if (!hasSht45) {
-    out["ok"] = false;
-    return;
+  const bool ok = recordFlag(record, offline::SHT45_OK);
+  out["ok"] = ok;
+  if (ok) {
+    out["temperature_c"] = record.shtTemperatureCenti / 100.0f;
+    out["humidity_pct"] = record.shtHumidityCenti / 100.0f;
   }
-
-  sensors_event_t humidity;
-  sensors_event_t temperature;
-  if (!sht45.getEvent(&humidity, &temperature)) {
-    out["ok"] = false;
-    return;
-  }
-  out["ok"] = true;
-  out["temperature_c"] = temperature.temperature;
-  out["humidity_pct"] = humidity.relative_humidity;
 }
 
-void addSoilReadings(JsonObject sensors, bool hasUnoReading,
-                     const uint16_t (&counts)[2], uint32_t unoSequence) {
+void addSoilJson(JsonObject sensors, const offline::ReadingRecord &record) {
   JsonArray probes = sensors.createNestedArray("soil_moisture");
-
+  const bool ok = recordFlag(record, offline::UNO_OK);
   for (uint8_t channel = 0; channel < 2; ++channel) {
     JsonObject probe = probes.createNestedObject();
     probe["channel"] = channel;
@@ -681,21 +755,19 @@ void addSoilReadings(JsonObject sensors, bool hasUnoReading,
     probe["depth_cm"] = config::SOIL_DEPTH_CM[channel];
     probe["sensor_type"] = "resistive_lm393_1p3m";
     probe["adc"] = "arduino_uno_10bit";
-    if (!hasUnoReading) {
-      probe["ok"] = false;
+    probe["ok"] = ok;
+    if (!ok) {
       continue;
     }
-
-    probe["ok"] = true;
-    probe["raw_counts"] = counts[channel];
-    probe["voltage_v"] = counts[channel] * config::UNO_ADC_REFERENCE_V /
+    probe["raw_counts"] = record.soilCounts[channel];
+    probe["voltage_v"] = record.soilCounts[channel] *
+                         config::UNO_ADC_REFERENCE_V /
                          config::UNO_ADC_MAX_COUNTS;
     probe["filter"] = "median";
     probe["sample_count"] = 9;
-    probe["uno_sequence"] = unoSequence;
-
+    probe["uno_sequence"] = record.unoSequence;
     float percent = 0;
-    if (soilPercent(counts[channel], channel, percent)) {
+    if (soilPercent(record.soilCounts[channel], channel, percent)) {
       probe["moisture_pct"] = percent;
     } else {
       probe["moisture_pct"] = nullptr;
@@ -703,93 +775,79 @@ void addSoilReadings(JsonObject sensors, bool hasUnoReading,
   }
 }
 
-void addTslReading(JsonObject sensors, const char *name, Tsl2584 &sensor,
-                   bool available) {
+void addTslJson(JsonObject sensors, const char *name, uint8_t address,
+                const uint16_t (&values)[3], bool ok, bool saturated) {
   JsonObject out = sensors.createNestedObject(name);
-  out["address"] = sensor.address();
-  Tsl2584Reading reading;
-  if (!available || !sensor.read(reading)) {
-    out["ok"] = false;
-    return;
+  out["address"] = address;
+  out["ok"] = ok;
+  if (ok) {
+    out["broadband_counts"] = values[0];
+    out["infrared_counts"] = values[1];
+    out["visible_counts"] = values[2];
+    out["saturated"] = saturated;
   }
-  out["ok"] = true;
-  out["broadband_counts"] = reading.broadbandCounts;
-  out["infrared_counts"] = reading.infraredCounts;
-  out["visible_counts"] = reading.visibleCounts;
-  out["saturated"] = reading.saturated;
 }
 
-void addTcs3448Reading(JsonObject sensors) {
+void addTcs3448Json(JsonObject sensors,
+                    const offline::ReadingRecord &record) {
   JsonObject out = sensors.createNestedObject("tcs3448");
-  if (!hasTcs3448) {
-    out["ok"] = false;
+  const bool ok = recordFlag(record, offline::TCS3448_OK);
+  out["ok"] = ok;
+  if (!ok) {
     return;
   }
-
-  uint16_t readings[TCS3448_CHANNEL_COUNT] = {};
-  if (!tcs3448.readAllChannels(readings)) {
-    out["ok"] = false;
-    return;
+  const char *names[13] = {
+      "f1_405nm", "f2_425nm", "fz_450nm", "f3_475nm", "f4_515nm",
+      "f5_550nm", "fy_555nm", "fxl_600nm", "f6_640nm", "f7_690nm",
+      "f8_745nm", "nir_855nm", "visible"};
+  for (uint8_t i = 0; i < 13; ++i) {
+    out[names[i]] = record.tcs3448[i];
   }
-
-  out["ok"] = true;
-  out["f1_405nm"] = readings[TCS3448_CHANNEL_F1];
-  out["f2_425nm"] = readings[TCS3448_CHANNEL_F2];
-  out["fz_450nm"] = readings[TCS3448_CHANNEL_FZ];
-  out["f3_475nm"] = readings[TCS3448_CHANNEL_F3];
-  out["f4_515nm"] = readings[TCS3448_CHANNEL_F4];
-  out["f5_550nm"] = readings[TCS3448_CHANNEL_F5];
-  out["fy_555nm"] = readings[TCS3448_CHANNEL_FY];
-  out["fxl_600nm"] = readings[TCS3448_CHANNEL_FXL];
-  out["f6_640nm"] = readings[TCS3448_CHANNEL_F6];
-  out["f7_690nm"] = readings[TCS3448_CHANNEL_F7];
-  out["f8_745nm"] = readings[TCS3448_CHANNEL_F8];
-  out["nir_855nm"] = readings[TCS3448_CHANNEL_NIR];
-  out["visible"] = readings[TCS3448_CHANNEL_VIS_TL_0];
 }
 
-void addTimeAndGpsReading(JsonObject sensors) {
+void addTimeAndGpsJson(JsonObject sensors,
+                       const offline::ReadingRecord &record) {
   JsonObject timing = sensors.createNestedObject("timekeeping");
-  const time_t systemEpoch = time(nullptr);
-  const bool validSystemTime = systemEpoch >= config::MIN_VALID_UNIX_TIME;
+  const bool validSystemTime = recordFlag(record, offline::SYSTEM_TIME_VALID);
   timing["ok"] = validSystemTime;
-  timing["source"] = timeSourceName(timeSource);
-  timing["rtc_available"] = hasRtc;
-  timing["rtc_last_set_source"] = timeSourceName(rtcLastSetSource);
+  timing["source"] =
+      timeSourceName(static_cast<TimeSource>(record.timeSource));
+  timing["rtc_available"] = recordFlag(record, offline::RTC_AVAILABLE);
+  timing["rtc_last_set_source"] =
+      timeSourceName(static_cast<TimeSource>(record.rtcLastSetSource));
   timing["timezone"] = "Asia/Kolkata";
   timing["utc_offset"] = "+05:30";
   if (validSystemTime) {
-    timing["system_epoch"] = static_cast<uint32_t>(systemEpoch);
-    timing["utc"] = iso8601Utc(systemEpoch);
-    timing["ist"] = iso8601Ist(systemEpoch);
+    timing["system_epoch"] = record.observedEpoch;
+    timing["utc"] = iso8601Utc(record.observedEpoch);
+    timing["ist"] = iso8601Ist(record.observedEpoch);
   }
-  if (hasRtc) {
-    const time_t rtcEpoch = rtc.now().unixtime();
-    timing["rtc_epoch"] = static_cast<uint32_t>(rtcEpoch);
-    timing["rtc_ist"] = iso8601Ist(rtcEpoch);
+  if (recordFlag(record, offline::RTC_AVAILABLE)) {
+    timing["rtc_epoch"] = record.rtcEpoch;
+    timing["rtc_ist"] = iso8601Ist(record.rtcEpoch);
   }
 
   JsonObject out = sensors.createNestedObject("gps");
-  const bool validFix = gpsFixIsFresh();
-  const bool validGpsTime = gpsTimeIsFresh();
+  const bool validFix = recordFlag(record, offline::GPS_FIX_VALID);
+  const bool validGpsTime = recordFlag(record, offline::GPS_TIME_VALID);
   out["fix_valid"] = validFix;
   out["time_valid"] = validGpsTime;
   out["time_requires_fix"] = false;
-  out["relay_present"] = unoGps.present;
-  out["satellites"] = unoGps.satellites;
+  out["relay_present"] = recordFlag(record, offline::GPS_RELAY_PRESENT);
+  out["satellites"] = record.gpsSatellites;
   if (validGpsTime) {
-    out["time_utc"] = iso8601Utc(unoGps.epoch);
-    out["time_ist"] = iso8601Ist(unoGps.epoch);
+    out["time_utc"] = iso8601Utc(record.gpsEpoch);
+    out["time_ist"] = iso8601Ist(record.gpsEpoch);
   }
-  if (unoGps.hdopValid) {
-    out["hdop"] = unoGps.hdop;
+  if (recordFlag(record, offline::GPS_HDOP_VALID)) {
+    out["hdop"] = record.gpsHdopCenti / 100.0f;
   }
   if (validFix) {
-    out["latitude_deg"] = unoGps.latitude;
-    out["longitude_deg"] = unoGps.longitude;
-    out["fix_age_ms"] = unoGps.fixAgeMs;
-    if (unoGps.altitudeValid) {
-      out["altitude_m"] = unoGps.altitudeM;
+    out["latitude_deg"] = record.gpsLatitudeE7 / 10000000.0;
+    out["longitude_deg"] = record.gpsLongitudeE7 / 10000000.0;
+    out["fix_age_ms"] = record.gpsFixAgeMs;
+    if (recordFlag(record, offline::GPS_ALTITUDE_VALID)) {
+      out["altitude_m"] = record.gpsAltitudeMm / 1000.0f;
     }
   }
 }
@@ -805,6 +863,87 @@ uint8_t configuredDs18b20PresentCount() {
     }
   }
   return count;
+}
+
+offline::ReadingRecord captureReading() {
+  offline::ReadingRecord record;
+  record.bootId = bootId;
+  record.sequence = sequenceNumber;
+  record.uptimeMs = millis();
+  snprintf(record.firmware, sizeof(record.firmware), "%s",
+           config::FIRMWARE_VERSION);
+  if (WiFi.status() == WL_CONNECTED) {
+    record.wifiRssiDbm = static_cast<int8_t>(WiFi.RSSI());
+  }
+
+  uint16_t unoCounts[2] = {};
+  uint32_t unoSequence = 0;
+  const bool hasUnoReading = readUnoAdc(unoCounts, unoSequence);
+  if (hasUnoReading) {
+    record.flags |= offline::UNO_OK;
+    record.soilCounts[0] = unoCounts[0];
+    record.soilCounts[1] = unoCounts[1];
+    record.unoSequence = unoSequence;
+  } else {
+    addTelemetryEvent("uno", "warn", "%s",
+                      unoLastError[0] == '\0' ? "Uno reading unavailable"
+                                              : unoLastError);
+  }
+  pollTimeSources();
+
+  const time_t systemEpoch = time(nullptr);
+  if (systemEpoch >= config::MIN_VALID_UNIX_TIME) {
+    record.flags |= offline::SYSTEM_TIME_VALID;
+    record.observedEpoch = static_cast<uint32_t>(systemEpoch);
+  }
+  record.timeSource = static_cast<uint8_t>(timeSource);
+  record.rtcLastSetSource = static_cast<uint8_t>(rtcLastSetSource);
+  if (hasRtc) {
+    record.flags |= offline::RTC_AVAILABLE;
+    record.rtcEpoch = rtc.now().unixtime();
+  }
+
+  captureDs18b20(record);
+  captureSht45(record);
+  captureTsl(record, tslSea, hasTslSea, true);
+  captureTsl(record, tslLand, hasTslLand, false);
+  captureTcs3448(record);
+
+  if (unoGps.present) {
+    record.flags |= offline::GPS_RELAY_PRESENT;
+  }
+  record.gpsSatellites =
+      static_cast<uint8_t>(std::min<uint32_t>(unoGps.satellites, 255));
+  if (gpsTimeIsFresh()) {
+    record.flags |= offline::GPS_TIME_VALID;
+    record.gpsEpoch = static_cast<uint32_t>(unoGps.epoch);
+  }
+  if (unoGps.hdopValid) {
+    record.flags |= offline::GPS_HDOP_VALID;
+    record.gpsHdopCenti = centiUnsigned(unoGps.hdop);
+  }
+  if (gpsFixIsFresh()) {
+    record.flags |= offline::GPS_FIX_VALID;
+    record.gpsFixAgeMs = unoGps.fixAgeMs;
+    record.gpsLatitudeE7 = static_cast<int32_t>(lround(unoGps.latitude * 1e7));
+    record.gpsLongitudeE7 =
+        static_cast<int32_t>(lround(unoGps.longitude * 1e7));
+    if (unoGps.altitudeValid) {
+      record.flags |= offline::GPS_ALTITUDE_VALID;
+      record.gpsAltitudeMm =
+          static_cast<int32_t>(lround(unoGps.altitudeM * 1000.0));
+    }
+  }
+
+  record.unoRequests = unoRequests;
+  record.unoSuccesses = unoSuccesses;
+  record.unoTimeouts = unoTimeouts;
+  record.unoInvalidResponses = unoInvalidResponses;
+  record.unoLastLatencyMs =
+      static_cast<uint16_t>(std::min<uint32_t>(unoLastLatencyMs, 65535));
+  record.unoLastResponseBytes = static_cast<uint16_t>(
+      min(unoLastResponseBytes, static_cast<size_t>(65535)));
+  return record;
 }
 
 void addTelemetrySnapshot(JsonObject telemetry) {
@@ -897,6 +1036,17 @@ void addTelemetrySnapshot(JsonObject telemetry) {
   http["failures"] = postFailures;
   http["last_status"] = postLastStatus;
 
+  JsonObject storage = telemetry.createNestedObject("offline_queue");
+  storage["ready"] = offlineQueue.ready();
+  storage["record_format"] = offline::RECORD_FORMAT_VERSION;
+  storage["record_bytes"] = offline::RECORD_BYTES;
+  storage["queued_readings"] = offlineQueue.count();
+  storage["capacity_readings"] = offlineQueue.capacity();
+  storage["file_bytes"] = offlineQueue.fileBytes();
+  storage["replayed_this_boot"] = offlineQueue.replayed();
+  storage["dropped_this_boot"] = offlineQueue.dropped();
+  storage["corrupt_records_at_boot"] = offlineQueue.corruptRecords();
+
   JsonObject clock = telemetry.createNestedObject("timekeeping");
   const time_t systemEpoch = time(nullptr);
   const bool validSystemTime = systemEpoch >= config::MIN_VALID_UNIX_TIME;
@@ -938,53 +1088,75 @@ void addTelemetrySnapshot(JsonObject telemetry) {
   }
 }
 
-String makePayload() {
-  uint16_t unoCounts[2] = {};
-  uint32_t unoSequence = 0;
-  const bool hasUnoReading = readUnoAdc(unoCounts, unoSequence);
-  if (!hasUnoReading) {
-    addTelemetryEvent("uno", "warn", "%s",
-                      unoLastError[0] == '\0' ? "Uno reading unavailable"
-                                              : unoLastError);
-  }
-  pollTimeSources();
-
-  DynamicJsonDocument doc(8192);
+String makePayload(const offline::ReadingRecord &record, bool fullTelemetry,
+                   bool storedOffline, uint16_t queueDepthAtSend) {
+  DynamicJsonDocument doc(fullTelemetry ? 9216 : 6144);
   doc["schema_version"] = 1;
   doc["device_id"] = config::DEVICE_ID;
-  doc["firmware"] = config::FIRMWARE_VERSION;
-  doc["sequence"] = sequenceNumber;
+  doc["firmware"] = record.firmware;
+  doc["sequence"] = record.sequence;
 
   char eventId[64] = {};
   snprintf(eventId, sizeof(eventId), "%s-%08lx-%lu", config::DEVICE_ID,
-           static_cast<unsigned long>(bootId),
-           static_cast<unsigned long>(sequenceNumber));
+           static_cast<unsigned long>(record.bootId),
+           static_cast<unsigned long>(record.sequence));
   doc["event_id"] = eventId;
 
   // Store an offset-aware IST timestamp. PostgreSQL timestamptz normalizes it
   // to the same UTC instant, while humans and raw payload logs see local time.
-  const String observedAt = iso8601Ist(time(nullptr));
+  const String observedAt = iso8601Ist(record.observedEpoch);
   if (observedAt.length() > 0) {
     doc["observed_at"] = observedAt;
   } else {
     doc["observed_at"] = nullptr;
   }
-  doc["uptime_ms"] = millis();
-  doc["wifi_rssi_dbm"] =
-      WiFi.status() == WL_CONNECTED ? WiFi.RSSI() : 0;
+  doc["uptime_ms"] = record.uptimeMs;
+  doc["wifi_rssi_dbm"] = record.wifiRssiDbm;
 
   JsonObject sensors = doc.createNestedObject("sensors");
-  addDs18b20Readings(sensors);
-  addSht45Reading(sensors);
-  addSoilReadings(sensors, hasUnoReading, unoCounts, unoSequence);
-  addTslReading(sensors, "tsl2584_sea", tslSea, hasTslSea);
-  addTslReading(sensors, "tsl2584_land", tslLand, hasTslLand);
-  addTcs3448Reading(sensors);
-  addTimeAndGpsReading(sensors);
-  addTelemetrySnapshot(doc.createNestedObject("telemetry"));
+  addDs18b20Json(sensors, record);
+  addSht45Json(sensors, record);
+  addSoilJson(sensors, record);
+  addTslJson(sensors, "tsl2584_sea", config::TSL2584_SEA_ADDRESS,
+             record.tslSea, recordFlag(record, offline::TSL_SEA_OK),
+             recordFlag(record, offline::TSL_SEA_SATURATED));
+  addTslJson(sensors, "tsl2584_land", config::TSL2584_LAND_ADDRESS,
+             record.tslLand, recordFlag(record, offline::TSL_LAND_OK),
+             recordFlag(record, offline::TSL_LAND_SATURATED));
+  addTcs3448Json(sensors, record);
+  addTimeAndGpsJson(sensors, record);
+
+  JsonObject telemetry = doc.createNestedObject("telemetry");
+  if (fullTelemetry) {
+    addTelemetrySnapshot(telemetry);
+  } else {
+    telemetry["version"] = 1;
+    JsonObject node = telemetry.createNestedObject("nodemcu");
+    node["firmware"] = record.firmware;
+    node["boot_id"] = record.bootId;
+    JsonObject link = telemetry.createNestedObject("uno_link");
+    link["telemetry_available"] = recordFlag(record, offline::UNO_OK);
+    link["requests"] = record.unoRequests;
+    link["successes"] = record.unoSuccesses;
+    link["timeouts"] = record.unoTimeouts;
+    link["invalid_responses"] = record.unoInvalidResponses;
+    link["last_latency_ms"] = record.unoLastLatencyMs;
+    link["last_response_bytes"] = record.unoLastResponseBytes;
+  }
+  JsonObject delivery = telemetry.createNestedObject("delivery");
+  delivery["stored_offline"] = storedOffline;
+  delivery["record_format"] = offline::RECORD_FORMAT_VERSION;
+  delivery["queue_depth_at_send"] = queueDepthAtSend;
+  if (storedOffline && record.observedEpoch >= config::MIN_VALID_UNIX_TIME &&
+      systemTimeIsValid()) {
+    const time_t now = time(nullptr);
+    delivery["queue_delay_seconds"] =
+        now > record.observedEpoch ? static_cast<uint32_t>(now - record.observedEpoch)
+                                   : 0;
+  }
 
   if (doc.overflowed()) {
-    addTelemetryEvent("json", "error", "Telemetry payload exceeded JSON capacity");
+    addTelemetryEvent("json", "error", "Reading payload exceeded JSON capacity");
     return String();
   }
 
@@ -1000,10 +1172,10 @@ String makePayload() {
 }
 
 template <typename TClient>
-bool postWithClient(TClient &client, const String &payload) {
+bool postWithClient(TClient &client, const String &payload, const char *url) {
   HTTPClient http;
   http.setTimeout(config::HTTP_TIMEOUT_MS);
-  if (!http.begin(client, config::INGEST_URL)) {
+  if (!http.begin(client, url)) {
     ++postAttempts;
     ++postFailures;
     postLastStatus = -1;
@@ -1035,14 +1207,14 @@ bool postWithClient(TClient &client, const String &payload) {
   return accepted;
 }
 
-bool postPayload(const String &payload) {
+bool postPayload(const String &payload, const char *url) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("Not posting: WiFi disconnected"));
     return false;
   }
 
-  const String url(config::INGEST_URL);
-  if (url.startsWith("https://")) {
+  const String destination(url);
+  if (destination.startsWith("https://")) {
     if (!systemTimeIsValid()) {
       Serial.println(F("Not posting HTTPS: waiting for NTP, GPS, or RTC time"));
       return false;
@@ -1058,7 +1230,7 @@ bool postPayload(const String &payload) {
         static_cast<unsigned>(config::TLS_TRANSMIT_BUFFER_BYTES));
     if (certificateStoreReady) {
       client.setCertStore(&certificateStore);
-      return postWithClient(client, payload);
+      return postWithClient(client, payload, url);
     }
 #ifdef TLS_ROOT_CA_PEM_OVERRIDE
     const char *rootCa = TLS_ROOT_CA_PEM_OVERRIDE;
@@ -1068,12 +1240,12 @@ bool postPayload(const String &payload) {
     if (strlen(rootCa) > 0) {
       BearSSL::X509List trustAnchor(rootCa);
       client.setTrustAnchors(&trustAnchor);
-      return postWithClient(client, payload);
+      return postWithClient(client, payload, url);
     }
 #if ALLOW_INSECURE_TLS
     Serial.println(F("WARNING: HTTPS certificate verification is disabled"));
     client.setInsecure();
-    return postWithClient(client, payload);
+    return postWithClient(client, payload, url);
 #else
     Serial.println(F("Not posting: no TLS root CA is configured"));
     return false;
@@ -1081,10 +1253,10 @@ bool postPayload(const String &payload) {
   }
 
   WiFiClient client;
-  return postWithClient(client, payload);
+  return postWithClient(client, payload, url);
 }
 
-bool readyToSampleAndSend() {
+bool readyToSend() {
   if (WiFi.status() != WL_CONNECTED) {
     return false;
   }
@@ -1092,11 +1264,101 @@ bool readyToSampleAndSend() {
          systemTimeIsValid();
 }
 
+String makeBatchPayload(const offline::ReadingRecord *records, uint8_t count,
+                        uint16_t queueDepthAtSend) {
+  String batch;
+  if (!batch.reserve(7000)) {
+    addTelemetryEvent("json", "error", "Could not reserve batch payload");
+    return String();
+  }
+  batch = F("{\"readings\":[");
+  for (uint8_t i = 0; i < count; ++i) {
+    const String reading =
+        makePayload(records[i], false, true, queueDepthAtSend);
+    if (reading.length() == 0) {
+      return String();
+    }
+    if (i > 0) {
+      batch += ',';
+    }
+    batch += reading;
+  }
+  batch += F("]}");
+  return batch;
+}
+
+uint32_t timeUntilNextSample(uint32_t now) {
+  if (lastSampleAt == 0) {
+    return 0;
+  }
+  const uint32_t elapsed = now - lastSampleAt;
+  return elapsed >= config::SAMPLE_INTERVAL_MS
+             ? 0
+             : config::SAMPLE_INTERVAL_MS - elapsed;
+}
+
+void drainOfflineQueue() {
+  if (!offlineQueue.ready() || offlineQueue.count() == 0 || !readyToSend()) {
+    return;
+  }
+  const uint32_t now = millis();
+  if (lastReplayAttemptAt != 0 &&
+      now - lastReplayAttemptAt < config::OFFLINE_REPLAY_RETRY_MS) {
+    return;
+  }
+  if (timeUntilNextSample(now) <= config::OFFLINE_REPLAY_SAMPLE_GUARD_MS) {
+    return;
+  }
+  lastReplayAttemptAt = now;
+
+  const uint8_t count = min(
+      config::OFFLINE_REPLAY_BATCH_SIZE,
+      static_cast<uint8_t>(min(offlineQueue.count(), static_cast<uint16_t>(255))));
+  offline::ReadingRecord records[config::OFFLINE_REPLAY_BATCH_SIZE];
+  for (uint8_t i = 0; i < count; ++i) {
+    if (!offlineQueue.peek(records[i], i)) {
+      addTelemetryEvent("queue", "error", "Could not read queued record %u", i);
+      return;
+    }
+  }
+  const uint16_t depthAtSend = offlineQueue.count();
+  const String payload = makeBatchPayload(records, count, depthAtSend);
+  if (payload.length() == 0) {
+    return;
+  }
+  Serial.printf("Replaying %u queued reading(s); %u queued before send\n", count,
+                depthAtSend);
+  if (!postPayload(payload, config::BATCH_INGEST_URL)) {
+    return;
+  }
+  if (!offlineQueue.acknowledge(count)) {
+    addTelemetryEvent("queue", "error",
+                      "Batch accepted but local acknowledgement failed");
+    return;
+  }
+  addTelemetryEvent("queue", "info", "Replayed %u; %u reading(s) remain",
+                    count, offlineQueue.count());
+}
+
 void initializeTlsTrustStore() {
   if (!LittleFS.begin()) {
     addTelemetryEvent("tls", "warn",
                       "LittleFS mount failed; using compiled fallback");
     return;
+  }
+
+  if (offlineQueue.begin(LittleFS)) {
+    addTelemetryEvent("queue", "info",
+                      "Offline queue ready: %u/%u reading(s), %u bytes",
+                      offlineQueue.count(), offlineQueue.capacity(),
+                      static_cast<unsigned>(offlineQueue.fileBytes()));
+    if (offlineQueue.corruptRecords() > 0) {
+      addTelemetryEvent("queue", "warn", "%lu corrupt record(s) ignored",
+                        static_cast<unsigned long>(
+                            offlineQueue.corruptRecords()));
+    }
+  } else {
+    addTelemetryEvent("queue", "error", "Offline queue initialization failed");
   }
 
   certificateStoreCount = certificateStore.initCertStore(
@@ -1199,26 +1461,35 @@ void loop() {
   monitorWifiStatus();
   pollTimeSources();
 
-  // Do not consume a sequence number or take sensor measurements until setup
-  // is complete and the network/TLS prerequisites allow an immediate send.
-  if (!readyToSampleAndSend()) {
-    delay(10);
-    return;
-  }
-
   const uint32_t now = millis();
   if (lastSampleAt == 0 || now - lastSampleAt >= config::SAMPLE_INTERVAL_MS) {
     lastSampleAt = now;
     ++sequenceNumber;
+    offline::ReadingRecord record = captureReading();
 
-    const String payload = makePayload();
-    if (payload.length() == 0) {
-      delay(10);
-      return;
+    bool delivered = false;
+    if (offlineQueue.count() == 0 && readyToSend()) {
+      const String payload = makePayload(record, true, false, 0);
+      if (payload.length() > 0) {
+        Serial.println(payload);
+        delivered = postPayload(payload, config::INGEST_URL);
+      }
     }
-    Serial.println(payload);
-    postPayload(payload);
+    if (!delivered) {
+      if (offlineQueue.enqueue(record)) {
+        addTelemetryEvent("queue", "info",
+                          "Stored sequence %lu locally; %u reading(s) queued",
+                          static_cast<unsigned long>(record.sequence),
+                          offlineQueue.count());
+      } else {
+        addTelemetryEvent("queue", "error",
+                          "Could not store sequence %lu locally",
+                          static_cast<unsigned long>(record.sequence));
+      }
+    }
   }
+
+  drainOfflineQueue();
 
   delay(10);
 }

@@ -123,10 +123,10 @@ The server dashboard renders this as a serial-like console and refreshes every
 30 seconds. It intentionally provides no command route back to either MCU, and
 credentials are never included in telemetry.
 
-Sampling starts only after hardware discovery and initialization have finished,
-WiFi is connected, and HTTPS has a valid RTC/NTP/GPS clock for certificate
-verification. If WiFi disconnects, measurements pause until it reconnects so a
-reading is not intentionally taken only to be discarded before transmission.
+Sampling starts only after hardware discovery and initialization have finished.
+It continues once per minute without WiFi, using RTC/GPS/system time when
+available. A live reading is sent immediately when the queue is empty and the
+HTTPS prerequisites are ready; otherwise it is appended to the flash queue.
 
 TSL2584 values are deliberately sent as raw broadband, infrared, and derived
 visible counts. Converting them to calibrated lux depends on the optical stack
@@ -134,9 +134,21 @@ and should be done after calibration rather than applying a misleading generic
 constant. The `0x29` device is emitted as `tsl2584_sea`; the `0x49` device is
 emitted as `tsl2584_land`.
 
-The current firmware retries WiFi automatically but does not persist samples
-through a power failure. Flash-backed queuing is the next addition if the node
-must tolerate long outages without losing readings.
+LittleFS contains a 512 KiB ring of 2,048 fixed 256-byte, versioned and
+checksummed records. That provides about 34 hours at the one-minute interval,
+including more than the required 24-hour outage. The queue is scanned after a
+restart, partially written records are ignored, and an acknowledged record is
+invalidated only after the API returns success. When full, the oldest record is
+discarded and the drop counter is exposed in telemetry.
+
+After WiFi returns, the node replays two readings per bounded batch request.
+Sampling has priority: replay stops 15 seconds before the next measurement,
+stores that new measurement, then resumes. Normal live requests retain full
+diagnostic telemetry. Historical replay requests retain the original event ID,
+sequence, observation time and sensor values, and add `telemetry.delivery`
+fields describing flash storage, queue delay and queue depth. Full live
+telemetry exposes `offline_queue` readiness, capacity, depth, replay/drop
+counters and corrupt-record count.
 
 ## Clock-source priority
 
@@ -180,4 +192,6 @@ The generator keeps only currently usable website-trust roots, verifies every
 reported SHA-256 fingerprint, writes a deterministic Unix archive, and verifies
 that archive before replacing the bundle. Updating the application alone does
 not update LittleFS, so deployments that change the CA bundle must include
-`uploadfs`.
+`uploadfs`. Uploading a filesystem image replaces the LittleFS partition and
+therefore clears any locally queued readings; do it only after the queue has
+drained or when intentional data loss is acceptable.
