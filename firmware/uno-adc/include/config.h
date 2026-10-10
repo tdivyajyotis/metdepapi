@@ -4,11 +4,13 @@
 
 namespace config {
 
-constexpr char FIRMWARE_VERSION[] = "0.2.2";
+constexpr char FIRMWARE_VERSION[] = "0.2.4";
 
 constexpr uint8_t NODEMCU_RX_PIN = 10;
 constexpr uint8_t NODEMCU_TX_PIN = 11;
-constexpr uint32_t NODEMCU_SERIAL_BAUD = 9600;
+// Keep the MCU exchange short without pushing AVR SoftwareSerial to its
+// observed timing limit. GPS remains on the separate 9600-baud AltSoftSerial.
+constexpr uint32_t NODEMCU_SERIAL_BAUD = 57600;
 
 // AltSoftSerial uses fixed pins on the Arduino Uno: RX=8 and TX=9. Only the
 // GPS TX -> Uno pin 8 connection is required. Keep GPS logic at a safe level

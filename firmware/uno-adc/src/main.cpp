@@ -182,11 +182,23 @@ void sendReadings() {
 void handleCommand(const char *command) {
   if (command[0] != '\0') {
     ++commandsReceived;
+    Serial.print(F("[node-rx] command=\""));
+    Serial.print(command);
+    Serial.println(F("\""));
   }
-  if (strcmp(command, "READ") == 0) {
+  if (strcmp(command, "R") == 0 || strcmp(command, "READ") == 0) {
     sendReadings();
   } else if (command[0] != '\0') {
     ++unknownCommands;
+    Serial.print(F("[node-rx] unknown command bytes:"));
+    for (const char *cursor = command; *cursor != '\0'; ++cursor) {
+      Serial.print(' ');
+      if (static_cast<uint8_t>(*cursor) < 0x10) {
+        Serial.print('0');
+      }
+      Serial.print(static_cast<uint8_t>(*cursor), HEX);
+    }
+    Serial.println();
     nodeMcuSerial.print(F("{\"v\":1,\"error\":\"unknown_command\"}\n"));
   }
 }

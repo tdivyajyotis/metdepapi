@@ -25,8 +25,10 @@ constexpr uint8_t DS18B20_DEPTH_CM[DS18B20_COUNT] = {5, 15, 30, 45};
 // 3.3 V signal that the Uno accepts as HIGH.
 constexpr uint8_t UNO_RX_PIN = D6;
 constexpr uint8_t UNO_TX_PIN = D7;
-constexpr uint32_t UNO_SERIAL_BAUD = 9600;
+constexpr uint32_t UNO_SERIAL_BAUD = 57600;
 constexpr uint16_t UNO_RESPONSE_TIMEOUT_MS = 2500;
+constexpr uint16_t UNO_REQUEST_RETRY_MS = 400;
+constexpr uint16_t UNO_RESPONSE_GAP_TIMEOUT_MS = 300;
 constexpr float UNO_ADC_REFERENCE_V = 5.0f;
 constexpr uint16_t UNO_ADC_MAX_COUNTS = 1023;
 constexpr uint8_t SOIL_DEPTH_CM[2] = {15, 45};  // Uno A0, A1 respectively.
@@ -65,7 +67,7 @@ constexpr uint8_t TELEMETRY_MAX_EVENTS = 12;
 constexpr size_t TELEMETRY_MESSAGE_LENGTH = 88;
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.5.5";
+constexpr char FIRMWARE_VERSION[] = "0.5.7";
 
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 

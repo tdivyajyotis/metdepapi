@@ -476,18 +476,26 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
     unoSerial.read();
   }
   // End any partial command the Uno may have received while either MCU was
-  // booting, then send a complete framed request.
-  unoSerial.print(F("\nREAD\n"));
+  // booting, then send the shortest possible framed request. The Uno also
+  // accepts legacy READ commands.
+  unoSerial.print(F("\nR\n"));
 
   size_t length = 0;
   bool overflowed = false;
+  bool responseStarted = false;
   unoResponseBuffer[0] = '\0';
   const uint32_t startedAt = millis();
+  uint32_t lastRequestAt = startedAt;
+  uint32_t lastByteAt = startedAt;
   while (millis() - startedAt < config::UNO_RESPONSE_TIMEOUT_MS) {
     while (unoSerial.available() > 0) {
       const char value = static_cast<char>(unoSerial.read());
+      responseStarted = true;
+      lastByteAt = millis();
       if (value == '\n') {
         if (length == 0 && !overflowed) {
+          responseStarted = false;
+          lastRequestAt = millis();
           continue;
         }
         unoResponseBuffer[length] = '\0';
@@ -509,7 +517,9 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
           // sample because of that one stale line.
           length = 0;
           overflowed = false;
+          responseStarted = false;
           unoResponseBuffer[0] = '\0';
+          lastRequestAt = millis();
           continue;
         }
 
@@ -573,6 +583,26 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
         overflowed = true;
       }
     }
+
+    const uint32_t now = millis();
+    if (responseStarted &&
+        now - lastByteAt >= config::UNO_RESPONSE_GAP_TIMEOUT_MS) {
+      ++unoInvalidResponses;
+      unoResponseBuffer[length] = '\0';
+      snprintf(unoLastError, sizeof(unoLastError),
+               "Partial response (%u bytes): %.28s",
+               static_cast<unsigned>(length), unoResponseBuffer);
+      length = 0;
+      overflowed = false;
+      responseStarted = false;
+      unoResponseBuffer[0] = '\0';
+      lastRequestAt = now;
+    }
+    if (!responseStarted &&
+        now - lastRequestAt >= config::UNO_REQUEST_RETRY_MS) {
+      unoSerial.print(F("R\n"));
+      lastRequestAt = now;
+    }
     delay(1);
   }
 
@@ -580,9 +610,11 @@ bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
   unoLastLatencyMs = millis() - startedAt;
   unoLastResponseBytes = length;
   unoTelemetry.available = false;
-  snprintf(unoLastError, sizeof(unoLastError),
-           "Timed out waiting for response (%u bytes)",
-           static_cast<unsigned>(length));
+  if (unoLastError[0] == '\0') {
+    snprintf(unoLastError, sizeof(unoLastError),
+             "Timed out waiting for response (%u bytes)",
+             static_cast<unsigned>(length));
+  }
   return false;
 }
 

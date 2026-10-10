@@ -15,6 +15,11 @@ ESP8266/NodeMCU firmware for:
 The two TSL2584TSV sensors use separate hardware-selected I2C addresses so
 they can coexist with each other and with the fixed-address TCS3448.
 
+The NodeMCU/Uno UART uses a newline-framed `R` command at 57600 baud. The
+NodeMCU retries a request when no response begins, accepts the Uno's JSON only
+after full validation, and preserves malformed/partial-response details in
+telemetry for diagnosis. The Uno continues to accept the legacy `READ` command.
+
 ## Wiring
 
 | Device | NodeMCU connection | Notes |

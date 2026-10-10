@@ -3,7 +3,8 @@
 This firmware replaces the ADS1115 previously used by the NodeMCU sensor
 node. The Uno samples two analog soil-moisture inputs, applies a nine-sample
 median filter, and returns a compact JSON record when the NodeMCU sends
-`READ` followed by a newline. It also continuously parses NMEA from the GPS
+`R` followed by a newline (`READ` remains accepted for compatibility). It also
+continuously parses NMEA from the GPS
 and relays GPS date/time, fix, position, satellites, HDOP, and altitude in the
 same response. The NodeMCU never connects directly to the GPS.
 
@@ -14,9 +15,11 @@ RMC status is `V` or GGA fix quality is `0`. In that state the Uno relays
 may still contain latitude/longitude fields in a no-fix sentence, but those
 fields are not treated as a valid position.
 
-Both ends resynchronize the newline-framed command at startup. A partial byte
-seen while either MCU is booting is discarded, and the NodeMCU keeps listening
-past a stale error line for the valid `READ` response.
+Both ends resynchronize the newline-framed command at startup. The MCU link
+runs at 57600 baud so it is substantially faster than the 9600-baud GPS link
+without pushing AVR SoftwareSerial to its observed 115200-baud timing limit.
+A partial byte seen while either MCU is booting is discarded, and the NodeMCU
+retries a request until response bytes begin or the bounded timeout expires.
 
 The response also contains a `telemetry` object with firmware and uptime,
 available SRAM, reset flags, command/overflow/sample/loop counters, TinyGPS
