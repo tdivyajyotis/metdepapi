@@ -111,7 +111,16 @@ python scripts/build_catalog.py
 python -m unittest discover -s tests -v
 ```
 
-The 61 passing tests cover captured IMD sources, PDF content verification and synthetic INCOIS parser/service cases. They verify documented keys, missing values, identity, temporal separation, official passthrough, feed completeness, actual sampling distance, verified-unit conversions, stale observations, restricted document redirects and unavailable-series routes. Captures are under `references/` and `tests/fixtures/`; collected snapshots go to ignored `data/imd.sqlite`. GitHub Actions is configured for Python 3.11 and 3.13 on Windows, macOS and Linux. Cross-platform CI execution remains deferred; local Windows Python and live-source checks are the validation performed here.
+The 87-test suite covers captured IMD sources, PDF content verification,
+synthetic INCOIS parser/service cases, sensor API authentication and limits,
+database timestamp behavior, token revocation, and CA-bundle integrity. It
+verifies documented keys, missing values, identity, temporal separation,
+official passthrough, feed completeness, actual sampling distance,
+verified-unit conversions, stale observations, restricted document redirects,
+and unavailable-series routes. Captures are under `references/` and
+`tests/fixtures/`; collected snapshots go to ignored `data/imd.sqlite`. GitHub
+Actions runs the complete Python suite on Python 3.11 and 3.13 across Windows,
+macOS, and Linux, and separately compiles the production NodeMCU firmware.
 
 ## Complete available-source collection
 

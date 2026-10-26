@@ -25,6 +25,7 @@ services:
       DEVICE_TOKENS: ${DEVICE_TOKENS:?Set DEVICE_TOKENS in .env}
       READ_API_TOKEN: ${READ_API_TOKEN:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      MAX_PAYLOAD_BYTES: ${MAX_PAYLOAD_BYTES:-65536}
     depends_on:
       postgres:
         condition: service_healthy

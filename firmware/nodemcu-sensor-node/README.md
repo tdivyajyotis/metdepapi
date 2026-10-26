@@ -1,198 +1,110 @@
 # NodeMCU sensor node
 
-ESP8266/NodeMCU firmware for:
+Production ESP8266 firmware for the LoLin NodeMCU V3 station. The NodeMCU now
+reads every installed sensor directly; the Arduino Uno ADC/GPS coprocessor is
+not part of this design.
 
-- four DS18B20 temperature probes on one 1-Wire bus;
-- one SHT45 temperature/humidity sensor;
-- one TCS3448 14-channel spectral sensor;
-- two TSL2584TSV ambient-light sensors;
-- two 1.3 m resistive soil-moisture probe/LM393 modules sampled by an Arduino
-  Uno ADC coprocessor;
-- GPS time/location parsed and relayed by that Uno;
-- DS3231 RTC holdover and synchronization; and
-- authenticated JSON ingestion over verified HTTPS.
+## Installed hardware
 
-The two TSL2584TSV sensors use separate hardware-selected I2C addresses so
-they can coexist with each other and with the fixed-address TCS3448.
+- four fixed-identity DS18B20 probes on the D5/GPIO14 1-Wire bus;
+- ADS1115 at `0x48`, powered from 5 V and reached through the I2C level shifter;
+- two LM393 soil modules on ADS1115 channels A0 and A1;
+- NEO-6M GPS TX through level-shifter channel 3 to D6/GPIO12;
+- SHT45 at `0x44` on the 3.3 V expansion I2C bus;
+- TSL2584 sea-facing at `0x29` and land-facing at `0x49`;
+- TCS3448 breakout on the 3.3 V expansion I2C bus;
+- verified HTTPS ingestion with a persistent LittleFS offline queue.
 
-The NodeMCU/Uno UART uses a newline-framed `R` command at 57600 baud. The
-NodeMCU retries a request when no response begins, accepts the Uno's JSON only
-after full validation, and preserves malformed/partial-response details in
-telemetry for diagnosis. The Uno continues to accept the legacy `READ` command.
+## Production wiring
 
-## Wiring
-
-| Device | NodeMCU connection | Notes |
+| Signal/device | Connection | Electrical side |
 | --- | --- | --- |
-| I2C SDA | D2 / GPIO4 | Shared by every I2C device |
-| I2C SCL | D1 / GPIO5 | Shared by every I2C device |
-| Four DS18B20 data pins | D5 / GPIO14 | One shared bus; add 4.7 kOhm from data to 3.3 V |
-| Arduino Uno serial RX | D7 / GPIO13 | Connect to Uno D10 |
-| Arduino Uno serial TX | D6 / GPIO12 | From Uno D11 through 5 V-to-3.3 V level conversion |
-| SHT45 | `0x44` | Default address |
-| TCS3448 | `0x39` | Fixed address |
-| TSL2584 sea-facing | `0x29` | ADDR_SEL to GND; payload key `tsl2584_sea` |
-| TSL2584 land-facing | `0x49` | ADDR_SEL to VDD; payload key `tsl2584_land` |
-| DS3231 RTC | `0x68` | Shared I2C bus; the NodeMCU is its only controller |
+| I2C SCL | D1/GPIO5 → L1; H1 → ADS1115 SCL | 3.3 V low / 5 V high |
+| I2C SDA | D2/GPIO4 → L2; H2 → ADS1115 SDA | 3.3 V low / 5 V high |
+| 3.3 V I2C expansion | D1, D2, 3V3, GND | Low side; optical/SHT sensors |
+| DS18B20 DATA | D5/GPIO14 | 4.7 kΩ pull-up to 3.3 V |
+| GPS TX | GPS TX → H3; L3 → D6/GPIO12 | 5 V/3.3 V shifted UART |
+| GPS RX | disconnected | Not required for NMEA reception |
+| ADS1115 A0/A1 | LM393 AO1/AO2 | 0–5 V analog |
+| LM393 power | 5 V and common GND | DO pins unused |
 
-The four temperature probes are assigned by their complete 64-bit ROM, never
-by discovery order. They remain in these slots even when one is disconnected:
+The level converter is powered with `HV=5 V`, `LV=3.3 V`, and common ground.
+The ADS1115 uses `GAIN_TWOTHIRDS` (±6.144 V scale), but each analog input must
+still remain between ground and its 5 V supply. I2C runs at 100 kHz.
+Every other I2C sensor shares D1 (clock) and D2 (data) on the 3.3 V low side.
+There is no external real-time clock in this firmware or wiring layout.
 
-| Sensor | ROM | Last byte | Depth below sand surface |
-| --- | --- | --- | --- |
-| 1 | `288C186F000000C1` | `C1` | 5 cm |
-| 2 | `288A10CC0000006C` | `6C` | 15 cm |
-| 3 | `2841326E000000DE` | `DE` | 30 cm |
-| 4 | `286B216700000006` | `06` | 45 cm |
+## DS18B20 identity map
 
-The payload includes `sensor_id`, full `rom`, `rom_suffix`, and `depth_cm` for
-every slot. A missing probe is still emitted in its assigned slot with
-`present: false` and `ok: false`.
+| Sensor | ROM | Depth |
+| --- | --- | --- |
+| 1 | `288C186F000000C1` | 5 cm |
+| 2 | `288A10CC0000006C` | 15 cm |
+| 3 | `2841326E000000DE` | 30 cm |
+| 4 | `286B216700000006` | 45 cm |
 
-The soil modules have `VCC`, `GND`, `AO`, and `DO`. Connect `AO` to Uno A0/A1
-and leave `DO` disconnected; the digital comparator discards most of the useful
-moisture information. Ensure the analog outputs remain within the Uno's selected
-ADC reference voltage. Add local decoupling
-near the LM393 boards because the 1.3 m probe cables can pick up noise.
-
-Soil channels are also fixed: Uno `A0` is soil sensor 1 at 15 cm, and `A1` is
-soil sensor 2 at 45 cm. These defaults live in `SOIL_DEPTH_CM` in NodeMCU
-`include/config.h`; each reading carries `sensor_id`, `uno_pin`, and `depth_cm`.
-
-Use a breakout with regulation and level shifting for the TCS3448. The bare
-TCS3448 is a 1.8 V part and must not be connected directly to the NodeMCU's
-3.3 V I2C bus. The Uno, NodeMCU, and sensors must share ground.
-
-These are resistive two-electrode probes, not capacitive probes. Continuous DC
-excitation accelerates polarization and corrosion. For longer life, power both
-modules only during a measurement using a MOSFET or load switch controlled by
-the Uno firmware's `SOIL_POWER_PIN`. Do **not** power them directly from a GPIO:
-the two modules together are specified at roughly 30 mA. Leave that pin at
-`0xFF` if they are continuously powered.
-
-Do not use `0x39` for either TSL2584: it conflicts with the TCS3448.
+Slots are matched by the complete ROM rather than discovery order. Missing
+probes remain in their assigned payload positions with `present: false`.
 
 ## Build and upload
 
-1. Install VS Code and the PlatformIO extension, or PlatformIO Core.
-2. Copy `include/secrets.example.h` to `include/secrets.h`.
-3. Build and upload `../uno-adc` to the Uno, then wire the serial link as
-   documented in its README.
-4. Fill in the WiFi and device-token values.
-5. Edit `include/config.h` for the endpoint, device ID, interval, and pins.
-6. Connect the NodeMCU and run `pio run -t upload`, followed by
-   `pio run -t uploadfs`. The second command installs the tracked Mozilla CA
-   store into LittleFS.
-7. Open the serial monitor with `pio device monitor`. Confirm that startup
-   reports a nonzero number of trust anchors loaded from LittleFS.
-
-At startup, the firmware prints every discovered I2C address and a sensor
-presence summary. Missing sensors are represented as `"ok": false`; they do
-not stop the rest of the station.
-
-## Soil-moisture calibration
-
-The Uno firmware takes nine analog samples per channel and transmits their median,
-which rejects occasional cable and switching noise. Raw 10-bit Uno ADC readings
-are always transmitted. To enable `moisture_pct`:
-
-1. Record each probe's 10-bit `raw_counts` while dry/in air.
-2. Record it in fully wetted reference soil (not directly in a cup of water).
-3. Put those two values into `SOIL_DRY_COUNTS` and `SOIL_WET_COUNTS` in
+1. Install PlatformIO Core or the VS Code PlatformIO extension.
+2. Copy `include/secrets.example.h` to `include/secrets.h` and fill in Wi-Fi and
+   API credentials.
+3. Review device ID, endpoints, sensor ROMs, depths, and soil calibration in
    `include/config.h`.
+4. Run `pio run`, then `pio run -t upload`.
+5. Run `pio run -t uploadfs` when installing or changing the CA bundle.
+6. Run `pio device monitor` at 115200 baud and verify the I2C scan.
 
-Probe/module pairs differ substantially, and soil type, compaction, salinity,
-temperature, and insertion depth all affect this resistive measurement. A
-factory-generic percentage would therefore be misleading. The code supports
-either polarity: wet may be above or below the dry count.
+Expected production I2C addresses are TSL2584 sea `0x29`, SHT45 `0x44`,
+ADS1115 `0x48`, TSL2584 land `0x49`, and TCS3448 `0x59`. An unexpected address
+or a missing expected address is reported in telemetry and the serial log.
 
-## Payload behavior
+## Soil calibration
 
-Each request includes a unique boot/session event ID and sequence number,
-sensor health flags, raw optical/ADC values, WiFi RSSI, firmware version, and a
-timezone-aware IST (`+05:30`) timestamp once RTC, NTP, or GPS has provided
-valid time. Unix epochs remain UTC-based, so storage, ordering, and certificate
-validation use the correct instant. The server should enforce uniqueness on
-`event_id` so retries are idempotent.
+The median of nine ADS1115 samples per channel is sent as raw counts and
+voltage. To enable `moisture_pct`, place
+each LM393 probe/module pair in a repeatable dry reference and wetted reference
+soil, then enter those raw counts in `SOIL_DRY_COUNTS` and `SOIL_WET_COUNTS`.
+Equal defaults intentionally produce `null` rather than a fabricated value.
 
-Each request also carries a bounded, read-only `telemetry` snapshot: NodeMCU
-reset/memory state, WiFi, TLS trust-store state, I2C scan results, sensor
-presence, Uno-link health, the Uno's own counters and memory state, HTTP upload
-counters, clock state, and the twelve most recent structured diagnostic events.
-The server dashboard renders this as a serial-like console and refreshes every
-30 seconds. It intentionally provides no command route back to either MCU, and
-credentials are never included in telemetry.
+The two channels are fixed: A0 is sensor 1 at 15 cm and A1 is sensor 2 at
+45 cm. The firmware accepts either calibration polarity.
 
-Sampling starts only after hardware discovery and initialization have finished.
-It continues once per minute without WiFi, using RTC/GPS/system time when
-available. A live reading is sent immediately when the queue is empty and the
-HTTPS prerequisites are ready; otherwise it is appended to the flash queue.
+## Time and GPS
 
-TSL2584 values are deliberately sent as raw broadband, infrared, and derived
-visible counts. Converting them to calibrated lux depends on the optical stack
-and should be done after calibration rather than applying a misleading generic
-constant. The `0x29` device is emitted as `tsl2584_sea`; the `0x49` device is
-emitted as `tsl2584_land`.
+NTP supplies initial system time. Checksum-valid NEO-6M date/time received on
+D6 can then discipline the system clock; a position fix is not required for
+time. Fresh valid coordinates, satellites, HDOP, and altitude are emitted when
+available. If GPS time becomes stale, the source changes to `gps_holdover` and
+the ESP8266 clock continues running.
 
-LittleFS contains a 384 KiB ring of 1,536 fixed 256-byte, versioned and
-checksummed records. That provides 25.6 hours at the one-minute interval,
-including more than the required 24-hour outage while leaving enough free
-space for LittleFS copy-on-write updates beside the TLS trust store. The queue is scanned after a
-restart, partially written records are ignored, and an acknowledged record is
-invalidated only after the API returns success. When full, the oldest record is
-discarded and the drop counter is exposed in telemetry.
+There is no battery-backed clock. After a cold boot, HTTPS waits until NTP or
+GPS supplies plausible time. The ESP8266 system clock provides holdover only
+while the board remains powered.
 
-After WiFi returns, the node replays two readings per bounded batch request.
-Sampling has priority: replay stops 15 seconds before the next measurement,
-stores that new measurement, then resumes. Normal live requests retain full
-diagnostic telemetry. Historical replay requests retain the original event ID,
-sequence, observation time and sensor values, and add `telemetry.delivery`
-fields describing flash storage, queue delay and queue depth. Full live
-telemetry exposes `offline_queue` readiness, capacity, depth, replay/drop
-counters and corrupt-record count.
+## Payload and offline behavior
 
-## Clock-source priority
+Payloads retain the existing sensor keys for DS18B20, SHT45, both TSL2584
+sensors, and TCS3448. Soil entries now identify `ads1115_16bit` and
+`adc_channel` instead of an Uno pin. GPS reports `connection: direct_uart_d6`.
+Telemetry contains `ads1115` and `gps_uart` health blocks and reports the
+current time source. The GPS UART block also counts receive-buffer overflows so
+missed NMEA bursts are visible remotely. It no longer emits `uno` or
+`uno_link`.
 
-At boot, a valid DS3231 restores the system clock immediately. SNTP then runs
-until its first successful synchronization, writes that NTP time to the
-DS3231, labels the active source `ntp`, and stops. When the Uno later relays
-fresh GPS time, the NodeMCU switches to GPS, writes the GPS time to the DS3231,
-and labels the source `gps`. A position fix is not required for clock
-discipline: checksum-valid NMEA time remains usable while coordinates stay
-invalid and are omitted. Loss of fresh GPS time becomes `gps_holdover`; the
-local clock continues from its most recent discipline.
+Telemetry version 2 reports whether each current I2C read succeeded, its last
+successful-read age, accumulated read failures, and the age of the last GPS
+byte. Missing I2C devices are retried every 30 seconds, so late power-up no
+longer requires a NodeMCU reboot.
 
-`sensors.timekeeping` reports `source`, `rtc_available`, UTC and IST strings,
-Unix epochs, and `rtc_last_set_source`. Telemetry also reports whether NTP was
-applied and whether the latest GPS fix and time are fresh. Source-transition
-events distinguish a normal RTC-to-NTP-to-GPS handoff from a wall-clock jump.
-A DS3231 stores time but not provenance, so after a reboot an RTC-restored clock
-is conservatively labeled `rtc` until NTP or GPS refreshes it. `sensors.gps`
-reports the Uno-relayed fix, location, UTC time, and IST time.
+LittleFS stores 1,536 checksummed 256-byte version-3 records, providing 25.6
+hours at the one-minute interval. The new magic and format number reject every
+older packed layout. The original fixed-size queue allocation is reused; an
+incompatible experimental v2 queue file is removed during the upgrade. Let any
+important offline queue drain before installing firmware 0.9.0.
 
-HTTPS is attempted only after the clock is plausible. The firmware uses the
-Mozilla website-trust roots in `data/certs.ar` through BearSSL's flash-backed
-`CertStore`; only the root needed for a connection is loaded into RAM. If
-LittleFS is missing or corrupt, it fails over to the compiled GTS Root R4 that
-validates the Cloudflare WE1 chain in use when this release was built. Keep
-`ALLOW_INSECURE_TLS` set to `0`. `TLS_ROOT_CA_PEM_OVERRIDE` in `secrets.h`
-changes only that compiled fallback.
-
-The CA archive is checked in so ordinary builds do not depend on the network.
-Its source URL, generation time, hashes, and certificate inventory are recorded
-in `data/ca-bundle-manifest.json`. Refresh it periodically from Mozilla's CCADB
-report, review the manifest diff, rebuild, and upload the filesystem image:
-
-```powershell
-python tools/generate_ca_bundle.py
-pio run -t buildfs
-pio run -t uploadfs
-```
-
-The generator keeps only currently usable website-trust roots, verifies every
-reported SHA-256 fingerprint, writes a deterministic Unix archive, and verifies
-that archive before replacing the bundle. Updating the application alone does
-not update LittleFS, so deployments that change the CA bundle must include
-`uploadfs`. Uploading a filesystem image replaces the LittleFS partition and
-therefore clears any locally queued readings; do it only after the queue has
-drained or when intentional data loss is acceptable.
+Live readings contain the full diagnostic snapshot. Replayed readings preserve
+their original event ID, sequence, observation time, and sensor values while
+adding delivery and queue-delay metadata.

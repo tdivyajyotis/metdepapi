@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imd-local"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local IMD product collection with documented field names and replaceable providers"
 requires-python = ">=3.11"
 dependencies = []

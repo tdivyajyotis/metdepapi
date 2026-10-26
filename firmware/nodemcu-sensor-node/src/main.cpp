@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Adafruit_ADS1X15.h>
 #include <ArduinoJson.h>
 #include <CertStoreBearSSL.h>
 #include <DallasTemperature.h>
@@ -6,8 +7,8 @@
 #include <ESP8266WiFi.h>
 #include <LittleFS.h>
 #include <OneWire.h>
-#include <RTClib.h>
 #include <SoftwareSerial.h>
+#include <TinyGPSPlus.h>
 #include <WiFiClient.h>
 #include <WiFiClientSecureBearSSL.h>
 #include <Wire.h>
@@ -43,8 +44,9 @@ namespace {
 
 OneWire oneWire(config::ONE_WIRE_PIN);
 DallasTemperature ds18b20(&oneWire);
-SoftwareSerial unoSerial(config::UNO_RX_PIN, config::UNO_TX_PIN);
-RTC_DS3231 rtc;
+SoftwareSerial gpsSerial(config::GPS_RX_PIN, config::GPS_TX_PIN);
+TinyGPSPlus gps;
+Adafruit_ADS1115 ads1115;
 Adafruit_SHT4x sht45;
 Adafruit_TCS3448 tcs3448;
 Tsl2584 tslSea(config::TSL2584_SEA_ADDRESS);
@@ -56,7 +58,7 @@ bool hasSht45 = false;
 bool hasTcs3448 = false;
 bool hasTslSea = false;
 bool hasTslLand = false;
-bool hasRtc = false;
+bool hasAds1115 = false;
 bool certificateStoreReady = false;
 int certificateStoreCount = 0;
 
@@ -68,33 +70,10 @@ struct TelemetryEvent {
   char message[config::TELEMETRY_MESSAGE_LENGTH] = {};
 };
 
-struct UnoTelemetry {
-  bool available = false;
-  char firmware[16] = {};
-  uint32_t uptimeMs = 0;
-  int16_t freeSramBytes = 0;
-  uint8_t resetFlags = 0;
-  uint32_t commandsReceived = 0;
-  uint32_t unknownCommands = 0;
-  uint32_t commandOverflows = 0;
-  uint32_t adcSamplesCompleted = 0;
-  uint32_t lastSampleMs = 0;
-  uint32_t loopCount = 0;
-  uint32_t gpsCharsProcessed = 0;
-  uint32_t gpsSentencesOk = 0;
-  uint32_t gpsSentencesWithFix = 0;
-  uint32_t gpsChecksumFailures = 0;
-  bool soilPowerSwitched = false;
-};
-
 TelemetryEvent telemetryEvents[config::TELEMETRY_MAX_EVENTS];
 uint8_t telemetryEventCount = 0;
 uint32_t nextTelemetryEventId = 1;
 uint32_t droppedTelemetryEvents = 0;
-UnoTelemetry unoTelemetry;
-char unoResponseBuffer[1024] = {};
-char unoLastError[72] = {};
-StaticJsonDocument<1024> unoReplyDocument;
 uint8_t i2cAddresses[16] = {};
 uint8_t i2cAddressCount = 0;
 uint32_t wifiConnectAttempts = 0;
@@ -104,50 +83,43 @@ bool missingWifiConfigReported = false;
 uint32_t wifiAttemptStartedAt = 0;
 uint32_t lastWifiProgressAt = 0;
 wl_status_t previousWifiStatus = WL_IDLE_STATUS;
-uint32_t unoRequests = 0;
-uint32_t unoSuccesses = 0;
-uint32_t unoTimeouts = 0;
-uint32_t unoInvalidResponses = 0;
-uint32_t unoLastLatencyMs = 0;
-size_t unoLastResponseBytes = 0;
+uint32_t adsReads = 0;
+uint32_t adsFailures = 0;
+uint32_t gpsUartOverflows = 0;
+uint32_t lastGpsByteAt = 0;
+uint32_t lastSensorRecoveryAt = 0;
+uint32_t adsLastSuccessAt = 0;
+uint32_t sht45LastSuccessAt = 0;
+uint32_t tslSeaLastSuccessAt = 0;
+uint32_t tslLandLastSuccessAt = 0;
+uint32_t tcs3448LastSuccessAt = 0;
+uint32_t ds18b20LastSuccessAt[config::DS18B20_COUNT] = {};
+uint32_t adsReadFailures = 0;
+uint32_t sht45ReadFailures = 0;
+uint32_t tslSeaReadFailures = 0;
+uint32_t tslLandReadFailures = 0;
+uint32_t tcs3448ReadFailures = 0;
+uint32_t ds18b20ReadFailures[config::DS18B20_COUNT] = {};
 uint32_t postAttempts = 0;
 uint32_t postSuccesses = 0;
 uint32_t postFailures = 0;
 int postLastStatus = 0;
 
 enum class TimeSource : uint8_t {
-  Unsynchronized,
-  Rtc,
-  Ntp,
-  Gps,
-  GpsHoldover,
+  // Keep the public numeric values stable. Value 1 belonged to removed
+  // hardware and remains intentionally unused.
+  Unsynchronized = 0,
+  Ntp = 2,
+  Gps = 3,
+  GpsHoldover = 4,
 };
 
 TimeSource timeSource = TimeSource::Unsynchronized;
-TimeSource rtcLastSetSource = TimeSource::Unsynchronized;
 volatile bool ntpSyncArrived = false;
 bool ntpSyncReceived = false;
 bool ntpClockApplied = false;
 uint32_t lastGpsTimeAt = 0;
 uint32_t lastGpsDisciplineAt = 0;
-
-struct UnoGpsReading {
-  bool present = false;
-  bool fixValid = false;
-  bool timeValid = false;
-  time_t epoch = 0;
-  double latitude = 0;
-  double longitude = 0;
-  double altitudeM = 0;
-  bool altitudeValid = false;
-  double hdop = 0;
-  bool hdopValid = false;
-  uint32_t fixAgeMs = UINT32_MAX;
-  uint32_t receivedAt = 0;
-  uint32_t satellites = 0;
-};
-
-UnoGpsReading unoGps;
 
 uint32_t lastSampleAt = 0;
 uint32_t lastWifiAttemptAt = 0;
@@ -181,8 +153,6 @@ void addTelemetryEvent(const char *source, const char *level,
 
 const char *timeSourceName(TimeSource source) {
   switch (source) {
-    case TimeSource::Rtc:
-      return "rtc";
     case TimeSource::Ntp:
       return "ntp";
     case TimeSource::Gps:
@@ -214,27 +184,7 @@ void setSystemTime(time_t epoch) {
   settimeofday(&value, nullptr);
 }
 
-void writeRtc(time_t epoch, TimeSource source) {
-  if (!hasRtc || epoch < config::MIN_VALID_UNIX_TIME) {
-    return;
-  }
-  rtc.adjust(DateTime(static_cast<uint32_t>(epoch)));
-  rtcLastSetSource = source;
-  addTelemetryEvent("time", "info", "RTC updated from %s",
-                    timeSourceName(source));
-}
-
 void initializeTimekeeping() {
-  hasRtc = config::RTC_ENABLED && rtc.begin(&Wire);
-  if (hasRtc && !rtc.lostPower()) {
-    const time_t rtcEpoch = rtc.now().unixtime();
-    if (rtcEpoch >= config::MIN_VALID_UNIX_TIME) {
-      setSystemTime(rtcEpoch);
-      changeTimeSource(TimeSource::Rtc, "valid RTC at boot");
-      addTelemetryEvent("time", "info", "System clock restored from RTC");
-    }
-  }
-
   settimeofday_cb([](bool fromSntp) {
     if (fromSntp) {
       ntpSyncArrived = true;
@@ -243,21 +193,56 @@ void initializeTimekeeping() {
   configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
 }
 
-bool gpsFixIsFresh() {
-  return unoGps.present && unoGps.fixValid &&
-         unoGps.fixAgeMs <= config::GPS_MAX_FIX_AGE_MS &&
-         millis() - unoGps.receivedAt <= config::GPS_RELAY_STALE_MS &&
-         unoGps.satellites >= config::GPS_MIN_SATELLITES;
+void pumpGps() {
+  while (gpsSerial.available() > 0) {
+    gps.encode(static_cast<char>(gpsSerial.read()));
+    lastGpsByteAt = millis();
+  }
+  if (gpsSerial.overflow()) {
+    ++gpsUartOverflows;
+  }
 }
 
-bool gpsTimeIsFresh() {
-  return unoGps.present && unoGps.timeValid &&
-         unoGps.epoch >= config::MIN_VALID_UNIX_TIME &&
-         millis() - unoGps.receivedAt <= config::GPS_RELAY_STALE_MS;
+bool gpsReceiverIsFresh() {
+  return lastGpsByteAt != 0 &&
+         millis() - lastGpsByteAt <= config::GPS_PRESENT_MAX_AGE_MS;
+}
+
+int64_t daysFromCivil(int year, unsigned month, unsigned day) {
+  year -= month <= 2;
+  const int era = (year >= 0 ? year : year - 399) / 400;
+  const unsigned yearOfEra = static_cast<unsigned>(year - era * 400);
+  const unsigned dayOfYear =
+      (153 * (month + (month > 2 ? -3 : 9)) + 2) / 5 + day - 1;
+  const unsigned dayOfEra =
+      yearOfEra * 365 + yearOfEra / 4 - yearOfEra / 100 + dayOfYear;
+  return static_cast<int64_t>(era) * 146097 + dayOfEra - 719468;
 }
 
 time_t gpsEpoch() {
-  return unoGps.epoch;
+  if (!gps.date.isValid() || !gps.time.isValid()) {
+    return 0;
+  }
+  const int64_t days = daysFromCivil(gps.date.year(), gps.date.month(),
+                                     gps.date.day());
+  const int64_t seconds = days * 86400LL + gps.time.hour() * 3600LL +
+                          gps.time.minute() * 60LL + gps.time.second();
+  return seconds > 0 ? static_cast<time_t>(seconds) : 0;
+}
+
+bool gpsFixIsFresh() {
+  return gps.location.isValid() &&
+         gps.location.age() <= config::GPS_MAX_FIX_AGE_MS &&
+         gps.satellites.isValid() &&
+         gps.satellites.age() <= config::GPS_MAX_FIX_AGE_MS &&
+         gps.satellites.value() >= config::GPS_MIN_SATELLITES;
+}
+
+bool gpsTimeIsFresh() {
+  return gps.date.isValid() && gps.time.isValid() &&
+         gps.date.age() <= config::GPS_MAX_TIME_AGE_MS &&
+         gps.time.age() <= config::GPS_MAX_TIME_AGE_MS &&
+         gpsEpoch() >= config::MIN_VALID_UNIX_TIME;
 }
 
 void pollTimeSources() {
@@ -269,7 +254,7 @@ void pollTimeSources() {
 
   // NMEA time validity is independent of navigation-fix validity. A receiver
   // may emit checksum-valid UTC in RMC status V or GGA fix quality 0. Use that
-  // time for the system clock and RTC while continuing to suppress position.
+  // time for the system clock while continuing to suppress invalid position.
   if (validGpsTime) {
     const bool firstGpsSync = timeSource != TimeSource::Gps;
     const bool disciplineDue =
@@ -280,7 +265,6 @@ void pollTimeSources() {
       if (epoch >= config::MIN_VALID_UNIX_TIME) {
         sntp_stop();
         setSystemTime(epoch);
-        writeRtc(epoch, TimeSource::Gps);
         lastGpsDisciplineAt = now;
         addTelemetryEvent("time", "info", "System clock disciplined from GPS");
       }
@@ -298,13 +282,13 @@ void pollTimeSources() {
     if (timeSource != TimeSource::Gps &&
         timeSource != TimeSource::GpsHoldover && systemTimeIsValid()) {
       changeTimeSource(TimeSource::Ntp, "initial NTP synchronization");
-      writeRtc(time(nullptr), TimeSource::Ntp);
       ntpClockApplied = true;
       addTelemetryEvent("time", "info",
                         "Initial system clock synchronized from NTP");
     }
     // This station intentionally uses NTP only for the initial sync. GPS takes
-    // precedence when it becomes valid; the RTC provides subsequent holdover.
+    // precedence when it becomes valid; the ESP8266 system clock provides
+    // holdover while it remains powered.
     sntp_stop();
   }
 }
@@ -446,179 +430,118 @@ bool soilPercent(int16_t counts, uint8_t channel, float &percent) {
   return true;
 }
 
-void updateUnoTelemetry(JsonObject reply) {
-  if (reply.isNull()) {
-    unoTelemetry.available = false;
-    return;
-  }
-  unoTelemetry.available = true;
-  snprintf(unoTelemetry.firmware, sizeof(unoTelemetry.firmware), "%s",
-           reply["firmware"] | "unknown");
-  unoTelemetry.uptimeMs = reply["uptime_ms"] | 0UL;
-  unoTelemetry.freeSramBytes = reply["free_sram_bytes"] | 0;
-  unoTelemetry.resetFlags = reply["reset_flags"] | 0;
-  unoTelemetry.commandsReceived = reply["commands_received"] | 0UL;
-  unoTelemetry.unknownCommands = reply["unknown_commands"] | 0UL;
-  unoTelemetry.commandOverflows = reply["command_overflows"] | 0UL;
-  unoTelemetry.adcSamplesCompleted = reply["adc_samples_completed"] | 0UL;
-  unoTelemetry.lastSampleMs = reply["last_sample_ms"] | 0UL;
-  unoTelemetry.loopCount = reply["loop_count"] | 0UL;
-  unoTelemetry.gpsCharsProcessed = reply["gps_chars_processed"] | 0UL;
-  unoTelemetry.gpsSentencesOk = reply["gps_sentences_ok"] | 0UL;
-  unoTelemetry.gpsSentencesWithFix =
-      reply["gps_sentences_with_fix"] | 0UL;
-  unoTelemetry.gpsChecksumFailures = reply["gps_checksum_failures"] | 0UL;
-  unoTelemetry.soilPowerSwitched = reply["soil_power_switched"] | false;
+bool i2cDevicePresent(uint8_t address) {
+  Wire.beginTransmission(address);
+  return Wire.endTransmission() == 0;
 }
 
-bool readUnoAdc(uint16_t (&counts)[2], uint32_t &unoSequence) {
-  ++unoRequests;
-  unoLastError[0] = '\0';
-  unoSerial.listen();
-  while (unoSerial.available() > 0) {
-    unoSerial.read();
+void logSensorRecovery(const char *name, bool available) {
+  if (available) {
+    addTelemetryEvent("sensors", "info", "%s recovered", name);
   }
-  // End any partial command the Uno may have received while either MCU was
-  // booting, then send the shortest possible framed request. The Uno also
-  // accepts legacy READ commands.
-  unoSerial.print(F("\nR\n"));
+}
 
-  size_t length = 0;
-  bool overflowed = false;
-  bool responseStarted = false;
-  unoResponseBuffer[0] = '\0';
-  const uint32_t startedAt = millis();
-  uint32_t lastRequestAt = startedAt;
-  uint32_t lastByteAt = startedAt;
-  while (millis() - startedAt < config::UNO_RESPONSE_TIMEOUT_MS) {
-    while (unoSerial.available() > 0) {
-      const char value = static_cast<char>(unoSerial.read());
-      responseStarted = true;
-      lastByteAt = millis();
-      if (value == '\n') {
-        if (length == 0 && !overflowed) {
-          responseStarted = false;
-          lastRequestAt = millis();
-          continue;
-        }
-        unoResponseBuffer[length] = '\0';
-        unoLastLatencyMs = millis() - startedAt;
-        unoLastResponseBytes = length;
-        unoReplyDocument.clear();
-        const DeserializationError error =
-            deserializeJson(unoReplyDocument, unoResponseBuffer);
-        auto &reply = unoReplyDocument;
-        if (overflowed || error || reply["v"].as<uint8_t>() != 1 ||
-            !reply.containsKey("a0") || !reply.containsKey("a1")) {
-          ++unoInvalidResponses;
-          unoTelemetry.available = false;
-          snprintf(unoLastError, sizeof(unoLastError),
-                   "Invalid response (%u bytes): %.28s",
-                   static_cast<unsigned>(length), unoResponseBuffer);
-          // A startup-framing error can precede the valid READ response. Keep
-          // listening until the request timeout instead of dropping the whole
-          // sample because of that one stale line.
-          length = 0;
-          overflowed = false;
-          responseStarted = false;
-          unoResponseBuffer[0] = '\0';
-          lastRequestAt = millis();
-          continue;
-        }
-
-        const uint16_t a0 = reply["a0"].as<uint16_t>();
-        const uint16_t a1 = reply["a1"].as<uint16_t>();
-        if (a0 > config::UNO_ADC_MAX_COUNTS ||
-            a1 > config::UNO_ADC_MAX_COUNTS) {
-          ++unoInvalidResponses;
-          snprintf(unoLastError, sizeof(unoLastError),
-                   "ADC response out of range");
-          return false;
-        }
-        counts[0] = a0;
-        counts[1] = a1;
-        unoSequence = reply["seq"] | 0UL;
-
-        JsonObject gpsReply = reply["gps"];
-        unoGps = UnoGpsReading();
-        if (!gpsReply.isNull()) {
-          unoGps.present = true;
-          unoGps.fixValid = gpsReply["fix_valid"] | false;
-          unoGps.timeValid = gpsReply["time_valid"] | false;
-          unoGps.satellites = gpsReply["satellites"] | 0UL;
-          unoGps.fixAgeMs = gpsReply["fix_age_ms"] | UINT32_MAX;
-          unoGps.receivedAt = millis();
-          if (unoGps.timeValid) {
-            const uint16_t year = gpsReply["year"] | 0;
-            const uint8_t month = gpsReply["month"] | 0;
-            const uint8_t day = gpsReply["day"] | 0;
-            const uint8_t hour = gpsReply["hour"] | 0;
-            const uint8_t minute = gpsReply["minute"] | 0;
-            const uint8_t second = gpsReply["second"] | 0;
-            if (year >= 2021 && month >= 1 && month <= 12 && day >= 1 &&
-                day <= 31 && hour <= 23 && minute <= 59 && second <= 60) {
-              unoGps.epoch =
-                  DateTime(year, month, day, hour, minute, second).unixtime();
-            } else {
-              unoGps.timeValid = false;
-            }
-          }
-          if (unoGps.fixValid) {
-            unoGps.latitude = gpsReply["latitude_deg"] | 0.0;
-            unoGps.longitude = gpsReply["longitude_deg"] | 0.0;
-          }
-          if (gpsReply.containsKey("altitude_m")) {
-            unoGps.altitudeValid = true;
-            unoGps.altitudeM = gpsReply["altitude_m"].as<double>();
-          }
-          if (gpsReply.containsKey("hdop")) {
-            unoGps.hdopValid = true;
-            unoGps.hdop = gpsReply["hdop"].as<double>();
-          }
-        }
-        updateUnoTelemetry(reply["telemetry"].as<JsonObject>());
-        ++unoSuccesses;
-        return true;
-      }
-      if (value != '\r' && length + 1 < sizeof(unoResponseBuffer)) {
-        unoResponseBuffer[length++] = value;
-      } else if (value != '\r') {
-        overflowed = true;
-      }
-    }
-
-    const uint32_t now = millis();
-    if (responseStarted &&
-        now - lastByteAt >= config::UNO_RESPONSE_GAP_TIMEOUT_MS) {
-      ++unoInvalidResponses;
-      unoResponseBuffer[length] = '\0';
-      snprintf(unoLastError, sizeof(unoLastError),
-               "Partial response (%u bytes): %.28s",
-               static_cast<unsigned>(length), unoResponseBuffer);
-      length = 0;
-      overflowed = false;
-      responseStarted = false;
-      unoResponseBuffer[0] = '\0';
-      lastRequestAt = now;
-    }
-    if (!responseStarted &&
-        now - lastRequestAt >= config::UNO_REQUEST_RETRY_MS) {
-      unoSerial.print(F("R\n"));
-      lastRequestAt = now;
-    }
-    delay(1);
+bool initializeAds1115() {
+  if (!i2cDevicePresent(config::ADS1115_ADDRESS) ||
+      !ads1115.begin(config::ADS1115_ADDRESS, &Wire)) {
+    return false;
   }
+  ads1115.setGain(GAIN_TWOTHIRDS);
+  ads1115.setDataRate(RATE_ADS1115_128SPS);
+  return true;
+}
 
-  ++unoTimeouts;
-  unoLastLatencyMs = millis() - startedAt;
-  unoLastResponseBytes = length;
-  unoTelemetry.available = false;
-  if (unoLastError[0] == '\0') {
-    snprintf(unoLastError, sizeof(unoLastError),
-             "Timed out waiting for response (%u bytes)",
-             static_cast<unsigned>(length));
+bool initializeSht45() {
+  if (!i2cDevicePresent(config::SHT45_ADDRESS) || !sht45.begin(&Wire)) {
+    return false;
   }
-  return false;
+  sht45.setPrecision(SHT4X_HIGH_PRECISION);
+  sht45.setHeater(SHT4X_NO_HEATER);
+  return true;
+}
+
+bool initializeTcs3448() {
+  return i2cDevicePresent(config::TCS3448_ADDRESS) && tcs3448.begin(&Wire) &&
+         tcs3448.setGain(TCS3448_GAIN_64X) && tcs3448.setATIME(29) &&
+         tcs3448.setASTEP(599) &&
+         tcs3448.setSMUXMode(TCS3448_SMUX_18CH);
+}
+
+void recoverUnavailableSensors(bool force = false) {
+  const uint32_t now = millis();
+  if (!force && now - lastSensorRecoveryAt <
+                    config::SENSOR_RECOVERY_INTERVAL_MS) {
+    return;
+  }
+  lastSensorRecoveryAt = now;
+
+  if (!hasAds1115) {
+    hasAds1115 = initializeAds1115();
+    if (!force) logSensorRecovery("ADS1115", hasAds1115);
+  }
+  if (!hasSht45) {
+    hasSht45 = initializeSht45();
+    if (!force) logSensorRecovery("SHT45", hasSht45);
+  }
+  if (!hasTslSea) {
+    hasTslSea = tslSea.begin(Wire);
+    if (!force) logSensorRecovery("TSL sea", hasTslSea);
+  }
+  if (!hasTslLand) {
+    hasTslLand = tslLand.begin(Wire);
+    if (!force) logSensorRecovery("TSL land", hasTslLand);
+  }
+  if (!hasTcs3448) {
+    hasTcs3448 = initializeTcs3448();
+    if (!force) logSensorRecovery("TCS3448", hasTcs3448);
+  }
+}
+
+int16_t readAdsMedian(uint8_t channel) {
+  int16_t samples[config::ADS1115_MEDIAN_SAMPLES] = {};
+  for (uint8_t i = 0; i < config::ADS1115_MEDIAN_SAMPLES; ++i) {
+    samples[i] = ads1115.readADC_SingleEnded(channel);
+    pumpGps();
+  }
+  for (uint8_t i = 1; i < config::ADS1115_MEDIAN_SAMPLES; ++i) {
+    const int16_t value = samples[i];
+    int8_t j = static_cast<int8_t>(i) - 1;
+    while (j >= 0 && samples[j] > value) {
+      samples[j + 1] = samples[j];
+      --j;
+    }
+    samples[j + 1] = value;
+  }
+  return samples[config::ADS1115_MEDIAN_SAMPLES / 2];
+}
+
+bool captureAds1115(offline::ReadingRecord &record) {
+  ++adsReads;
+  if (!hasAds1115 || !i2cDevicePresent(config::ADS1115_ADDRESS)) {
+    hasAds1115 = false;
+    ++adsFailures;
+    ++adsReadFailures;
+    return false;
+  }
+  record.flags |= offline::ADS1115_PRESENT;
+  const int16_t values[2] = {readAdsMedian(0), readAdsMedian(1)};
+  for (uint8_t channel = 0; channel < 2; ++channel) {
+    if (values[channel] < config::ADS1115_MIN_COUNTS ||
+        values[channel] > config::ADS1115_MAX_COUNTS) {
+      ++adsFailures;
+      ++adsReadFailures;
+      addTelemetryEvent("ads1115", "warn",
+                        "A%u out of 0-5 V range: %d counts", channel,
+                        values[channel]);
+      return false;
+    }
+    record.soilCounts[channel] = values[channel];
+    record.soilMillivolts[channel] = static_cast<uint16_t>(
+        lroundf(values[channel] * config::ADS1115_LSB_MV));
+  }
+  record.flags |= offline::ADS1115_OK;
+  adsLastSuccessAt = millis();
+  return true;
 }
 
 bool recordFlag(const offline::ReadingRecord &record, offline::ReadingFlag flag) {
@@ -637,6 +560,11 @@ uint16_t centiUnsigned(float value) {
 
 void captureDs18b20(offline::ReadingRecord &record) {
   ds18b20.requestTemperatures();
+  const uint32_t conversionStartedAt = millis();
+  while (millis() - conversionStartedAt < config::DS18B20_CONVERSION_MS) {
+    pumpGps();
+    delay(1);
+  }
   for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
     DeviceAddress address = {};
     memcpy(address, config::DS18B20_ROMS[i], sizeof(DeviceAddress));
@@ -646,6 +574,7 @@ void captureDs18b20(offline::ReadingRecord &record) {
       record.flags |= static_cast<uint32_t>(offline::DS1_PRESENT) << i;
     }
     if (!present) {
+      ++ds18b20ReadFailures[i];
       continue;
     }
     const float temperature = ds18b20.getTempC(address);
@@ -653,6 +582,9 @@ void captureDs18b20(offline::ReadingRecord &record) {
         temperature <= 125.0f) {
       record.flags |= static_cast<uint32_t>(offline::DS1_OK) << i;
       record.dsTemperatureCenti[i] = centiSigned(temperature);
+      ds18b20LastSuccessAt[i] = millis();
+    } else {
+      ++ds18b20ReadFailures[i];
     }
   }
 }
@@ -664,18 +596,34 @@ void captureSht45(offline::ReadingRecord &record) {
   sensors_event_t humidity;
   sensors_event_t temperature;
   if (!sht45.getEvent(&humidity, &temperature)) {
+    ++sht45ReadFailures;
+    hasSht45 = false;
     return;
   }
+  sht45LastSuccessAt = millis();
   record.flags |= offline::SHT45_OK;
   record.shtTemperatureCenti = centiSigned(temperature.temperature);
   record.shtHumidityCenti = centiUnsigned(humidity.relative_humidity);
 }
 
 void captureTsl(offline::ReadingRecord &record, Tsl2584 &sensor,
-                bool available, bool sea) {
+                bool &available, bool sea) {
   Tsl2584Reading reading;
   if (!available || !sensor.read(reading)) {
+    if (available) {
+      if (sea) {
+        ++tslSeaReadFailures;
+      } else {
+        ++tslLandReadFailures;
+      }
+      available = false;
+    }
     return;
+  }
+  if (sea) {
+    tslSeaLastSuccessAt = millis();
+  } else {
+    tslLandLastSuccessAt = millis();
   }
   record.flags |= sea ? offline::TSL_SEA_OK : offline::TSL_LAND_OK;
   if (reading.saturated) {
@@ -694,8 +642,11 @@ void captureTcs3448(offline::ReadingRecord &record) {
   }
   uint16_t readings[TCS3448_CHANNEL_COUNT] = {};
   if (!tcs3448.readAllChannels(readings)) {
+    ++tcs3448ReadFailures;
+    hasTcs3448 = false;
     return;
   }
+  tcs3448LastSuccessAt = millis();
   record.flags |= offline::TCS3448_OK;
   const uint8_t channels[13] = {
       TCS3448_CHANNEL_F1,       TCS3448_CHANNEL_F2,
@@ -746,26 +697,22 @@ void addSht45Json(JsonObject sensors, const offline::ReadingRecord &record) {
 
 void addSoilJson(JsonObject sensors, const offline::ReadingRecord &record) {
   JsonArray probes = sensors.createNestedArray("soil_moisture");
-  const bool ok = recordFlag(record, offline::UNO_OK);
+  const bool ok = recordFlag(record, offline::ADS1115_OK);
   for (uint8_t channel = 0; channel < 2; ++channel) {
     JsonObject probe = probes.createNestedObject();
     probe["channel"] = channel;
     probe["sensor_id"] = channel + 1;
-    probe["uno_pin"] = channel == 0 ? "A0" : "A1";
+    probe["adc_channel"] = channel == 0 ? "A0" : "A1";
     probe["depth_cm"] = config::SOIL_DEPTH_CM[channel];
     probe["sensor_type"] = "resistive_lm393_1p3m";
-    probe["adc"] = "arduino_uno_10bit";
+    probe["adc"] = "ads1115_16bit";
+    probe["pga_range_v"] = 6.144f;
     probe["ok"] = ok;
     if (!ok) {
       continue;
     }
     probe["raw_counts"] = record.soilCounts[channel];
-    probe["voltage_v"] = record.soilCounts[channel] *
-                         config::UNO_ADC_REFERENCE_V /
-                         config::UNO_ADC_MAX_COUNTS;
-    probe["filter"] = "median";
-    probe["sample_count"] = 9;
-    probe["uno_sequence"] = record.unoSequence;
+    probe["voltage_v"] = record.soilMillivolts[channel] / 1000.0f;
     float percent = 0;
     if (soilPercent(record.soilCounts[channel], channel, percent)) {
       probe["moisture_pct"] = percent;
@@ -812,9 +759,6 @@ void addTimeAndGpsJson(JsonObject sensors,
   timing["ok"] = validSystemTime;
   timing["source"] =
       timeSourceName(static_cast<TimeSource>(record.timeSource));
-  timing["rtc_available"] = recordFlag(record, offline::RTC_AVAILABLE);
-  timing["rtc_last_set_source"] =
-      timeSourceName(static_cast<TimeSource>(record.rtcLastSetSource));
   timing["timezone"] = "Asia/Kolkata";
   timing["utc_offset"] = "+05:30";
   if (validSystemTime) {
@@ -822,18 +766,14 @@ void addTimeAndGpsJson(JsonObject sensors,
     timing["utc"] = iso8601Utc(record.observedEpoch);
     timing["ist"] = iso8601Ist(record.observedEpoch);
   }
-  if (recordFlag(record, offline::RTC_AVAILABLE)) {
-    timing["rtc_epoch"] = record.rtcEpoch;
-    timing["rtc_ist"] = iso8601Ist(record.rtcEpoch);
-  }
-
   JsonObject out = sensors.createNestedObject("gps");
   const bool validFix = recordFlag(record, offline::GPS_FIX_VALID);
   const bool validGpsTime = recordFlag(record, offline::GPS_TIME_VALID);
   out["fix_valid"] = validFix;
   out["time_valid"] = validGpsTime;
   out["time_requires_fix"] = false;
-  out["relay_present"] = recordFlag(record, offline::GPS_RELAY_PRESENT);
+  out["present"] = recordFlag(record, offline::GPS_PRESENT);
+  out["connection"] = "direct_uart_d6";
   out["satellites"] = record.gpsSatellites;
   if (validGpsTime) {
     out["time_utc"] = iso8601Utc(record.gpsEpoch);
@@ -876,19 +816,7 @@ offline::ReadingRecord captureReading() {
     record.wifiRssiDbm = static_cast<int8_t>(WiFi.RSSI());
   }
 
-  uint16_t unoCounts[2] = {};
-  uint32_t unoSequence = 0;
-  const bool hasUnoReading = readUnoAdc(unoCounts, unoSequence);
-  if (hasUnoReading) {
-    record.flags |= offline::UNO_OK;
-    record.soilCounts[0] = unoCounts[0];
-    record.soilCounts[1] = unoCounts[1];
-    record.unoSequence = unoSequence;
-  } else {
-    addTelemetryEvent("uno", "warn", "%s",
-                      unoLastError[0] == '\0' ? "Uno reading unavailable"
-                                              : unoLastError);
-  }
+  captureAds1115(record);
   pollTimeSources();
 
   const time_t systemEpoch = time(nullptr);
@@ -897,11 +825,6 @@ offline::ReadingRecord captureReading() {
     record.observedEpoch = static_cast<uint32_t>(systemEpoch);
   }
   record.timeSource = static_cast<uint8_t>(timeSource);
-  record.rtcLastSetSource = static_cast<uint8_t>(rtcLastSetSource);
-  if (hasRtc) {
-    record.flags |= offline::RTC_AVAILABLE;
-    record.rtcEpoch = rtc.now().unixtime();
-  }
 
   captureDs18b20(record);
   captureSht45(record);
@@ -909,45 +832,62 @@ offline::ReadingRecord captureReading() {
   captureTsl(record, tslLand, hasTslLand, false);
   captureTcs3448(record);
 
-  if (unoGps.present) {
-    record.flags |= offline::GPS_RELAY_PRESENT;
+  if (gpsReceiverIsFresh()) {
+    record.flags |= offline::GPS_PRESENT;
   }
   record.gpsSatellites =
-      static_cast<uint8_t>(std::min<uint32_t>(unoGps.satellites, 255));
+      gps.satellites.isValid() &&
+              gps.satellites.age() <= config::GPS_MAX_FIX_AGE_MS
+                             ? static_cast<uint8_t>(std::min<uint32_t>(
+                                   gps.satellites.value(), 255))
+                             : 0;
   if (gpsTimeIsFresh()) {
     record.flags |= offline::GPS_TIME_VALID;
-    record.gpsEpoch = static_cast<uint32_t>(unoGps.epoch);
+    record.gpsEpoch = static_cast<uint32_t>(gpsEpoch());
   }
-  if (unoGps.hdopValid) {
+  if (gps.hdop.isValid() &&
+      gps.hdop.age() <= config::GPS_MAX_FIX_AGE_MS) {
     record.flags |= offline::GPS_HDOP_VALID;
-    record.gpsHdopCenti = centiUnsigned(unoGps.hdop);
+    record.gpsHdopCenti =
+        static_cast<uint16_t>(std::min<uint32_t>(gps.hdop.value(), 65535));
   }
   if (gpsFixIsFresh()) {
     record.flags |= offline::GPS_FIX_VALID;
-    record.gpsFixAgeMs = unoGps.fixAgeMs;
-    record.gpsLatitudeE7 = static_cast<int32_t>(lround(unoGps.latitude * 1e7));
+    record.gpsFixAgeMs = gps.location.age();
+    record.gpsLatitudeE7 =
+        static_cast<int32_t>(lround(gps.location.lat() * 1e7));
     record.gpsLongitudeE7 =
-        static_cast<int32_t>(lround(unoGps.longitude * 1e7));
-    if (unoGps.altitudeValid) {
+        static_cast<int32_t>(lround(gps.location.lng() * 1e7));
+    if (gps.altitude.isValid() &&
+        gps.altitude.age() <= config::GPS_MAX_FIX_AGE_MS) {
       record.flags |= offline::GPS_ALTITUDE_VALID;
       record.gpsAltitudeMm =
-          static_cast<int32_t>(lround(unoGps.altitudeM * 1000.0));
+          static_cast<int32_t>(lround(gps.altitude.meters() * 1000.0));
     }
   }
-
-  record.unoRequests = unoRequests;
-  record.unoSuccesses = unoSuccesses;
-  record.unoTimeouts = unoTimeouts;
-  record.unoInvalidResponses = unoInvalidResponses;
-  record.unoLastLatencyMs =
-      static_cast<uint16_t>(std::min<uint32_t>(unoLastLatencyMs, 65535));
-  record.unoLastResponseBytes = static_cast<uint16_t>(
-      min(unoLastResponseBytes, static_cast<size_t>(65535)));
+  record.gpsCharsProcessed = gps.charsProcessed();
+  record.gpsSentencesOk = gps.passedChecksum();
+  record.gpsChecksumFailures = gps.failedChecksum();
+  record.adsReads = adsReads;
+  record.adsFailures = adsFailures;
   return record;
 }
 
-void addTelemetrySnapshot(JsonObject telemetry) {
-  telemetry["version"] = 1;
+void addHealthEntry(JsonObject parent, const char *name, bool detected,
+                    bool readingOk, uint32_t lastSuccessAt,
+                    uint32_t readFailures) {
+  JsonObject health = parent.createNestedObject(name);
+  health["detected"] = detected;
+  health["reading_ok"] = readingOk;
+  health["read_failures"] = readFailures;
+  if (lastSuccessAt != 0) {
+    health["last_success_age_ms"] = millis() - lastSuccessAt;
+  }
+}
+
+void addTelemetrySnapshot(JsonObject telemetry,
+                          const offline::ReadingRecord &record) {
+  telemetry["version"] = 2;
   telemetry["captured_uptime_ms"] = millis();
   telemetry["dropped_events"] = droppedTelemetryEvents;
 
@@ -1000,34 +940,68 @@ void addTelemetrySnapshot(JsonObject telemetry) {
   presence["tsl2584_sea"] = hasTslSea;
   presence["tsl2584_land"] = hasTslLand;
   presence["tcs3448"] = hasTcs3448;
-  presence["ds3231"] = hasRtc;
+  presence["ads1115"] = hasAds1115;
+  presence["gps"] = gpsReceiverIsFresh();
 
-  JsonObject unoLink = telemetry.createNestedObject("uno_link");
-  unoLink["requests"] = unoRequests;
-  unoLink["successes"] = unoSuccesses;
-  unoLink["timeouts"] = unoTimeouts;
-  unoLink["invalid_responses"] = unoInvalidResponses;
-  unoLink["last_latency_ms"] = unoLastLatencyMs;
-  unoLink["last_response_bytes"] = unoLastResponseBytes;
-  unoLink["telemetry_available"] = unoTelemetry.available;
+  JsonObject sensorHealth = telemetry.createNestedObject("sensor_health");
+  JsonObject dsHealth = sensorHealth.createNestedObject("ds18b20");
+  JsonArray dsProbes = dsHealth.createNestedArray("probes");
+  uint8_t dsOkCount = 0;
+  uint32_t dsFailureCount = 0;
+  for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
+    const bool present = recordFlag(
+        record, static_cast<offline::ReadingFlag>(offline::DS1_PRESENT << i));
+    const bool ok = recordFlag(
+        record, static_cast<offline::ReadingFlag>(offline::DS1_OK << i));
+    if (ok) ++dsOkCount;
+    dsFailureCount += ds18b20ReadFailures[i];
+    JsonObject probe = dsProbes.createNestedObject();
+    probe["sensor_id"] = i + 1;
+    probe["detected"] = present;
+    probe["reading_ok"] = ok;
+    probe["read_failures"] = ds18b20ReadFailures[i];
+    if (ds18b20LastSuccessAt[i] != 0) {
+      probe["last_success_age_ms"] = millis() - ds18b20LastSuccessAt[i];
+    }
+  }
+  dsHealth["reading_ok"] = dsOkCount == config::DS18B20_COUNT;
+  dsHealth["ok_count"] = dsOkCount;
+  dsHealth["configured_count"] = config::DS18B20_COUNT;
+  dsHealth["read_failures"] = dsFailureCount;
+  addHealthEntry(sensorHealth, "ads1115", hasAds1115,
+                 recordFlag(record, offline::ADS1115_OK), adsLastSuccessAt,
+                 adsReadFailures);
+  addHealthEntry(sensorHealth, "sht45", hasSht45,
+                 recordFlag(record, offline::SHT45_OK), sht45LastSuccessAt,
+                 sht45ReadFailures);
+  addHealthEntry(sensorHealth, "tsl2584_sea", hasTslSea,
+                 recordFlag(record, offline::TSL_SEA_OK), tslSeaLastSuccessAt,
+                 tslSeaReadFailures);
+  addHealthEntry(sensorHealth, "tsl2584_land", hasTslLand,
+                 recordFlag(record, offline::TSL_LAND_OK),
+                 tslLandLastSuccessAt, tslLandReadFailures);
+  addHealthEntry(sensorHealth, "tcs3448", hasTcs3448,
+                 recordFlag(record, offline::TCS3448_OK), tcs3448LastSuccessAt,
+                 tcs3448ReadFailures);
 
-  if (unoTelemetry.available) {
-    JsonObject uno = telemetry.createNestedObject("uno");
-    uno["firmware"] = unoTelemetry.firmware;
-    uno["uptime_ms"] = unoTelemetry.uptimeMs;
-    uno["free_sram_bytes"] = unoTelemetry.freeSramBytes;
-    uno["reset_flags"] = unoTelemetry.resetFlags;
-    uno["commands_received"] = unoTelemetry.commandsReceived;
-    uno["unknown_commands"] = unoTelemetry.unknownCommands;
-    uno["command_overflows"] = unoTelemetry.commandOverflows;
-    uno["adc_samples_completed"] = unoTelemetry.adcSamplesCompleted;
-    uno["last_sample_ms"] = unoTelemetry.lastSampleMs;
-    uno["loop_count"] = unoTelemetry.loopCount;
-    uno["gps_chars_processed"] = unoTelemetry.gpsCharsProcessed;
-    uno["gps_sentences_ok"] = unoTelemetry.gpsSentencesOk;
-    uno["gps_sentences_with_fix"] = unoTelemetry.gpsSentencesWithFix;
-    uno["gps_checksum_failures"] = unoTelemetry.gpsChecksumFailures;
-    uno["soil_power_switched"] = unoTelemetry.soilPowerSwitched;
+  JsonObject adc = telemetry.createNestedObject("ads1115");
+  adc["address"] = config::ADS1115_ADDRESS;
+  adc["available"] = hasAds1115;
+  adc["reading_ok"] = recordFlag(record, offline::ADS1115_OK);
+  adc["reads"] = adsReads;
+  adc["failures"] = adsFailures;
+  adc["pga_range_v"] = 6.144f;
+
+  JsonObject gpsLink = telemetry.createNestedObject("gps_uart");
+  gpsLink["pin"] = "D6/GPIO12";
+  gpsLink["baud"] = config::GPS_SERIAL_BAUD;
+  gpsLink["chars_processed"] = gps.charsProcessed();
+  gpsLink["sentences_ok"] = gps.passedChecksum();
+  gpsLink["checksum_failures"] = gps.failedChecksum();
+  gpsLink["buffer_overflows"] = gpsUartOverflows;
+  gpsLink["receiving_recently"] = gpsReceiverIsFresh();
+  if (lastGpsByteAt != 0) {
+    gpsLink["last_rx_age_ms"] = millis() - lastGpsByteAt;
   }
 
   JsonObject http = telemetry.createNestedObject("http");
@@ -1052,7 +1026,6 @@ void addTelemetrySnapshot(JsonObject telemetry) {
   const bool validSystemTime = systemEpoch >= config::MIN_VALID_UNIX_TIME;
   clock["system_time_valid"] = validSystemTime;
   clock["source"] = timeSourceName(timeSource);
-  clock["rtc_last_set_source"] = timeSourceName(rtcLastSetSource);
   clock["timezone"] = "Asia/Kolkata";
   clock["utc_offset"] = "+05:30";
   clock["ntp_sync_received"] = ntpSyncReceived;
@@ -1066,14 +1039,9 @@ void addTelemetrySnapshot(JsonObject telemetry) {
     clock["system_utc"] = iso8601Utc(systemEpoch);
     clock["system_ist"] = iso8601Ist(systemEpoch);
   }
-  if (hasRtc) {
-    const time_t rtcEpoch = rtc.now().unixtime();
-    clock["rtc_epoch"] = static_cast<uint32_t>(rtcEpoch);
-    clock["rtc_ist"] = iso8601Ist(rtcEpoch);
-  }
   if (gpsTimeIsFresh()) {
-    clock["gps_epoch"] = static_cast<uint32_t>(unoGps.epoch);
-    clock["gps_ist"] = iso8601Ist(unoGps.epoch);
+    clock["gps_epoch"] = static_cast<uint32_t>(gpsEpoch());
+    clock["gps_ist"] = iso8601Ist(gpsEpoch());
   }
 
   JsonArray events = telemetry.createNestedArray("events");
@@ -1128,20 +1096,17 @@ String makePayload(const offline::ReadingRecord &record, bool fullTelemetry,
 
   JsonObject telemetry = doc.createNestedObject("telemetry");
   if (fullTelemetry) {
-    addTelemetrySnapshot(telemetry);
+    addTelemetrySnapshot(telemetry, record);
   } else {
-    telemetry["version"] = 1;
+    telemetry["version"] = 2;
     JsonObject node = telemetry.createNestedObject("nodemcu");
     node["firmware"] = record.firmware;
     node["boot_id"] = record.bootId;
-    JsonObject link = telemetry.createNestedObject("uno_link");
-    link["telemetry_available"] = recordFlag(record, offline::UNO_OK);
-    link["requests"] = record.unoRequests;
-    link["successes"] = record.unoSuccesses;
-    link["timeouts"] = record.unoTimeouts;
-    link["invalid_responses"] = record.unoInvalidResponses;
-    link["last_latency_ms"] = record.unoLastLatencyMs;
-    link["last_response_bytes"] = record.unoLastResponseBytes;
+    JsonObject adc = telemetry.createNestedObject("ads1115");
+    adc["available"] = recordFlag(record, offline::ADS1115_PRESENT);
+    adc["reading_ok"] = recordFlag(record, offline::ADS1115_OK);
+    adc["reads"] = record.adsReads;
+    adc["failures"] = record.adsFailures;
   }
   JsonObject delivery = telemetry.createNestedObject("delivery");
   delivery["stored_offline"] = storedOffline;
@@ -1216,7 +1181,7 @@ bool postPayload(const String &payload, const char *url) {
   const String destination(url);
   if (destination.startsWith("https://")) {
     if (!systemTimeIsValid()) {
-      Serial.println(F("Not posting HTTPS: waiting for NTP, GPS, or RTC time"));
+      Serial.println(F("Not posting HTTPS: waiting for NTP or GPS time"));
       return false;
     }
     BearSSL::WiFiClientSecure client;
@@ -1394,34 +1359,18 @@ void scanI2cBus() {
 void initializeSensors() {
   ds18b20.begin();
   ds18b20.setResolution(12);
-  ds18b20.setWaitForConversion(true);
-
-  hasSht45 = sht45.begin(&Wire);
-  if (hasSht45) {
-    sht45.setPrecision(SHT4X_HIGH_PRECISION);
-    sht45.setHeater(SHT4X_NO_HEATER);
-  }
-
-  hasTslSea = tslSea.begin(Wire);
-  hasTslLand = tslLand.begin(Wire);
-  hasTcs3448 = tcs3448.begin();
-  if (hasTcs3448) {
-    hasTcs3448 = tcs3448.setGain(TCS3448_GAIN_64X) &&
-                 tcs3448.setATIME(29) && tcs3448.setASTEP(599) &&
-                 tcs3448.setSMUXMode(TCS3448_SMUX_18CH);
-  }
+  ds18b20.setWaitForConversion(false);
+  recoverUnavailableSensors(true);
 }
 
 void printSensorStatus() {
-  const char *rtcStatus =
-      config::RTC_ENABLED ? (hasRtc ? "ok" : "missing") : "disabled";
   addTelemetryEvent(
       "sensors", "info",
-      "DS18B20=%u/%u SHT45=%s Uno=serial TSL-Sea=%s TSL-Land=%s TCS=%s RTC=%s",
+      "DS18B20=%u/%u ADS1115=%s GPS=D6 SHT45=%s TSL-Sea=%s TSL-Land=%s TCS=%s",
       configuredDs18b20PresentCount(), config::DS18B20_COUNT,
-      hasSht45 ? "ok" : "missing", hasTslSea ? "ok" : "missing",
-      hasTslLand ? "ok" : "missing", hasTcs3448 ? "ok" : "missing",
-      rtcStatus);
+      hasAds1115 ? "ok" : "missing", hasSht45 ? "ok" : "missing",
+      hasTslSea ? "ok" : "missing",
+      hasTslLand ? "ok" : "missing", hasTcs3448 ? "ok" : "missing");
   for (uint8_t i = 0; i < config::DS18B20_COUNT; ++i) {
     DeviceAddress address = {};
     memcpy(address, config::DS18B20_ROMS[i], sizeof(DeviceAddress));
@@ -1443,7 +1392,10 @@ void setup() {
   addTelemetryEvent("boot", "info", "NodeMCU %s starting; reset=%s",
                     config::FIRMWARE_VERSION, ESP.getResetReason().c_str());
   initializeTlsTrustStore();
-  unoSerial.begin(config::UNO_SERIAL_BAUD);
+  gpsSerial.begin(config::GPS_SERIAL_BAUD, SWSERIAL_8N1,
+                  config::GPS_RX_PIN, config::GPS_TX_PIN, false,
+                  config::GPS_RX_BUFFER_BYTES,
+                  config::GPS_ISR_BUFFER_WORDS);
   Wire.begin(config::I2C_SDA_PIN, config::I2C_SCL_PIN);
   Wire.setClock(config::I2C_CLOCK_HZ);
   scanI2cBus();
@@ -1457,9 +1409,11 @@ void setup() {
 }
 
 void loop() {
+  pumpGps();
   connectWifi();
   monitorWifiStatus();
   pollTimeSources();
+  recoverUnavailableSensors();
 
   const uint32_t now = millis();
   if (lastSampleAt == 0 || now - lastSampleAt >= config::SAMPLE_INTERVAL_MS) {
@@ -1491,5 +1445,6 @@ void loop() {
 
   drainOfflineQueue();
 
-  delay(10);
+  pumpGps();
+  delay(2);
 }

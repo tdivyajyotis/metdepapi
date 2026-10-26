@@ -72,6 +72,24 @@ class FakeConnection:
 
 @unittest.skipUnless(SERVER_DEPS_AVAILABLE, "install the 'server' extra")
 class DatabaseTests(unittest.TestCase):
+    def test_initialize_disables_devices_absent_from_configuration(self):
+        connection = FakeConnection()
+        database = Database("unused")
+
+        @contextmanager
+        def fake_connect():
+            yield connection
+
+        database.connect = fake_connect
+        database.initialize({})
+
+        self.assertTrue(
+            any(
+                "UPDATE devices SET enabled = false" in query
+                for query, _ in connection.calls
+            )
+        )
+
     def test_device_time_is_trusted_only_near_server_time(self):
         reference = datetime(2026, 10, 9, 0, 15, tzinfo=UTC)
         self.assertEqual(

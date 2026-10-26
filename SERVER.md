@@ -1,28 +1,34 @@
 # Sensor ingestion server
 
+Current server/package version: `0.2.0`. Current production NodeMCU firmware:
+`0.9.0` with telemetry version 2 and offline-record format 3.
+
 This service accepts the JSON produced by `firmware/nodemcu-sensor-node`, stores
 the original payload in PostgreSQL, flattens every numeric sensor leaf into a
 queryable time series, and serves a small dashboard at `/`.
 
-The storage format is deliberately sensor-agnostic. An Arduino Uno can therefore
-send ADC readings through the NodeMCU as, for example:
+The storage format is deliberately sensor-agnostic. The NodeMCU can therefore
+send its direct ADS1115 soil readings as, for example:
 
 ```json
 {
-  "arduino_adc": {
-    "ok": true,
-    "reference_v": 5.0,
-    "resolution_bits": 10,
-    "channels": [
-      {"channel": 0, "raw_counts": 512, "voltage_v": 2.502},
-      {"channel": 1, "raw_counts": 203, "voltage_v": 0.992}
-    ]
-  }
+  "soil_moisture": [
+    {
+      "channel": 0,
+      "adc_channel": "A0",
+      "adc": "ads1115_16bit",
+      "pga_range_v": 6.144,
+      "raw_counts": 13344,
+      "voltage_v": 2.502
+    }
+  ]
 }
 ```
 
 Those values become metrics such as
-`arduino_adc.channels.0.raw_counts` without a schema migration.
+`soil_moisture.0.raw_counts` without a schema migration. The same generic
+storage also retains the direct GPS data and all SHT45, TCS3448, TSL2584, and
+DS18B20 measurements.
 
 ## Start locally
 
@@ -54,12 +60,14 @@ $body = @{
   observed_at = (Get-Date).ToUniversalTime().ToString("o")
   firmware = "test"
   sensors = @{
-    arduino_adc = @{
-      ok = $true
-      reference_v = 5.0
-      resolution_bits = 10
-      channels = @(@{channel = 0; raw_counts = 512; voltage_v = 2.502})
-    }
+    soil_moisture = @(@{
+      channel = 0
+      adc_channel = "A0"
+      adc = "ads1115_16bit"
+      pga_range_v = 6.144
+      raw_counts = 13344
+      voltage_v = 2.502
+    })
   }
 } | ConvertTo-Json -Depth 8
 
@@ -99,13 +107,19 @@ sensor channel, a recent-arrivals table, and a collapsible one-way telemetry
 console. There is deliberately no API or UI route that sends commands to field
 hardware.
 
+Hardware health is based on the current sample, not only startup discovery.
+The dashboard shows per-sensor last-success age/read failures and GPS last-byte
+age, and marks compact replay telemetry as historical rather than currently
+healthy.
+
 Live device observation timestamps more than five minutes from the API server
 clock remain preserved inside the original JSON payload, but the indexed
 observation time falls back to server `received_at`. A reading explicitly marked
 `telemetry.delivery.stored_offline: true` may retain a past indexed observation
 time up to 36 hours old, matching the flash queue envelope. Future or older
 timestamps still fall back to receipt time, protecting series from a corrupt
-RTC.
+device clock. Time comes from NTP or the direct GPS UART; there is no external
+battery-backed clock.
 
 ## Purging test readings
 
@@ -134,6 +148,12 @@ If `READ_API_TOKEN` is set, the GET routes require that bearer token. The
 included browser dashboard does not retain a read token, so either leave it
 unset behind Cloudflare Access or put the dashboard behind a same-origin proxy
 that supplies authentication.
+
+`DEVICE_TOKENS` is authoritative at every API startup. Devices removed from
+the JSON mapping are disabled in PostgreSQL, so deleting a token from the
+deployment configuration revokes it. Device tokens must contain at least 32
+characters. `MAX_PAYLOAD_BYTES` defaults to 65,536 and is enforced while the
+request body streams in, including requests without `Content-Length`.
 
 ## Cloudflare Tunnel
 

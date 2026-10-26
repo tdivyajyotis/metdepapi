@@ -1,5 +1,9 @@
 # Arduino Uno DS18B20 diagnostic
 
+> **Bench utility:** this sketch is not part of the deployed stack. Production
+> DS18B20 devices connect to NodeMCU D5/GPIO14 with the 3.3 V pull-up shown in
+> the hardware schematic.
+
 This standalone sketch identifies one DS18B20 probe at a time and continuously
 prints its temperature. It prints the complete 64-bit ROM address in both a
 label-friendly form and a C/C++ byte-array form.

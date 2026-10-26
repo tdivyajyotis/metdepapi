@@ -1,5 +1,9 @@
 # Arduino Uno complete station sensor diagnostic
 
+> **Legacy only:** this sketch describes the former Uno/DS3231 arrangement.
+> The production NodeMCU now reads the ADS1115 and GPS directly, and its RTC is
+> deferred. Use this project only to test disconnected legacy hardware.
+
 This standalone sketch checks the station sensor hardware without Wi-Fi or the
 server. It intentionally uses the same initialization and measurement calls as
 the current NodeMCU firmware:

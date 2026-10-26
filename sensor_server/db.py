@@ -157,7 +157,7 @@ def trusted_observed_at(
 
     The complete original payload is retained in JSONB for diagnosis. Returning
     None here makes the indexed/queryable timestamp fall back to received_at,
-    preventing a bad RTC from pinning an old reading at the top of the dashboard
+    preventing a bad field clock from pinning an old reading at the top of the dashboard
     or distorting time-series order.
     """
     if value is None:
@@ -198,6 +198,9 @@ class Database:
                     """,
                     (TSL_NAME_MIGRATION_VERSION,),
                 )
+            # DEVICE_TOKENS is authoritative. Removing a device from the
+            # deployment configuration revokes its previously stored token.
+            connection.execute("UPDATE devices SET enabled = false")
             for device_id, token in device_tokens.items():
                 connection.execute(
                     """

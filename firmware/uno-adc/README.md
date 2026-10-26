@@ -1,5 +1,9 @@
 # Arduino Uno ADC coprocessor
 
+> **Legacy only:** the production station now reads the ADS1115 and GPS
+> directly from the NodeMCU. This sketch is retained only for bench testing old
+> hardware and must not be used as the current wiring reference.
+
 This firmware replaces the ADS1115 previously used by the NodeMCU sensor
 node. The Uno samples two analog soil-moisture inputs, applies a nine-sample
 median filter, and returns a compact JSON record when the NodeMCU sends

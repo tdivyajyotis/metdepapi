@@ -1,4 +1,5 @@
 import importlib.util
+import asyncio
 import unittest
 from datetime import UTC, datetime
 from unittest.mock import patch
@@ -192,6 +193,49 @@ class ApiTests(unittest.TestCase):
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response.status_code, 413)
+
+    def test_payload_limit_without_content_length(self):
+        messages = iter(
+            [
+                {
+                    "type": "http.request",
+                    "body": b"x" * (main.settings.max_payload_bytes // 2 + 1),
+                    "more_body": True,
+                },
+                {
+                    "type": "http.request",
+                    "body": b"y" * (main.settings.max_payload_bytes // 2 + 1),
+                    "more_body": False,
+                },
+            ]
+        )
+        sent = []
+
+        async def receive():
+            return next(messages)
+
+        async def send(message):
+            sent.append(message)
+
+        async def consume_body(_scope, receive_body, send_response):
+            while True:
+                message = await receive_body()
+                if not message.get("more_body"):
+                    break
+            await send_response({"type": "http.response.start", "status": 204, "headers": []})
+            await send_response({"type": "http.response.body", "body": b""})
+
+        middleware = main.PayloadSizeLimitMiddleware(
+            consume_body, main.settings.max_payload_bytes
+        )
+        asyncio.run(
+            middleware(
+                {"type": "http", "method": "POST", "path": "/", "headers": []},
+                receive,
+                send,
+            )
+        )
+        self.assertEqual(sent[0]["status"], 413)
 
 
 if __name__ == "__main__":

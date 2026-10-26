@@ -4,9 +4,10 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from .auth import bearer_token
 from .config import Settings
@@ -18,6 +19,71 @@ from .schemas import BatchIngestResponse, IngestResponse, ReadingBatchIn, Readin
 settings = Settings.from_env()
 database = Database(settings.database_url)
 static_dir = Path(__file__).with_name("static")
+SERVER_VERSION = "0.2.0"
+
+
+class PayloadTooLarge(Exception):
+    pass
+
+
+class PayloadSizeLimitMiddleware:
+    """Enforce a body limit even when Content-Length is absent or dishonest."""
+
+    def __init__(self, app: ASGIApp, max_bytes: int):
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        for name, value in scope.get("headers", []):
+            if name.lower() != b"content-length":
+                continue
+            try:
+                if int(value) > self.max_bytes:
+                    response = JSONResponse(
+                        status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                        content={"detail": "Request body is too large"},
+                    )
+                    await response(scope, receive, send)
+                    return
+            except ValueError:
+                response = JSONResponse(
+                    status_code=400, content={"detail": "Invalid Content-Length"}
+                )
+                await response(scope, receive, send)
+                return
+
+        received = 0
+        response_started = False
+
+        async def limited_receive():
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    raise PayloadTooLarge
+            return message
+
+        async def tracked_send(message):
+            nonlocal response_started
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+
+        try:
+            await self.app(scope, limited_receive, tracked_send)
+        except PayloadTooLarge:
+            if response_started:
+                raise
+            response = JSONResponse(
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                content={"detail": "Request body is too large"},
+            )
+            await response(scope, receive, send)
 
 
 @asynccontextmanager
@@ -28,9 +94,11 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Local Environmental Station API",
-    version="0.1.0",
+    version=SERVER_VERSION,
     lifespan=lifespan,
 )
+
+app.add_middleware(PayloadSizeLimitMiddleware, max_bytes=settings.max_payload_bytes)
 
 if settings.cors_origins:
     app.add_middleware(
@@ -40,21 +108,6 @@ if settings.cors_origins:
         allow_methods=["GET"],
         allow_headers=["Authorization", "Content-Type"],
     )
-
-
-@app.middleware("http")
-async def limit_payload_size(request: Request, call_next):
-    raw_length = request.headers.get("content-length")
-    if raw_length:
-        try:
-            if int(raw_length) > settings.max_payload_bytes:
-                return JSONResponse(
-                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                    content={"detail": "Request body is too large"},
-                )
-        except ValueError:
-            return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
-    return await call_next(request)
 
 
 def require_read_access(authorization: str | None = Header(default=None)) -> None:
@@ -71,7 +124,10 @@ def dashboard() -> FileResponse:
 
 @app.get("/healthz")
 def health() -> dict[str, str]:
-    return {"status": "ok" if database.healthy() else "unhealthy"}
+    return {
+        "status": "ok" if database.healthy() else "unhealthy",
+        "version": SERVER_VERSION,
+    }
 
 
 @app.post("/v1/readings", response_model=IngestResponse, status_code=201)

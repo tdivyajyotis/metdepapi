@@ -74,6 +74,16 @@ class SettingsTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 Settings.from_env()
 
+    def test_short_device_tokens_are_rejected(self):
+        import os
+        from unittest.mock import patch
+
+        with patch.dict(
+            os.environ, {"DEVICE_TOKENS": '{"station-001":"short"}'}, clear=True
+        ):
+            with self.assertRaises(RuntimeError):
+                Settings.from_env()
+
 
 if __name__ == "__main__":
     unittest.main()
