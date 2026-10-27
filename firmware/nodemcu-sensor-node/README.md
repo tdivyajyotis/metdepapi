@@ -10,18 +10,17 @@ not part of this design.
 - ADS1115 at `0x48`, powered from 5 V and reached through the I2C level shifter;
 - two LM393 soil modules on ADS1115 channels A0 and A1;
 - NEO-6M GPS TX through level-shifter channel 3 to D6/GPIO12;
-- SHT45 at `0x44` on the 3.3 V expansion I2C bus;
+- SHT45 at `0x44` on the shared D1/D2 I2C bus;
 - TSL2584 sea-facing at `0x29` and land-facing at `0x49`;
-- TCS3448 breakout on the 3.3 V expansion I2C bus;
+- TCS3448 breakout on the shared D1/D2 I2C bus;
 - verified HTTPS ingestion with a persistent LittleFS offline queue.
 
 ## Production wiring
 
 | Signal/device | Connection | Electrical side |
 | --- | --- | --- |
-| I2C SCL | D1/GPIO5 → L1; H1 → ADS1115 SCL | 3.3 V low / 5 V high |
-| I2C SDA | D2/GPIO4 → L2; H2 → ADS1115 SDA | 3.3 V low / 5 V high |
-| 3.3 V I2C expansion | D1, D2, 3V3, GND | Low side; optical/SHT sensors |
+| Shared I2C SCL | D1/GPIO5 → sensors and L1; H1 → ADS1115 SCL | 3.3 V low / 5 V high |
+| Shared I2C SDA | D2/GPIO4 → sensors and L2; H2 → ADS1115 SDA | 3.3 V low / 5 V high |
 | DS18B20 DATA | D5/GPIO14 | 4.7 kΩ pull-up to 3.3 V |
 | GPS TX | GPS TX → H3; L3 → D6/GPIO12 | 5 V/3.3 V shifted UART |
 | GPS RX | disconnected | Not required for NMEA reception |
@@ -30,9 +29,11 @@ not part of this design.
 
 The level converter is powered with `HV=5 V`, `LV=3.3 V`, and common ground.
 The ADS1115 uses `GAIN_TWOTHIRDS` (±6.144 V scale), but each analog input must
-still remain between ground and its 5 V supply. I2C runs at 100 kHz.
-Every other I2C sensor shares D1 (clock) and D2 (data) on the 3.3 V low side.
-There is no external real-time clock in this firmware or wiring layout.
+still remain between ground and its 5 V supply. The single I2C bus runs at
+100 kHz: D1 is SCL/clock and D2 is SDA/data. SHT45, both TSL2584s, and TCS3448
+must connect to the 3.3 V low side only; the ADS1115 remains on the level
+shifter's 5 V high side. Never expose an ESP8266 pin or 3.3 V sensor to a 5 V
+I2C pull-up. There is no external real-time clock in this firmware.
 
 ## DS18B20 identity map
 
@@ -57,9 +58,9 @@ probes remain in their assigned payload positions with `present: false`.
 5. Run `pio run -t uploadfs` when installing or changing the CA bundle.
 6. Run `pio device monitor` at 115200 baud and verify the I2C scan.
 
-Expected production I2C addresses are TSL2584 sea `0x29`, SHT45 `0x44`,
-ADS1115 `0x48`, TSL2584 land `0x49`, and TCS3448 `0x59`. An unexpected address
-or a missing expected address is reported in telemetry and the serial log.
+The shared D1/D2 bus expects TSL2584 sea `0x29`, SHT45 `0x44`, ADS1115
+`0x48`, TSL2584 land `0x49`, and TCS3448 `0x59`. Unexpected or missing
+addresses are reported in telemetry and the serial log.
 
 ## Soil calibration
 
@@ -74,15 +75,23 @@ The two channels are fixed: A0 is sensor 1 at 15 cm and A1 is sensor 2 at
 
 ## Time and GPS
 
-NTP supplies initial system time. Checksum-valid NEO-6M date/time received on
-D6 can then discipline the system clock; a position fix is not required for
-time. Fresh valid coordinates, satellites, HDOP, and altitude are emitted when
-available. If GPS time becomes stale, the source changes to `gps_holdover` and
-the ESP8266 clock continues running.
+NTP is a mandatory clock gate. The firmware does not capture, queue, replay, or
+transmit any reading unless SNTP has successfully initialized the clock and the
+current system time remains valid. Checksum-valid
+NEO-6M date/time received on D6 may discipline the clock only after that first
+NTP synchronization; a position fix is not required for time. Fresh valid
+coordinates, satellites, HDOP, and altitude are emitted when available. If GPS
+time becomes stale, the source changes to `gps_holdover` and the ESP8266 clock
+continues running.
 
-There is no battery-backed clock. After a cold boot, HTTPS waits until NTP or
-GPS supplies plausible time. The ESP8266 system clock provides holdover only
-while the board remains powered.
+GPS calendar fields are validated independently of TinyGPS++'s validity flag.
+Years before 2021—including the NEO-6M placeholder year 2000—month/day zero,
+impossible calendar dates, and invalid time fields are rejected and can never
+set the system clock.
+
+There is no battery-backed clock. After every cold boot, sampling and HTTPS
+wait specifically for a successful NTP synchronization. The ESP8266 system
+clock provides holdover only while the board remains powered.
 
 ## Payload and offline behavior
 
@@ -99,11 +108,13 @@ successful-read age, accumulated read failures, and the age of the last GPS
 byte. Missing I2C devices are retried every 30 seconds, so late power-up no
 longer requires a NodeMCU reboot.
 
-LittleFS stores 1,536 checksummed 256-byte version-3 records, providing 25.6
-hours at the one-minute interval. The new magic and format number reject every
-older packed layout. The original fixed-size queue allocation is reused; an
+LittleFS stores 1,536 checksummed 256-byte version-4 records, providing 25.6
+hours at the one-minute interval. Format 4 aligns every multi-byte field and
+adds compile-time alignment checks, preventing ESP8266 exception 9 when sensor
+values pass through library templates. Its new magic rejects every older
+packed layout. The original fixed-size queue allocation is reused; an
 incompatible experimental v2 queue file is removed during the upgrade. Let any
-important offline queue drain before installing firmware 0.9.0.
+important offline queue drain before installing firmware 0.10.0.
 
 Live readings contain the full diagnostic snapshot. Replayed readings preserve
 their original event ID, sequence, observation time, and sensor values while

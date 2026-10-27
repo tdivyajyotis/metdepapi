@@ -2,13 +2,15 @@
 
 #include <Arduino.h>
 #include <FS.h>
+#include <stddef.h>
 
 namespace offline {
 
-constexpr uint32_t RECORD_MAGIC = 0x54475133UL;  // "TGQ3"
+constexpr uint32_t RECORD_MAGIC = 0x54475134UL;  // "TGQ4"
 constexpr uint32_t LEGACY_RECORD_MAGIC_V1 = 0x54475131UL;  // "TGQ1"
 constexpr uint32_t LEGACY_RECORD_MAGIC_V2 = 0x54475132UL;  // "TGQ2"
-constexpr uint16_t RECORD_FORMAT_VERSION = 3;
+constexpr uint32_t LEGACY_RECORD_MAGIC_V3 = 0x54475133UL;  // "TGQ3"
+constexpr uint16_t RECORD_FORMAT_VERSION = 4;
 constexpr uint16_t RECORD_BYTES = 256;
 constexpr uint16_t RECORD_CAPACITY = 1536;
 constexpr size_t QUEUE_FILE_BYTES =
@@ -45,7 +47,7 @@ enum ReadingFlag : uint32_t {
 };
 
 #pragma pack(push, 1)
-struct ReadingRecord {
+struct alignas(4) ReadingRecord {
   uint32_t magic = RECORD_MAGIC;
   uint16_t formatVersion = RECORD_FORMAT_VERSION;
   uint16_t recordBytes = RECORD_BYTES;
@@ -69,6 +71,10 @@ struct ReadingRecord {
   int8_t wifiRssiDbm = -127;
   uint8_t timeSource = 0;
   uint8_t gpsSatellites = 0;
+  // Keep the entire 16-bit sensor region naturally aligned. Format 3 omitted
+  // this byte and could fault when a library bound an odd-offset field by
+  // reference on ESP8266.
+  uint8_t alignmentPadding = 0;
   uint16_t gpsHdopCenti = 0;
   int16_t dsTemperatureCenti[4] = {};
   int16_t soilCounts[2] = {};
@@ -78,14 +84,54 @@ struct ReadingRecord {
   uint16_t tslSea[3] = {};
   uint16_t tslLand[3] = {};
   uint16_t tcs3448[13] = {};
-  // Format 3 intentionally starts a new binary contract.
-  uint8_t reserved[105] = {};
+  // Format 4 intentionally starts a new binary contract.
+  uint8_t reserved[104] = {};
   uint32_t crc32 = 0;
 };
 #pragma pack(pop)
 
 static_assert(sizeof(ReadingRecord) == RECORD_BYTES,
               "Offline reading record must remain exactly 256 bytes");
+static_assert(alignof(ReadingRecord) >= 4,
+              "Reading records must have an aligned base address");
+
+// ESP8266 raises exception 9 for unaligned half-word and word accesses. Check
+// every multi-byte member, not just the fields involved in a known crash, so a
+// future binary-format edit fails at compile time instead of in the field.
+#define OFFLINE_ASSERT_MEMBER_ALIGNED(member)                              \
+  static_assert(offsetof(ReadingRecord, member) %                          \
+                        alignof(decltype(ReadingRecord::member)) == 0,      \
+                "Unaligned offline record member: " #member)
+OFFLINE_ASSERT_MEMBER_ALIGNED(magic);
+OFFLINE_ASSERT_MEMBER_ALIGNED(formatVersion);
+OFFLINE_ASSERT_MEMBER_ALIGNED(recordBytes);
+OFFLINE_ASSERT_MEMBER_ALIGNED(storageId);
+OFFLINE_ASSERT_MEMBER_ALIGNED(bootId);
+OFFLINE_ASSERT_MEMBER_ALIGNED(sequence);
+OFFLINE_ASSERT_MEMBER_ALIGNED(observedEpoch);
+OFFLINE_ASSERT_MEMBER_ALIGNED(uptimeMs);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsEpoch);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsFixAgeMs);
+OFFLINE_ASSERT_MEMBER_ALIGNED(flags);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsLatitudeE7);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsLongitudeE7);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsAltitudeMm);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsCharsProcessed);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsSentencesOk);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsChecksumFailures);
+OFFLINE_ASSERT_MEMBER_ALIGNED(adsReads);
+OFFLINE_ASSERT_MEMBER_ALIGNED(adsFailures);
+OFFLINE_ASSERT_MEMBER_ALIGNED(gpsHdopCenti);
+OFFLINE_ASSERT_MEMBER_ALIGNED(dsTemperatureCenti);
+OFFLINE_ASSERT_MEMBER_ALIGNED(soilCounts);
+OFFLINE_ASSERT_MEMBER_ALIGNED(soilMillivolts);
+OFFLINE_ASSERT_MEMBER_ALIGNED(shtTemperatureCenti);
+OFFLINE_ASSERT_MEMBER_ALIGNED(shtHumidityCenti);
+OFFLINE_ASSERT_MEMBER_ALIGNED(tslSea);
+OFFLINE_ASSERT_MEMBER_ALIGNED(tslLand);
+OFFLINE_ASSERT_MEMBER_ALIGNED(tcs3448);
+OFFLINE_ASSERT_MEMBER_ALIGNED(crc32);
+#undef OFFLINE_ASSERT_MEMBER_ALIGNED
 
 class Queue {
  public:

@@ -118,6 +118,7 @@ TimeSource timeSource = TimeSource::Unsynchronized;
 volatile bool ntpSyncArrived = false;
 bool ntpSyncReceived = false;
 bool ntpClockApplied = false;
+bool ntpStartupWaitReported = false;
 uint32_t lastGpsTimeAt = 0;
 uint32_t lastGpsDisciplineAt = 0;
 
@@ -179,6 +180,10 @@ bool systemTimeIsValid() {
   return time(nullptr) >= config::MIN_VALID_UNIX_TIME;
 }
 
+bool clockReadyForData() {
+  return ntpClockApplied && systemTimeIsValid();
+}
+
 void setSystemTime(time_t epoch) {
   timeval value = {epoch, 0};
   settimeofday(&value, nullptr);
@@ -219,15 +224,38 @@ int64_t daysFromCivil(int year, unsigned month, unsigned day) {
   return static_cast<int64_t>(era) * 146097 + dayOfEra - 719468;
 }
 
+bool leapYear(unsigned year) {
+  return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+}
+
+uint8_t daysInMonth(unsigned year, unsigned month) {
+  static constexpr uint8_t DAYS[] = {31, 28, 31, 30, 31, 30,
+                                     31, 31, 30, 31, 30, 31};
+  if (month < 1 || month > 12) return 0;
+  if (month == 2 && leapYear(year)) return 29;
+  return DAYS[month - 1];
+}
+
+bool gpsCalendarFieldsValid() {
+  if (!gps.date.isValid() || !gps.time.isValid()) return false;
+  const unsigned year = gps.date.year();
+  const unsigned month = gps.date.month();
+  const unsigned day = gps.date.day();
+  return year >= 2021 && year <= 2099 && month >= 1 && month <= 12 &&
+         day >= 1 && day <= daysInMonth(year, month) &&
+         gps.time.hour() < 24 && gps.time.minute() < 60 &&
+         gps.time.second() < 60;
+}
+
 time_t gpsEpoch() {
-  if (!gps.date.isValid() || !gps.time.isValid()) {
-    return 0;
-  }
+  if (!gpsCalendarFieldsValid()) return 0;
   const int64_t days = daysFromCivil(gps.date.year(), gps.date.month(),
                                      gps.date.day());
   const int64_t seconds = days * 86400LL + gps.time.hour() * 3600LL +
                           gps.time.minute() * 60LL + gps.time.second();
-  return seconds > 0 ? static_cast<time_t>(seconds) : 0;
+  return seconds >= config::MIN_VALID_UNIX_TIME
+             ? static_cast<time_t>(seconds)
+             : 0;
 }
 
 bool gpsFixIsFresh() {
@@ -239,7 +267,7 @@ bool gpsFixIsFresh() {
 }
 
 bool gpsTimeIsFresh() {
-  return gps.date.isValid() && gps.time.isValid() &&
+  return gpsCalendarFieldsValid() &&
          gps.date.age() <= config::GPS_MAX_TIME_AGE_MS &&
          gps.time.age() <= config::GPS_MAX_TIME_AGE_MS &&
          gpsEpoch() >= config::MIN_VALID_UNIX_TIME;
@@ -252,10 +280,25 @@ void pollTimeSources() {
     lastGpsTimeAt = now;
   }
 
+  // NTP is the mandatory startup authority. The SNTP callback runs only after
+  // the ESP8266 system clock has been set successfully. GPS is deliberately
+  // prevented from stopping SNTP or opening the sampling gate before this.
+  if (ntpSyncArrived) {
+    ntpSyncArrived = false;
+    ntpSyncReceived = true;
+    if (systemTimeIsValid()) {
+      changeTimeSource(TimeSource::Ntp, "initial NTP synchronization");
+      ntpClockApplied = true;
+      addTelemetryEvent("time", "info",
+                        "Initial system clock synchronized from NTP");
+      sntp_stop();
+    }
+  }
+
   // NMEA time validity is independent of navigation-fix validity. A receiver
   // may emit checksum-valid UTC in RMC status V or GGA fix quality 0. Use that
   // time for the system clock while continuing to suppress invalid position.
-  if (validGpsTime) {
+  if (ntpClockApplied && validGpsTime) {
     const bool firstGpsSync = timeSource != TimeSource::Gps;
     const bool disciplineDue =
         lastGpsDisciplineAt == 0 ||
@@ -276,21 +319,6 @@ void pollTimeSources() {
     changeTimeSource(TimeSource::GpsHoldover, "GPS time became stale");
   }
 
-  if (ntpSyncArrived) {
-    ntpSyncArrived = false;
-    ntpSyncReceived = true;
-    if (timeSource != TimeSource::Gps &&
-        timeSource != TimeSource::GpsHoldover && systemTimeIsValid()) {
-      changeTimeSource(TimeSource::Ntp, "initial NTP synchronization");
-      ntpClockApplied = true;
-      addTelemetryEvent("time", "info",
-                        "Initial system clock synchronized from NTP");
-    }
-    // This station intentionally uses NTP only for the initial sync. GPS takes
-    // precedence when it becomes valid; the ESP8266 system clock provides
-    // holdover while it remains powered.
-    sntp_stop();
-  }
 }
 
 String romToString(const DeviceAddress address) {
@@ -630,10 +658,18 @@ void captureTsl(offline::ReadingRecord &record, Tsl2584 &sensor,
     record.flags |= sea ? offline::TSL_SEA_SATURATED
                         : offline::TSL_LAND_SATURATED;
   }
-  uint16_t *values = sea ? record.tslSea : record.tslLand;
-  values[0] = reading.broadbandCounts;
-  values[1] = reading.infraredCounts;
-  values[2] = reading.visibleCounts;
+  // Keep the packed member expression visible to the compiler. Record format
+  // 4 also aligns this complete 16-bit region, preventing ESP8266 exception 9
+  // when template/library code binds a field by reference.
+  if (sea) {
+    record.tslSea[0] = reading.broadbandCounts;
+    record.tslSea[1] = reading.infraredCounts;
+    record.tslSea[2] = reading.visibleCounts;
+  } else {
+    record.tslLand[0] = reading.broadbandCounts;
+    record.tslLand[1] = reading.infraredCounts;
+    record.tslLand[2] = reading.visibleCounts;
+  }
 }
 
 void captureTcs3448(offline::ReadingRecord &record) {
@@ -723,14 +759,15 @@ void addSoilJson(JsonObject sensors, const offline::ReadingRecord &record) {
 }
 
 void addTslJson(JsonObject sensors, const char *name, uint8_t address,
-                const uint16_t (&values)[3], bool ok, bool saturated) {
+                uint16_t broadband, uint16_t infrared, uint16_t visible,
+                bool ok, bool saturated) {
   JsonObject out = sensors.createNestedObject(name);
   out["address"] = address;
   out["ok"] = ok;
   if (ok) {
-    out["broadband_counts"] = values[0];
-    out["infrared_counts"] = values[1];
-    out["visible_counts"] = values[2];
+    out["broadband_counts"] = broadband;
+    out["infrared_counts"] = infrared;
+    out["visible_counts"] = visible;
     out["saturated"] = saturated;
   }
 }
@@ -931,6 +968,9 @@ void addTelemetrySnapshot(JsonObject telemetry,
     addresses.add(i2cAddresses[i]);
   }
   bus["device_count"] = i2cAddressCount;
+  bus["sda"] = "D2/GPIO4";
+  bus["scl"] = "D1/GPIO5";
+  bus["clock_hz"] = config::I2C_CLOCK_HZ;
 
   JsonObject presence = telemetry.createNestedObject("sensor_presence");
   presence["ds18b20_discovered"] = ds18b20.getDeviceCount();
@@ -1030,8 +1070,16 @@ void addTelemetrySnapshot(JsonObject telemetry,
   clock["utc_offset"] = "+05:30";
   clock["ntp_sync_received"] = ntpSyncReceived;
   clock["ntp_clock_applied"] = ntpClockApplied;
+  clock["initial_ntp_required"] = true;
+  clock["sampling_enabled"] = clockReadyForData();
   clock["gps_fix_fresh"] = gpsFixIsFresh();
   clock["gps_time_fresh"] = gpsTimeIsFresh();
+  clock["gps_calendar_fields_valid"] = gpsCalendarFieldsValid();
+  if (gps.date.isValid()) {
+    clock["gps_reported_year"] = gps.date.year();
+    clock["gps_reported_month"] = gps.date.month();
+    clock["gps_reported_day"] = gps.date.day();
+  }
   clock["gps_time_used_without_fix"] =
       gpsTimeIsFresh() && !gpsFixIsFresh();
   if (validSystemTime) {
@@ -1086,10 +1134,12 @@ String makePayload(const offline::ReadingRecord &record, bool fullTelemetry,
   addSht45Json(sensors, record);
   addSoilJson(sensors, record);
   addTslJson(sensors, "tsl2584_sea", config::TSL2584_SEA_ADDRESS,
-             record.tslSea, recordFlag(record, offline::TSL_SEA_OK),
+             record.tslSea[0], record.tslSea[1], record.tslSea[2],
+             recordFlag(record, offline::TSL_SEA_OK),
              recordFlag(record, offline::TSL_SEA_SATURATED));
   addTslJson(sensors, "tsl2584_land", config::TSL2584_LAND_ADDRESS,
-             record.tslLand, recordFlag(record, offline::TSL_LAND_OK),
+             record.tslLand[0], record.tslLand[1], record.tslLand[2],
+             recordFlag(record, offline::TSL_LAND_OK),
              recordFlag(record, offline::TSL_LAND_SATURATED));
   addTcs3448Json(sensors, record);
   addTimeAndGpsJson(sensors, record);
@@ -1177,11 +1227,15 @@ bool postPayload(const String &payload, const char *url) {
     Serial.println(F("Not posting: WiFi disconnected"));
     return false;
   }
+  if (!clockReadyForData()) {
+    Serial.println(F("Not posting: initial NTP clock gate is closed"));
+    return false;
+  }
 
   const String destination(url);
   if (destination.startsWith("https://")) {
     if (!systemTimeIsValid()) {
-      Serial.println(F("Not posting HTTPS: waiting for NTP or GPS time"));
+      Serial.println(F("Not posting HTTPS: waiting for initial NTP sync"));
       return false;
     }
     BearSSL::WiFiClientSecure client;
@@ -1225,8 +1279,7 @@ bool readyToSend() {
   if (WiFi.status() != WL_CONNECTED) {
     return false;
   }
-  return strncmp(config::INGEST_URL, "https://", 8) != 0 ||
-         systemTimeIsValid();
+  return clockReadyForData();
 }
 
 String makeBatchPayload(const offline::ReadingRecord *records, uint8_t count,
@@ -1340,7 +1393,7 @@ void initializeTlsTrustStore() {
 }
 
 void scanI2cBus() {
-  Serial.println(F("I2C scan:"));
+  Serial.println(F("I2C scan D1=SCL D2=SDA:"));
   i2cAddressCount = 0;
   for (uint8_t address = 1; address < 127; ++address) {
     Wire.beginTransmission(address);
@@ -1352,7 +1405,7 @@ void scanI2cBus() {
     }
     yield();
   }
-  addTelemetryEvent("i2c", "info", "Scan found %u device(s)",
+  addTelemetryEvent("i2c", "info", "Scan found %u device(s) on D1/D2",
                     i2cAddressCount);
 }
 
@@ -1416,7 +1469,15 @@ void loop() {
   recoverUnavailableSensors();
 
   const uint32_t now = millis();
-  if (lastSampleAt == 0 || now - lastSampleAt >= config::SAMPLE_INTERVAL_MS) {
+  const bool samplingReady = clockReadyForData();
+  if (!samplingReady && !ntpStartupWaitReported) {
+    ntpStartupWaitReported = true;
+    addTelemetryEvent("time", "info",
+                      "Waiting for initial NTP sync before first sample");
+  }
+  if (samplingReady &&
+      (lastSampleAt == 0 ||
+       now - lastSampleAt >= config::SAMPLE_INTERVAL_MS)) {
     lastSampleAt = now;
     ++sequenceNumber;
     offline::ReadingRecord record = captureReading();

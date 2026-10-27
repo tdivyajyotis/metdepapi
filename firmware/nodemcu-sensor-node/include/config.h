@@ -4,9 +4,10 @@
 
 namespace config {
 
-// LoLin NodeMCU V3 wiring from hardware-schematic.svg.
-constexpr uint8_t I2C_SCL_PIN = D1;       // GPIO5 -> level shifter L1
-constexpr uint8_t I2C_SDA_PIN = D2;       // GPIO4 -> level shifter L2
+// One shared I2C bus. The 3.3 V sensors connect directly to the low-voltage
+// D1/D2 side; the 5 V ADS1115 remains behind the bidirectional level shifter.
+constexpr uint8_t I2C_SCL_PIN = D1;  // GPIO5, clock
+constexpr uint8_t I2C_SDA_PIN = D2;  // GPIO4, data
 constexpr uint8_t ONE_WIRE_PIN = D5;      // GPIO14, 4.7 kOhm pull-up to 3.3 V
 constexpr uint8_t GPS_RX_PIN = D6;        // GPIO12 <- level shifter <- GPS TX
 constexpr int8_t GPS_TX_PIN = -1;         // GPS RX is intentionally disconnected
@@ -21,7 +22,7 @@ constexpr int16_t ADS1115_MAX_COUNTS = 26667;
 constexpr uint8_t ADS1115_MEDIAN_SAMPLES = 9;
 constexpr uint8_t SOIL_DEPTH_CM[2] = {15, 45};
 
-// Existing 3.3 V expansion I2C bus sensors remain installed.
+// Devices on the shared D1/D2 I2C bus.
 constexpr uint8_t SHT45_ADDRESS = 0x44;
 // TSL2584TSV ADDR_SEL: GND -> 0x29, VDD -> 0x49.
 constexpr uint8_t TSL2584_SEA_ADDRESS = 0x29;
@@ -68,7 +69,7 @@ constexpr uint8_t TELEMETRY_MAX_EVENTS = 12;
 constexpr size_t TELEMETRY_MESSAGE_LENGTH = 88;
 
 constexpr char DEVICE_ID[] = "station-001";
-constexpr char FIRMWARE_VERSION[] = "0.9.0";
+constexpr char FIRMWARE_VERSION[] = "0.10.0";
 constexpr char INGEST_URL[] = "https://ingest.turtleguard.in/v1/readings";
 constexpr char BATCH_INGEST_URL[] =
     "https://ingest.turtleguard.in/v1/readings/batch";

@@ -142,7 +142,8 @@ bool Queue::scan() {
       }
     } else if (record.magic != 0 &&
                record.magic != LEGACY_RECORD_MAGIC_V1 &&
-               record.magic != LEGACY_RECORD_MAGIC_V2) {
+               record.magic != LEGACY_RECORD_MAGIC_V2 &&
+               record.magic != LEGACY_RECORD_MAGIC_V3) {
       ++corruptRecords_;
     }
     if ((index & 0x1F) == 0) {
@@ -164,7 +165,7 @@ bool Queue::scan() {
 bool Queue::begin(fs::FS &filesystem) {
   filesystem_ = &filesystem;
   // A v2 file used a different packed layout and cannot be decoded safely.
-  // Remove it before allocating/reusing the format-3 queue so it cannot also
+  // Remove it before allocating/reusing the active queue so it cannot also
   // consume the LittleFS space needed by the active ring.
   if (filesystem_->exists(LEGACY_V2_QUEUE_PATH)) {
     filesystem_->remove(LEGACY_V2_QUEUE_PATH);

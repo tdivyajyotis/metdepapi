@@ -1,7 +1,7 @@
 # Sensor ingestion server
 
 Current server/package version: `0.2.0`. Current production NodeMCU firmware:
-`0.9.0` with telemetry version 2 and offline-record format 3.
+`0.10.0` with telemetry version 2 and offline-record format 4.
 
 This service accepts the JSON produced by `firmware/nodemcu-sensor-node`, stores
 the original payload in PostgreSQL, flattens every numeric sensor leaf into a
@@ -119,7 +119,10 @@ observation time falls back to server `received_at`. A reading explicitly marked
 time up to 36 hours old, matching the flash queue envelope. Future or older
 timestamps still fall back to receipt time, protecting series from a corrupt
 device clock. Time comes from NTP or the direct GPS UART; there is no external
-battery-backed clock.
+battery-backed clock. Firmware 0.10.0 requires a successful initial NTP sync and
+a currently valid system clock before it captures, queues, replays, or
+transmits readings. GPS discipline starts only after that gate opens, and
+placeholder year 2000 or malformed calendar fields are rejected.
 
 ## Purging test readings
 
